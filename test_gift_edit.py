@@ -193,9 +193,10 @@ if have_db:
             g.refresh_from_db()
             ok(g.idea == 'GE gloves' and g.gift == '',
                'PRIVATE: someone else cannot edit it')
-            t = ca.get('/celebrations/gifts/').content.decode()
+            # CG-5, 15 Nov 2026 - ideas have their own tab now
+            t = ca.get('/celebrations/gifts/?tab=ideas').content.decode()
             ok('data-gift-edit' in t and 'GE gloves' in t,
-               'MY GIFTS shows it with its Edit')
+               'MY GIFTS (Ideas) shows it with its Edit')
             ca.post(url, {'action': 'delete', 'gift_id': g.pk})
             ok(not Gift.objects.filter(pk=g.pk).exists(), 'DELETE: gone')
             raise Rollback

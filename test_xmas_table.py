@@ -107,9 +107,9 @@ ok('aria-label="Christmas view"' in mg and
 ok('<table class="alv-matrix xt-table">' in mg and
    'class="alv-matrix-scroll xt-scroll"' in mg,
    'THE TABLE is the house matrix: it scrolls, the names stay put')
-ok('<td class="alv-matrix-absent">-</td>' in mg, 'a gap is "-"')
+ok('<td class="alv-matrix-absent' in mg, 'a gap is "-"')
 gv = read(J(ROOT, 'pages', 'views', 'celebration_gifts.py'))
-ok('def christmas_table(mine):' in gv and
+ok('def christmas_table(mine, this_year=None):' in gv and
    'cols = list(range(max(years), min(years) - 1, -1))' in gv,
    'THE VIEW: newest year first, down to the first')
 hp = read(J(ROOT, 'pages', 'help_content', 'administration.html'))
@@ -179,40 +179,48 @@ if have_db:
                                 gift='XT birthday cake', given=True)
             G(b, bob, 2021, gift='XT someone else', given=True)
 
-            t = christmas_table(Gift.objects.filter(owner=a))
-            ok(t['xt_years'] == [2025, 2024, 2023, 2022],
-               'COLUMNS: the latest year bought for, down to the first - '
-               'gaps included', t['xt_years'])
+            # CG-5, 15 Nov 2026 - a plan shows too, marked, where nothing
+            # was bought that year; someone with only a plan has a row.
+            t = christmas_table(Gift.objects.filter(owner=a), 2026)
+            txt = lambda r: [(c['text'], c['planned']) for c in r['cells']]  # noqa: E731
+            ok(t['xt_years'] == [2026, 2025, 2024, 2023, 2022],
+               'COLUMNS: the latest year, down to the first - gaps '
+               'included', t['xt_years'])
             names = [r['who'] for r in t['xt_rows']]
-            ok(names == ['XT Bob', 'XT Zoe'],
-               'ROWS: people with a Christmas gift bought, by name - not '
-               'someone with only a plan', names)
-            zr = t['xt_rows'][1]['cells']
-            ok(zr == ['XT watch', '', '', 'XT scarf · XT gloves'],
-               'CELLS: what was bought - not the plan; two in a year share '
-               'the cell', zr)
-            ok(t['xt_rows'][0]['cells'] == ['', 'XT perfume', '', ''],
+            ok(names == ['XT Ann', 'XT Bob', 'XT Zoe'],
+               'ROWS: by name - someone with only a plan has a row', names)
+            zr = txt(t['xt_rows'][2])
+            ok(zr == [('XT plan only', True), ('XT watch', False),
+                      ('', False), ('', False),
+                      ('XT scarf · XT gloves', False)],
+               'CELLS: what was bought; this year\'s plan marked planned; '
+               'two in a year share the cell', zr)
+            ok(txt(t['xt_rows'][1]) == [('', False), ('', False),
+                                        ('XT perfume', False), ('', False),
+                                        ('', False)],
                '  ticked Bought with only the plan written: the plan is '
                'what was bought; a birthday gift is not here')
+            ok(t['xt_planned'] and t['xt_this_year'] == 2026,
+               '  the table knows it holds plans, and which year is now')
             bob.delete()
-            t = christmas_table(Gift.objects.filter(owner=a))
-            ok(t['xt_rows'][0]['who'] == 'XT Bob' and t['xt_rows'][0]['gone'],
+            t = christmas_table(Gift.objects.filter(owner=a), 2026)
+            ok(t['xt_rows'][1]['who'] == 'XT Bob' and t['xt_rows'][1]['gone'],
                'A DELETED CONTACT keeps their row')
-            ok(christmas_table(Gift.objects.none()) ==
-               {'xt_years': [], 'xt_rows': []}, 'NOTHING BOUGHT: an empty '
-               'table, not an error')
+            ok(christmas_table(Gift.objects.none())['xt_rows'] == [],
+               'NOTHING YET: an empty table, not an error')
 
             r = ca.get('/celebrations/gifts/?tab=christmas&view=table')
             h = r.content.decode()
             ok(r.status_code == 200 and 'data-xmas-table' in h and
                'XT watch' in h and '<th scope="col">2025</th>' in h,
                'THE PAGE draws the table')
-            ok('XT plan only' not in h and '90' not in
-               h[h.index('data-xmas-table'):h.index('</table>')] and
+            tb = h[h.index('data-xmas-table'):h.index('</table>')]
+            ok('<em>XT plan only</em><span class="sr-only"> (planned)</span>'
+               in tb and 'xt-key' in tb and '90' not in tb and
                'XT someone else' not in h and 'data-shopping-list' not in h,
-               '  no plan, no budget, no cost; nobody else\'s gifts; no '
-               'shopping list button')
-            ok(h.count('<td class="alv-matrix-absent">-</td>') == 5,
+               '  a plan shows marked as planned, with the key; no budget, '
+               'no cost; nobody else\'s gifts; no shopping list button')
+            ok(h.count('class="alv-matrix-absent') == 10,
                '  every empty year is a "-"')
             r = ca.get('/celebrations/gifts/?tab=christmas&year=2026')
             h = r.content.decode()

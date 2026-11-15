@@ -106,14 +106,14 @@ mg = read(J(PT, 'celebration_gifts.html'))
 ok(mg.count('{% for p in y.people %}') == 1 and
    mg.count('{% for p in idea_people %}') == 1,
    'MY GIFTS: each person once, in a year and in Ideas')
-ok(mg.count(' <span class="gift-edit-link">Edit</span></span>') == 2,
+ok(mg.count(' <span class="gift-edit-link" title="Edit"><i class="fas fa-pen"') == 2,
    'Edit sits beside the gift, inside its line')
 ok('.gift-line .gift-amt { margin-left: auto; margin-right: 96px;' in mg,
    'the gift amounts sit left of the person\'s total')
 cm = read(J(PT, 'celebration_management.html'))
 ok(mg.count('value="given"{% if g.given %} checked{% endif %}> Bought</label>') == 2 and mg.count('> Just an idea</label>')
    == 2 and '> Bought</label>' in cm and '> Just an idea</label>' in cm and
-   "el('button', 'gift-row-btn', 'Bought')" in cm and
+   "'gift-row-btn gift-mark', 'Mark bought')" in cm and
    '> Given</label>' not in mg + cm,
    'BOUGHT / JUST AN IDEA, in My gifts and in the Gifts pop-up')
 gv = read(J(ROOT, 'pages', 'views', 'celebration_gifts.py'))
@@ -203,8 +203,11 @@ if have_db:
                y26.count('GP Aki') == 1 and y26.count('data-gift-edit') == 3
                and '€55' in y26,
                'THE PAGE: in 2026 Aki is one person with two gifts and €55')
-            ok(h.count('data-gift-person') == 4,
-               '  2025 is its own year; the idea is grouped too')
+            ok(h.count('data-gift-person') == 3 and 'data-ideas-nudge' in h,
+               '  2025 is its own year; the idea waits on the Ideas tab')
+            hi = ca.get('/celebrations/gifts/?tab=ideas').content.decode()
+            ok(hi.count('data-gift-person') == 1 and 'GP book' in hi,
+               '  and the Ideas tab groups it by person')
             # BOUGHT AS PLANNED, and buying by writing it down
             r1 = G(aki, year=2030, occasion='christmas', idea='GP pants',
                    budget=Decimal('10'))

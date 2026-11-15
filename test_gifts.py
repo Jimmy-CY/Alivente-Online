@@ -343,7 +343,9 @@ if have_db:
             ok(Gift.objects.get(owner=b, idea='CG mug').orphan_told is False
                and Gift.objects.filter(owner=a, orphan_told=True).count() == 2,
                '  Al, who deleted her, was told then; Bo not yet')
-            t = cb.get('/celebrations/gifts/', follow=True).content.decode()
+            # CG-5, 15 Nov 2026 - the idea is on the Ideas tab now
+            t = cb.get('/celebrations/gifts/?tab=ideas',
+                       follow=True).content.decode()
             ok('CG mug' in t and '(contact deleted)' in t and
                'CG Xena was deleted from Celebrations' in t,
                '  Bo is told on his next visit, and it is in My gifts')

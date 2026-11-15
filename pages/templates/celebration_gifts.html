@@ -17,7 +17,15 @@
 .gift-tabs { display: flex; gap: 8px; margin: 0 0 18px; flex-wrap: wrap; }
 .gift-tab { display: inline-flex; align-items: center; min-height: 40px; padding: 6px 16px; border-radius: 20px; border: 1px solid currentColor; text-decoration: none; color: var(--alv-accent); }
 .gift-tab.is-on { font-weight: 700; border-width: 2px; }
-.gift-year { margin-bottom: 22px; }
+.gift-year { margin-bottom: 30px; max-width: 760px; }
+.gift-year-head .form-section-title { margin-bottom: 2px; }
+.gift-tab-count { display: inline-block; min-width: 1.5em; margin-left: 6px; padding: 0 6px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; text-align: center; border: 1px solid currentColor; }
+.gift-ideas-nudge { margin: 0 0 16px; }
+.gift-ideas-nudge a { color: var(--alv-accent); font-weight: 600; }
+[data-gifts-mine], [data-gifts-ideas] { max-width: 840px; }
+.gift-occ { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; padding: 0 8px; border-radius: 999px; font-size: 0.75rem; line-height: 1.6; border: 1px solid var(--alv-line); color: var(--alv-ink-soft); vertical-align: 1px; white-space: nowrap; }
+.gift-occ-christmas { color: var(--alv-good); }
+.gift-occ-birthday { color: var(--alv-accent); }
 .gift-year-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .gift-who { font-weight: 600; min-width: 160px; }
 .gift-what { flex: 1; min-width: 160px; }
@@ -35,11 +43,21 @@
 .xmas-past { position: relative; }
 .xmas-past summary { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; cursor: pointer; color: var(--alv-accent); font-size: 0.9rem; list-style: none; }
 .xmas-past summary::-webkit-details-marker { display: none; }
-.xmas-past-table { position: absolute; right: 0; top: 100%; z-index: 5; display: block; min-width: 260px; max-width: min(380px, 90vw); max-height: 280px; overflow-y: auto; margin: 4px 0 0; padding: 8px 12px; background: var(--alv-paper); border: 1px solid var(--alv-line); border-radius: var(--alv-radius-sm); box-shadow: 0 6px 18px rgba(16, 34, 40, .12); }
-.xmas-past-table th, .xmas-past-table td { padding: 4px 14px 4px 0; text-align: left; vertical-align: top; }
-.xmas-past-table thead th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .02em; color: var(--alv-ink-soft); border-bottom: 1px solid var(--alv-line-soft); }
-.xmas-past-table tbody th { font-variant-numeric: tabular-nums; }
-.xmas-past-table td:first-of-type { color: var(--alv-ink-soft); }
+/* CG-5, 15 Nov 2026 - the Past Christmases card, tidied: a titled card, roomy rows, banded */
+.xmas-past-card { position: absolute; right: 0; top: calc(100% + 6px); z-index: 6; width: min(400px, 88vw); max-height: 320px; overflow-y: auto; background: var(--alv-paper); border: 1px solid var(--alv-line); border-radius: var(--alv-radius); box-shadow: 0 10px 28px rgba(16, 34, 40, .18); }
+.xmas-past-title { position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 14px; font-weight: 700; background: var(--alv-surface); border-bottom: 1px solid var(--alv-line); }
+.xmas-past-title i { color: var(--alv-accent); margin-right: 4px; }
+.xmas-past-close { border: 0; background: transparent; font-size: 1.3rem; line-height: 1; min-width: 32px; min-height: 32px; cursor: pointer; }
+.xmas-past-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.xmas-past-table th, .xmas-past-table td { padding: 8px 14px; text-align: left; vertical-align: top; }
+.xmas-past-table thead th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--alv-ink-soft); border-bottom: 1px solid var(--alv-line); }
+.xmas-past-table tbody tr + tr { border-top: 1px solid var(--alv-line-soft); }
+.xmas-past-table tbody tr:nth-child(even) { background: var(--alv-surface); }
+.xmas-past-table tbody th { width: 4.2em; font-variant-numeric: tabular-nums; }
+.xmas-past-table td { width: 50%; }
+.xmas-past-table td:first-of-type { color: var(--alv-ink-soft); font-style: italic; }
+.xmas-past-table td:last-of-type { font-weight: 600; }
+.xmas-past-same { color: var(--alv-good); font-size: 0.8rem; margin-left: 4px; }
 .xmas-past-none { color: var(--alv-ink-faint); }
 .xmas-copy { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 4px 0 14px; }
 .xmas-grid input[name="budget"], .xmas-grid input[name="cost"] { text-align: right; font-variant-numeric: tabular-nums; }
@@ -50,16 +68,16 @@
 .xmas-grid .xmas-done:has(input:disabled) { color: var(--alv-ink-faint); }
 .xmas-row input[readonly] { background: var(--alv-surface); }
 .xmas-row-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
-.gift-person { padding: 10px 0; border-top: 1px solid var(--alv-line-soft); }
+.gift-person { padding: 2px 0; border-top: 1px solid var(--alv-line-soft); }
 .gift-person:first-of-type { border-top: 0; }
-.gift-person-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 4px 0; }
+.gift-person-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 6px 0 0; }
 .gift-line { margin: 0; }
-.gift-line summary { display: flex; align-items: baseline; gap: 6px 12px; min-height: 36px; padding: 4px 0 4px 18px; cursor: pointer; list-style: none; }
+.gift-line summary { display: flex; align-items: baseline; gap: 6px 12px; min-height: 34px; padding: 3px 0 3px 18px; cursor: pointer; list-style: none; }
 .gift-line summary::-webkit-details-marker { display: none; }
 .gift-line .gift-what { flex: 0 1 auto; min-width: 0; }
 .gift-edit-link { color: var(--alv-accent); font-size: 0.9rem; margin-left: 8px; white-space: nowrap; }
 .gift-line .gift-amt { margin-left: auto; margin-right: 96px; white-space: nowrap; color: var(--alv-ink-soft); }
-@media screen and (max-width: 575.98px) { .gift-line .gift-amt { margin-right: 56px; } }
+@media screen and (max-width: 575.98px) { .gift-line .gift-amt { margin-right: 28px; } }
 .gift-line[open] .gift-edit-link { font-weight: 700; }
 .gift-line > form { padding-left: 18px; }
 .gift-edit-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px 12px; margin: 6px 0; }
@@ -72,7 +90,14 @@
 .xt-scroll { max-height: 70vh; overflow: auto; }
 .xt-table thead th, .xt-table tbody th, .xt-table td { text-align: left; }
 @media screen and (max-width: 575.98px) { .xt-table th.alv-matrix-row-head { min-width: 0; max-width: 120px; white-space: normal; } .xt-table td { min-width: 130px; } }
-.xt-table td { white-space: normal; min-width: 150px; max-width: 260px; vertical-align: top; }
+.xt-table td { white-space: normal; overflow-wrap: anywhere; min-width: 150px; max-width: 220px; vertical-align: top; }
+/* CG-5, 15 Nov 2026 - easier to read across: this year tinted, the row under the pointer banded, gaps faint, names shaded */
+.xt-table .xt-now { background: var(--alv-accent-soft); }
+.xt-table tbody tr:hover td, .xt-table tbody tr:hover th { background: var(--alv-neutral-soft); }
+.xt-table td.alv-matrix-absent { color: var(--alv-ink-faint); }
+.xt-table tbody th.alv-matrix-row-head { background: var(--alv-surface); }
+.xt-table td.xt-plan { color: var(--alv-ink-soft); }
+.xt-key { margin-left: 8px; white-space: nowrap; }
 </style>
 
 <h2 class="page-title-h2">CELEBRATIONS</h2>
@@ -92,12 +117,15 @@
 <nav class="gift-tabs" aria-label="Gifts">
     <a class="gift-tab{% if tab == 'mine' %} is-on{% endif %}" href="?tab=mine"{% if tab == 'mine' %} aria-current="page"{% endif %}>My gifts</a>
     <a class="gift-tab{% if tab == 'christmas' %} is-on{% endif %}" href="?tab=christmas&amp;year={{ xyear }}"{% if tab == 'christmas' %} aria-current="page"{% endif %}>Christmas list</a>
+    {# CG-5, 15 Nov 2026 - Demetri: "when we have a lot of gifts, the ideas will be so far down that a user won't even think to scroll down." #}
+    <a class="gift-tab{% if tab == 'ideas' %} is-on{% endif %}" href="?tab=ideas"{% if tab == 'ideas' %} aria-current="page"{% endif %}>Ideas{% if ideas %} <span class="gift-tab-count">{{ ideas|length }}</span>{% endif %}</a>
 </nav>
 
 <p class="text-muted small">Only you can see these. Gifts for someone are added from their Gifts button in Celebrations.</p>
 
 {% if tab == 'mine' %}
 <div class="form-card" data-gifts-mine>
+    {% if ideas %}<p class="gift-ideas-nudge" data-ideas-nudge><i class="fas fa-lightbulb" aria-hidden="true"></i> {{ ideas|length }} idea{{ ideas|length|pluralize }} still to use &mdash; <a href="?tab=ideas">see Ideas</a></p>{% endif %}
     {% for y in years %}
     <section class="gift-year">
         <div class="gift-year-head">
@@ -115,7 +143,7 @@
             {# CG-2, 13 Nov 2026 - change or delete it, here as well as on the contact. #}
             <details class="gift-edit gift-line" data-gift-edit>
                 <summary>
-                    <span class="gift-what">{{ g.gift|default:g.idea }} <span class="text-muted small">&middot; {{ g.get_occasion_display }}</span>{% if g.idea and g.gift and g.idea != g.gift %} <span class="text-muted small">(planned: {{ g.idea }})</span>{% endif %} <span class="gift-edit-link">Edit</span></span>
+                    <span class="gift-what">{{ g.gift|default:g.idea }} <span class="gift-occ gift-occ-{{ g.occasion }}"><i class="fas {% if g.occasion == 'christmas' %}fa-tree{% elif g.occasion == 'birthday' %}fa-birthday-cake{% elif g.occasion == 'nameday' %}fa-star{% elif g.occasion == 'anniversary' %}fa-heart{% else %}fa-gift{% endif %}" aria-hidden="true"></i> {{ g.get_occasion_display }}</span>{% if g.idea and g.gift and g.idea != g.gift %} <span class="text-muted small">(planned: {{ g.idea }})</span>{% endif %} <span class="gift-edit-link" title="Edit"><i class="fas fa-pen" aria-hidden="true"></i><span class="sr-only">Edit</span></span></span>
                     <span class="gift-amt">{% if g.cost is not None %}€{{ g.cost|floatformat:"-2" }}{% endif %}</span>
                 </summary>
                 <form method="post" action="{% url 'celebration_gift_save' %}" class="gift-edit-form">
@@ -151,9 +179,13 @@
     <p class="text-muted">Nothing given yet. Open a contact's Gifts button in Celebrations to record one.</p>
     {% endfor %}
 
+</div>
+
+{% elif tab == 'ideas' %}
+<div class="form-card" data-gifts-ideas>
     {% if ideas %}
     <section class="gift-year">
-        <h3 class="form-section-title">Ideas</h3>
+        <h3 class="form-section-title">Ideas still to use</h3>
         {% for p in idea_people %}
         <div class="gift-person" data-gift-person>
             <div class="gift-person-head">
@@ -163,7 +195,7 @@
             {% for g in p.rows %}
             <details class="gift-edit gift-line" data-gift-edit>
                 <summary>
-                    <span class="gift-what">{{ g.idea }} <span class="text-muted small">&middot; {{ g.get_occasion_display }} {{ g.year }}</span> <span class="gift-edit-link">Edit</span></span>
+                    <span class="gift-what">{{ g.idea }} <span class="gift-occ gift-occ-{{ g.occasion }}"><i class="fas {% if g.occasion == 'christmas' %}fa-tree{% elif g.occasion == 'birthday' %}fa-birthday-cake{% elif g.occasion == 'nameday' %}fa-star{% elif g.occasion == 'anniversary' %}fa-heart{% else %}fa-gift{% endif %}" aria-hidden="true"></i> {{ g.get_occasion_display }} {{ g.year }}</span> <span class="gift-edit-link" title="Edit"><i class="fas fa-pen" aria-hidden="true"></i><span class="sr-only">Edit</span></span></span>
                     <span class="gift-amt">{% if g.budget is not None %}about €{{ g.budget|floatformat:"-2" }}{% endif %}</span>
                 </summary>
                 <form method="post" action="{% url 'celebration_gift_save' %}" class="gift-edit-form">
@@ -195,9 +227,10 @@
         </div>
         {% endfor %}
     </section>
+    {% else %}
+    <p class="text-muted">No ideas waiting. In Celebrations, open someone's Gifts and choose <strong>Just an idea</strong> to save one. Christmas ideas live on the Christmas list.</p>
     {% endif %}
 </div>
-
 {% else %}
 <div class="alv-seg xmas-views" role="group" aria-label="Christmas view">
     <a href="?tab=christmas&amp;year={{ xyear }}"{% if view != 'table' %} aria-current="page"{% endif %}><i class="fas fa-list"></i> List</a>
@@ -207,20 +240,20 @@
 {% if view == 'table' %}
 <div class="form-card" data-xmas-table>
     {% if xt_rows %}
-    <p class="text-muted small">What you bought each Christmas, newest year first. Scroll sideways for the earlier years.</p>
+    <p class="text-muted small">What you bought each Christmas, newest year first. Scroll sideways for the earlier years.{% if xt_planned %} <span class="xt-key"><i class="fas fa-lightbulb" aria-hidden="true"></i> <em>planned, not bought yet</em></span>{% endif %}</p>
     <div class="alv-matrix-scroll xt-scroll" tabindex="0" role="region" aria-label="Christmas gifts by year">
         <table class="alv-matrix xt-table">
             <thead>
                 <tr>
                     <th scope="col" class="alv-matrix-row-head">Person</th>
-                    {% for y in xt_years %}<th scope="col">{{ y }}</th>{% endfor %}
+                    {% for y in xt_years %}<th scope="col"{% if y == xt_this_year %} class="xt-now"{% endif %}>{{ y }}</th>{% endfor %}
                 </tr>
             </thead>
             <tbody>
                 {% for r in xt_rows %}
                 <tr>
                     <th scope="row" class="alv-matrix-row-head">{{ r.who }}{% if r.gone %} <span class="gift-gone">(contact deleted)</span>{% endif %}</th>
-                    {% for c in r.cells %}{% if c %}<td>{{ c }}</td>{% else %}<td class="alv-matrix-absent">-</td>{% endif %}{% endfor %}
+                    {% for c in r.cells %}{% with y=xt_years|slice:forloop.counter|last %}{% if c.planned %}<td class="xt-plan{% if y == xt_this_year %} xt-now{% endif %}"><i class="fas fa-lightbulb" aria-hidden="true"></i> <em>{{ c.text }}</em><span class="sr-only"> (planned)</span></td>{% elif c.text %}<td{% if y == xt_this_year %} class="xt-now"{% endif %}>{{ c.text }}</td>{% else %}<td class="alv-matrix-absent{% if y == xt_this_year %} xt-now{% endif %}">-</td>{% endif %}{% endwith %}{% endfor %}
                 </tr>
                 {% endfor %}
             </tbody>
@@ -270,12 +303,15 @@
             {% if g.history %}
             <details class="xmas-past" data-xmas-past>
                 <summary><i class="fas fa-history" aria-hidden="true"></i> Past Christmases ({{ g.history|length }})</summary>
+                <div class="xmas-past-card" role="dialog" aria-label="Past Christmases for {{ g.who }}">
+                <div class="xmas-past-title"><span><i class="fas fa-history" aria-hidden="true"></i> {{ g.who }}</span><button type="button" class="xmas-past-close" aria-label="Close" data-past-close>&times;</button></div>
                 <table class="xmas-past-table">
                     <thead><tr><th scope="col">Year</th><th scope="col">Planned</th><th scope="col">Bought</th></tr></thead>
                     <tbody>
-                        {% for y, plan, what in g.history %}<tr><th scope="row">{{ y }}</th><td>{% if plan %}{{ plan }}{% else %}<span class="xmas-past-none">-</span>{% endif %}</td><td>{{ what }}</td></tr>{% endfor %}
+                        {% for y, plan, what in g.history %}<tr><th scope="row">{{ y }}</th><td>{% if plan %}{{ plan }}{% else %}<span class="xmas-past-none">-</span>{% endif %}</td><td>{{ what }}{% if plan and plan == what %} <i class="fas fa-check xmas-past-same" title="Bought as planned" aria-label="as planned"></i>{% endif %}</td></tr>{% endfor %}
                     </tbody>
                 </table>
+                </div>
             </details>
             {% else %}
             <span class="text-muted small">No past Christmases</span>
@@ -298,6 +334,23 @@
     <p class="text-muted">Nobody on the list for {{ xyear }} yet. Tick the people below.</p>
     {% endfor %}
 </div>
+<script>
+/* CG-5, 15 Nov 2026 - a Past Christmases card closes on its x, on a tap
+   outside it, or on Esc; opening one closes any other. */
+(function () {
+    var all = document.querySelectorAll('[data-xmas-past]');
+    function shut(except) { all.forEach(function (d) { if (d !== except) { d.open = false; } }); }
+    all.forEach(function (d) {
+        d.addEventListener('toggle', function () { if (d.open) { shut(d); } });
+        var x = d.querySelector('[data-past-close]');
+        if (x) { x.addEventListener('click', function () { d.open = false; }); }
+    });
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('[data-xmas-past]')) { shut(null); }
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { shut(null); } });
+})();
+</script>
 <script>
 /* CG-4, 14 Nov 2026 - Bought as planned. Demetri: "If this is ticked, it
    copies the Plan and the Budget to the What I bought and the Cost fields.

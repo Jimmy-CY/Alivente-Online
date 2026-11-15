@@ -217,7 +217,7 @@ def _total(values):
 def my_gifts(request):
     today = timezone.localdate()
     tab = request.GET.get('tab') or request.POST.get('tab') or 'mine'
-    if tab not in ('mine', 'christmas'):
+    if tab not in ('mine', 'christmas', 'ideas'):   # CG-5: Ideas, a tab
         tab = 'mine'
     try:
         xyear = int(request.GET.get('year') or request.POST.get('year'))
@@ -322,7 +322,7 @@ def my_gifts(request):
     view = request.GET.get('view')
     ctx['view'] = 'table' if view == 'table' else 'list'
     if tab == 'christmas' and ctx['view'] == 'table':
-        ctx.update(christmas_table(mine))
+        ctx.update(christmas_table(mine, today.year))
 
     # THE CHRISTMAS LIST for the chosen year.
     rows = list(mine.filter(occasion='christmas', year=xyear)
@@ -396,7 +396,7 @@ def bought(g):
     return g.idea if g.given else ''
 
 
-def christmas_table(mine):
+def christmas_table(mine, this_year=None):
     """CG-3, 14 Nov 2026 - every Christmas, side by side.
 
     Demetri, 14 Nov: "The columns are the latest year on the left, moving
@@ -406,32 +406,53 @@ def christmas_table(mine):
     merely insert '-' ... I just want to show What We Bought. No Budget,
     No Plan, No Cost."
 
-    Only what was bought: a row that is still only a plan is left out, and
-    a person with nothing bought in any year is not a row. Every year from
-    the latest to the first is a column, even one with nothing in it, so a
-    gap reads as a gap. Two gifts for one person in one year share a cell.
-    A deleted contact keeps their row under the name the gift was saved
-    with. Private, like everything here: only the owner's rows.
+    CG-5, 15 Nov 2026 - "if there are any planned gifts, how can we display
+    these??" A plan shows only where nothing was bought that year, marked
+    as planned, so the table still says what was bought. Someone with only
+    a plan so far has a row for it.
+
+    Every year from the latest to the first is a column, even one with
+    nothing in it, so a gap reads as a gap. Two gifts for one person in
+    one year share a cell. A deleted contact keeps their row under the
+    name the gift was saved with. Private: only the owner's rows.
+    Each cell is {'text', 'planned'}; text '' is a gap.
     """
-    cells, who, gone = {}, {}, {}
+    got, plan, who, gone = {}, {}, {}, {}
     for g in (mine.filter(occasion='christmas').select_related('contact')
               .order_by('id')):
         what = bought(g)
-        if not what:
+        idea = '' if g.given else (g.idea or '').strip()
+        if not what and not idea:
             continue
         key = ('c', g.contact_id) if g.contact_id else (
             'n', g.contact_name.strip().lower())
         who.setdefault(key, g.who)
         gone[key] = not g.contact_id
-        cells.setdefault(key, {}).setdefault(g.year, []).append(what)
-    if not cells:
-        return {'xt_years': [], 'xt_rows': []}
-    years = {y for c in cells.values() for y in c}
+        if what:
+            got.setdefault(key, {}).setdefault(g.year, []).append(what)
+        else:
+            plan.setdefault(key, {}).setdefault(g.year, []).append(idea)
+    if not who:
+        return {'xt_years': [], 'xt_rows': [], 'xt_planned': False,
+                'xt_this_year': this_year}
+    years = {y for d in (got, plan) for c in d.values() for y in c}
     cols = list(range(max(years), min(years) - 1, -1))
-    rows = [{'who': who[k], 'gone': gone[k],
-             'cells': [' \u00b7 '.join(cells[k].get(y, [])) for y in cols]}
-            for k in sorted(cells, key=lambda k: who[k].lower())]
-    return {'xt_years': cols, 'xt_rows': rows}
+    rows, any_plan = [], False
+    for k in sorted(who, key=lambda k: who[k].lower()):
+        cells = []
+        for y in cols:
+            b = got.get(k, {}).get(y)
+            p = plan.get(k, {}).get(y)
+            if b:
+                cells.append({'text': ' \u00b7 '.join(b), 'planned': False})
+            elif p:
+                any_plan = True
+                cells.append({'text': ' \u00b7 '.join(p), 'planned': True})
+            else:
+                cells.append({'text': '', 'planned': False})
+        rows.append({'who': who[k], 'gone': gone[k], 'cells': cells})
+    return {'xt_years': cols, 'xt_rows': rows, 'xt_planned': any_plan,
+            'xt_this_year': this_year}
 
 
 def shopping_text(year, rows):
