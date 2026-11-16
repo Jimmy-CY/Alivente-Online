@@ -35,7 +35,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from . import barcodes, boarding, fx, inbox
+from . import barcodes, boarding, dayorder, fx, inbox
 from .models import (BoardingPass, Booking, CheckItem, InboundEmail,
                      trips_for)
 from .views import (coming_up, eur, included, requests_for, shape, span,
@@ -53,7 +53,7 @@ ASSET_TYPES = {
 # Bump this AND the ?v= in travel/m/base.html together whenever the style
 # or script changes: an installed app keeps the old files until it moves.
 # test_travel_three.py checks the two agree.
-SW_VERSION = 'tv8-1'
+SW_VERSION = 'tv9-1'
 
 
 def page(request, template, ctx):
@@ -118,26 +118,44 @@ def on_day(bs, day):
         b.night = (day - b.start_date).days + 1 \
             if what == 'during' and b.nights else None
         out.append(b)
+    # TR-9, 16 Nov 2026 - a check-in or a car pick-up waits for the flight
+    # that gets you there (Demetri: "the order on the 9th should be
+    # Checkout, Drop off car, Fly on Ryan Air and then check in").
+    dayorder.smart(out, day)
+    out.sort(key=lambda r: (r.sort_at, r.rank, r.pk))
     return out
 
 
-def day_rows(bs, places, day):
+class DayRows(list):
+    """A day's rows; .custom when they are in an order someone chose."""
+    custom = False
+
+
+def day_rows(bs, places, day, saved=None):
     """TR-4 - a day of the itinerary: its bookings (as on_day) and the
-    places planned for it, in time order; places with no time at the end."""
-    rows = [(b.when or dt.time(0, 0), 0, b) for b in on_day(bs, day)]
+    places planned for it, in time order; places with no time at the end.
+    TR-9 - then the order chosen for the day (saved: {day: keys}), if any."""
+    rows = [(b.sort_at, 0, b) for b in on_day(bs, day)]
     for p in places:
         # TR-5 - a place with its booking shows once: as the booking.
         if p.day == day and not p.booking_id:
             p.is_place = True
             rows.append((p.time or dt.time(23, 59, 59), 1, p))
     rows.sort(key=lambda r: (r[0], r[1]))
-    return [r[2] for r in rows]
+    out, custom = dayorder.ordered([r[2] for r in rows],
+                                   (saved or {}).get(day))
+    for r in out:
+        r.order_key = dayorder.key(r)
+    out = DayRows(out)
+    out.custom = custom
+    return out
 
 
 def itinerary(trip, bs, places):
     """Every day of the trip, first to last, each with its rows - empty
     days too, so there is somewhere to put a place. (At most 60 days.)"""
     start, end = span(trip, bs)
+    saved = dayorder.saved_for(trip)
     days = []
     if start:
         end = end or start
@@ -145,7 +163,7 @@ def itinerary(trip, bs, places):
             end = start + dt.timedelta(days=60)
         d = start
         while d <= end:
-            days.append((d, day_rows(bs, places, d)))
+            days.append((d, day_rows(bs, places, d, saved)))
             d += dt.timedelta(days=1)
     return days
 
@@ -169,16 +187,17 @@ def today(request):
         bs = list(trip.bookings.prefetch_related('travellers'))
         fx.convert_pending(bs, limit=2)
         pl = list(trip.places.all())
+        saved = dayorder.saved_for(trip)                    # TR-9
         if now:
             ctx['day_no'] = (day - trip.start).days + 1
             ctx['days'] = ((trip.end or trip.start) - trip.start).days + 1
-            ctx['today_rows'] = day_rows(bs, pl, day)
+            ctx['today_rows'] = day_rows(bs, pl, day, saved)
             ctx['tomorrow_rows'] = day_rows(bs, pl,
-                                            day + dt.timedelta(days=1))
+                                            day + dt.timedelta(days=1), saved)
             ctx['tomorrow'] = day + dt.timedelta(days=1)
         else:
             ctx['in_days'] = (trip.start - day).days
-            ctx['first_rows'] = day_rows(bs, pl, trip.start)
+            ctx['first_rows'] = day_rows(bs, pl, trip.start, saved)
         ctx['coming'] = coming_up(bs, day)
         ctx['passes_today'] = BoardingPass.objects.filter(
             booking__trip=trip, booking__start_date__in=(
@@ -249,6 +268,8 @@ def trip(request, trip_id):
     return page(request, 'travel/m/trip.html', {
         'sub': sub, 'wish': [p for p in pl if not p.day],
         'itinerary': itinerary(t, bs, pl) if sub == 'itinerary' else [],
+        # TR-9 - the day being put in order (?order=YYYY-MM-DD): up / down.
+        'order_day': (request.GET.get('order') or '')[:10],
         'trip_days': [d for d, _ in itinerary(t, [], [])] if sub == 'wish'
         else [],
         'trip': t, 'days': list(days.items()), 'undated': undated,

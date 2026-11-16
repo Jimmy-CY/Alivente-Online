@@ -103,3 +103,10 @@ html.tv-turn-90 body.tv-holding .tv-nav, html.tv-turn-270 body.tv-holding .tv-na
 .tv-passrow > summary::-webkit-details-marker { display: none; }
 .tv-passrow[open] > summary { border-bottom: 1px solid var(--tv-line); }
 .tv-passrow .tv-pass { border-radius: 0 0 14px 14px; box-shadow: none; }
+/* TR-9, 16 Nov 2026 - a day of the itinerary put in order on the phone: up / down. */
+.tv-order-row { display: flex; align-items: center; gap: 6px; padding: 8px 0; border-bottom: 1px solid var(--tv-line); }
+.tv-order-row:last-child { border-bottom: 0; }
+.tv-order-row form { margin: 0; }
+.tv-order-row .tv-btn { min-width: 44px; padding: 8px 0; }
+.tv-order-row .tv-btn[disabled] { opacity: .35; }
+.tv-linkbtn { background: none; border: 0; padding: 0; color: var(--tv-teal); text-decoration: underline; font: inherit; cursor: pointer; }

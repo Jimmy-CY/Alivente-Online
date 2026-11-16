@@ -109,4 +109,13 @@ a.tv-bk:hover b { color: var(--alv-accent); }
 .tv-wpass.is-used.show-anyway .tv-code-box { opacity: 1; filter: none; }
 .tv-wpass.is-used.show-anyway .tv-used-stamp { opacity: .25; }
 .tv-wpass.is-used .tv-wpass-top { filter: grayscale(.7); }
+/* TR-9, 16 Nov 2026 - the itinerary's own order: a grip to drag by, where it will land. */
+.tv-drag { position: relative; display: flex; align-items: stretch; }
+.tv-drag > .tv-bk { flex: 1 1 auto; min-width: 0; }
+.tv-grip { flex: none; display: flex; align-items: center; padding: 0 8px 0 0; color: #9AA9AE; cursor: grab; }
+.tv-grip:hover { color: #0F6E77; }
+.tv-drag.is-dragging { opacity: .45; }
+.tv-drag.tv-drop-above { box-shadow: inset 0 3px 0 #0F6E77; }
+.tv-drag.tv-drop-below { box-shadow: inset 0 -3px 0 #0F6E77; }
+.tv-linkbtn { background: none; border: 0; padding: 0; color: #0F6E77; text-decoration: underline; cursor: pointer; font: inherit; }
 </style>

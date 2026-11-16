@@ -1630,6 +1630,9 @@ ROUNDS = [
     # TR-8, 16 Nov 2026 - Release 88 (TR-6 and TR-7 shipped together as
     # R87): boarding passes - Next, Coming up, Used.
     '.bak_travel8',
+    # TR-9, 16 Nov 2026 - Release 89: the order of a day on the itinerary
+    # (smart order; dragged, or up / down on the phone).
+    '.bak_travel9',
 ]
 
 

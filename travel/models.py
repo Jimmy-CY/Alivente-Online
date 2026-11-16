@@ -486,3 +486,25 @@ class Place(models.Model):
         from urllib.parse import quote
         q = ', '.join(x for x in (self.name, self.address) if x)
         return 'https://www.google.com/maps/search/?api=1&query=' + quote(q)
+
+
+class DayOrder(models.Model):
+    """TR-9, 16 Nov 2026 - the order you chose for one day of a trip's
+    itinerary (Demetri: "should i have the ability to drag and drop items
+    (within a day)"). keys lists the day's rows - 'b<booking>-<start|end|
+    during>' and 'p<place>' - first to last; a row added later keeps the
+    place the automatic order gives it. Shared with everyone on the trip;
+    deleted by "Back to automatic"."""
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE,
+                             related_name='day_orders')
+    day = models.DateField()
+    keys = models.TextField(blank=True, default='')
+    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL,
+                                   null=True, blank=True, related_name='+')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [('trip', 'day')]
+
+    def __str__(self):
+        return '%s %s' % (self.trip_id, self.day)

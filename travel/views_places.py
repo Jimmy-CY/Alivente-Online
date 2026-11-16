@@ -258,3 +258,51 @@ def place_delete(request, place_id):
     if nxt.startswith('/travel/') and '/place/' not in nxt:
         return redirect(nxt)
     return redirect('/travel/%d/itinerary/' % tid)
+
+
+@travel_view
+@require_POST
+def day_order(request, trip_id):
+    """TR-9, 16 Nov 2026 - the order of one day of the itinerary (Demetri:
+    "should i have the ability to drag and drop items (within a day)").
+
+    keys=b12-start,p7,...  the whole day, as dragged on the computer;
+    move=<key>&dir=up|down  one row, on the phone;
+    reset=1                 back to the automatic order.
+    Only the day's own rows count - anything else sent is dropped."""
+    from django.http import JsonResponse
+    from .dayorder import key, saved_for
+    from .models import DayOrder
+    from .phone import day_rows
+    t = _trip(request, trip_id)
+    day = _date(request.POST.get('day'))
+    if not day:
+        return JsonResponse({'ok': False, 'error': 'day'}, status=400)
+    if request.POST.get('reset'):
+        DayOrder.objects.filter(trip=t, day=day).delete()
+        keys = None
+    else:
+        rows = day_rows(list(t.bookings.prefetch_related('travellers')),
+                        list(t.places.all()), day, saved_for(t))
+        have = [key(r) for r in rows]
+        if request.POST.get('move'):
+            k, i = request.POST.get('move'), None
+            if k in have:
+                i = have.index(k)
+            j = None if i is None else (
+                i - 1 if request.POST.get('dir') == 'up' else i + 1)
+            if i is not None and 0 <= j < len(have):
+                have[i], have[j] = have[j], have[i]
+            keys = have
+        else:
+            sent = [k for k in (request.POST.get('keys') or '').split(',')
+                    if k in have]
+            keys = sent + [k for k in have if k not in sent]
+        DayOrder.objects.update_or_create(
+            trip=t, day=day, defaults={'keys': ','.join(keys),
+                                       'updated_by': request.user})
+    if request.headers.get('x-requested-with') == 'fetch':
+        return JsonResponse({'ok': True, 'keys': keys or []})
+    if request.resolver_match.url_name.startswith('m_'):
+        return _next(request, '/travel/m/trip/%d/?tab=itinerary' % t.pk)
+    return _next(request, '/travel/%d/itinerary/' % t.pk)

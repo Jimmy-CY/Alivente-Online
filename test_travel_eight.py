@@ -131,9 +131,11 @@ ok(all('travel:pass_wallet' in read(J(TT, x)) or
    'GOOGLE WALLET: every button goes through Alivente first, never '
    'straight to the airline\'s link')
 ph = read(J(TA, 'phone.py'))
-ok("SW_VERSION = 'tv8-1'" in ph and 'travel.js\' %}?v=tv8-1' in read(
-    J(TT, 'm', 'base.html')),
-   'the phone fetches the new script (worker and page agree on tv8-1)')
+_v = re.search(r"SW_VERSION = '(tv\d+-\d+)'", ph)
+ok(_v and int(_v.group(1)[2:].split('-')[0]) >= 8 and
+   'travel.js\' %%}?v=%s' % _v.group(1) in read(J(TT, 'm', 'base.html')),
+   'the phone fetches the new script (worker and page agree, tv8-1 or '
+   'later)')
 hp = read(J(ROOT, 'pages', 'help_content', 'administration.html'))
 mh = read(J(TT, 'm', 'help.html'))
 ok('<strong>Done with this pass</strong>' in hp and
