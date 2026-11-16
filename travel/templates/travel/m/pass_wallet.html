@@ -1,0 +1,13 @@
+{% extends 'travel/m/base.html' %}
+{% comment %} TR-8, 16 Nov 2026 - "Add to Google Wallet" after the flight. The airline's own link stops working once the flight is over (Cyprus Airways answers CKI_BOARDINGPASS_NONEFOUND); Demetri: "we need to give a nice message explaining this to people. Not have the system error out". {% endcomment %}
+{% block title %}Google Wallet - Travel{% endblock %}
+{% block top %}<h1>Google Wallet</h1>{% endblock %}
+{% block content %}
+<section class="tv-card" data-wallet-over>
+  <p class="tv-h2" style="margin: 0">This flight has already flown</p>
+  <p style="margin: 0"><b>{{ p.flight }}</b>, {{ p.frm|default:"–" }} &rarr; {{ p.to|default:"–" }} on {{ p.booking.start_date|date:"D j M Y" }}{% if p.name %} &ndash; {{ p.name }}{% endif %}.</p>
+  <p class="tv-muted" style="margin: 0">Airlines stop offering boarding passes to Google Wallet once the flight is over, so there is nothing to add any more. Your pass is still kept here, under <b>Used</b>.</p>
+  <p class="tv-muted tv-small" style="margin: 0">Not flown yet &ndash; a delay, say? Open the pass under Used and press <b>Not flown yet</b>: it goes back to Next and this button works again.</p>
+  <a href="{{ back }}?tab=used#pass-{{ p.pk }}" class="tv-btn wide">Back to my passes</a>
+</section>
+{% endblock %}

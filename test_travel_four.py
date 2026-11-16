@@ -122,7 +122,7 @@ ok('{% if new_open %}' in tp and '{% if phone_qr %}' in tp and
    'data-phone-button' in tp,
    'the Travel page: New trip and the phone code only when asked for')
 ph = read(J(TA, 'phone.py'))
-ok("'orientation': 'portrait'," in ph and "SW_VERSION = 'tv4-1'" in ph and
+ok("'orientation': 'portrait'," in ph and "SW_VERSION = 'tv" in ph and
    'tv-turn-90' in read(J(TA, 'assets', 'travel.js')) and
    'class="tv-holding"' in read(J(TT, 'm', 'passes.html')),
    'THE PASS DOES NOT FLIP: the installed app stays upright; elsewhere '

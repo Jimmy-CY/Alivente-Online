@@ -1,30 +1,34 @@
 {% extends 'travel/m/base.html' %}
-{% comment %} TR-3 - boarding passes, wallet-style: one a screen, swiped sideways, the barcode drawn again from the airline's own code. Kept on the phone for when there is no signal. {% endcomment %}
+{% comment %} TR-3 - boarding passes, wallet-style, the barcode drawn again from the airline's own code, kept on the phone for when there is no signal. TR-8, 16 Nov 2026 - three tabs AT THE TOP (Demetri: "Selection is hidden at the bottom"): Next, Coming up, Used. Your own pass first ("Your Boarding Pass must always come first"); swiped sideways only between the people on the same flight. The rules are in travel/boarding.py. {% endcomment %}
 {% block title %}Passes - Travel{% endblock %}
 {% block body_attr %} class="tv-holding"{% endblock %}
 {% block top %}<h1>Passes</h1>{% endblock %}
-{% block sub %}<div class="sub">{% if every %}Every pass{% else %}The next one you need first{% endif %}</div>{% endblock %}
+{% block tabs %}<nav class="tv-seg" role="tablist" aria-label="Boarding passes" data-pass-tabs>
+  <a href="?tab=next" role="tab" data-tab="next"{% if tab_open == 'next' %} class="on" aria-selected="true"{% endif %}>Next</a>
+  <a href="?tab=coming" role="tab" data-tab="coming"{% if tab_open == 'coming' %} class="on" aria-selected="true"{% endif %}>Coming up{% if coming %} · {{ coming|length }}{% endif %}</a>
+  <a href="?tab=used" role="tab" data-tab="used"{% if tab_open == 'used' %} class="on" aria-selected="true"{% endif %}>Used{% if used %} · {{ used|length }}{% endif %}</a>
+</nav>{% endblock %}
 {% block content %}
-{% if cards %}
+<section data-tab-panel="next"{% if tab_open != 'next' %} hidden{% endif %}>
+{% if nxt %}
 <div class="tv-passes" data-passes>
-{% for p in cards %}
-  <article class="tv-pass" data-pass{% if p.is_next %} data-next{% endif %} aria-label="Boarding pass {{ forloop.counter }} of {{ cards|length }}">
-    <div class="tv-pass-head"><b style="font-size: 17px">{{ p.booking.provider|default:p.booking.title }}</b><span style="font-size: 12px; opacity: .85">{{ p.booking.start_date|date:"D j M" }}</span></div>
-    <div class="tv-pass-route"><div><div style="font-size: 12px; opacity: .8">From</div><div class="tv-pass-code3">{{ p.frm|default:"–" }}</div></div><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-bottom: 12px"><path d="M2 16l20-6-20-6 4 6-4 6z"/></svg><div style="text-align: right"><div style="font-size: 12px; opacity: .8">To</div><div class="tv-pass-code3">{{ p.to|default:"–" }}</div></div></div>
-    <div class="tv-pass-grid"><div><small>FLIGHT</small><b>{{ p.flight }}</b></div><div><small>LEAVES</small><b>{{ p.booking.start_time|time:"H:i"|default:"–" }}</b></div><div><small>SEAT</small><b>{{ p.seat_shown|default:"–" }}</b></div><div><small>REF</small><b>{{ p.info.pnr|default:p.booking.reference|default:"–" }}</b></div></div>
-    <div class="tv-pass-foot">
-      <div class="tv-row" style="width: 100%"><div><div class="tv-muted tv-small">Passenger</div><b>{{ p.name|default:"–" }}</b></div>{% if p.info.seq %}<div style="text-align: right"><div class="tv-muted tv-small">Seq</div><b>{{ p.info.seq }}</b></div>{% endif %}</div>
-      {% if p.svg %}<div data-barcode="{{ p.format }}" style="width: 100%; display: flex; justify-content: center">{{ p.svg|safe }}</div>{% else %}<p class="tv-muted" style="margin: 0">This barcode cannot be drawn here - open the airline&rsquo;s PDF on the booking.</p>{% endif %}
-      <div class="tv-muted tv-small" style="text-align: center">Show at security and the gate · turn the screen brightness up</div>
-      {% if p.wallet_link and not p.over %}<a href="{{ p.wallet_link }}" class="tv-btn wide" style="background: #1D2B31; border-color: #1D2B31" target="_blank" rel="noopener">Add to Google Wallet</a>{% endif %}
-      <a href="{% url 'travel:m_booking' p.booking.pk %}" class="tv-small">The booking</a>
-    </div>
-  </article>
-{% endfor %}
+{% for p in nxt %}{% include 'travel/m/_pass.html' with lead=forloop.first %}{% endfor %}
 </div>
-{% if cards|length > 1 %}<div class="tv-dots" aria-hidden="true">{% for p in cards %}<span data-dot{% if p.is_next %} class="on"{% endif %}></span>{% endfor %}</div><p class="tv-muted tv-small" style="text-align: center; margin: 0">Swipe for the next pass</p>{% endif %}
+{% if nxt|length > 1 %}<div class="tv-dots" aria-hidden="true">{% for p in nxt %}<span data-dot{% if forloop.first %} class="on"{% endif %}></span>{% endfor %}</div><p class="tv-muted tv-small" style="text-align: center; margin: 0">Swipe for the others on this flight</p>{% endif %}
+{% if then %}<a href="?tab=coming#pass-{{ then.pk }}" class="tv-card tv-then" data-then><span class="tv-muted tv-small">Then{% if then.boards %} · {{ then.boards }}{% endif %}</span><b>{{ then.frm|default:"–" }} &rarr; {{ then.to|default:"–" }} {{ then.booking.start_time|time:"H:i" }}</b><span class="tv-small">{{ then.flight }} &ndash; tap to open</span></a>{% endif %}
+{% if earlier %}<a href="?tab=used#pass-{{ earlier.pk }}" class="tv-card tv-then" data-earlier><span class="tv-muted tv-small">Earlier today</span><b>{{ earlier.frm|default:"–" }} &rarr; {{ earlier.to|default:"–" }}</b><span class="tv-small">{{ earlier.flight }} &ndash; tap to open</span></a>{% endif %}
+{% elif cards %}
+<section class="tv-card" data-no-next><p class="tv-h2">No flight coming up</p><p class="tv-muted" style="margin: 0">{% if last %}Your last pass was {{ last.flight }}, {{ last.frm }} &rarr; {{ last.to }} on {{ last.booking.start_date|date:"j M" }}. {% endif %}Every pass is kept under <a href="?tab=used" data-tab-link="used">Used</a>.</p></section>
 {% else %}
 <section class="tv-card" data-no-passes><p class="tv-h2">No boarding passes yet</p><p class="tv-muted" style="margin: 0">When the airline emails your boarding pass, forward it to the trips address (or share it to Travel) and it shows here, ready to scan &mdash; even with no signal.</p></section>
 {% endif %}
-<a href="{% if every %}{% url 'travel:m_passes' %}{% else %}?show=all{% endif %}" class="tv-muted tv-small" style="text-align: center">{% if every %}Only the ones to come{% else %}Earlier passes{% endif %}</a>
+</section>
+<section data-tab-panel="coming"{% if tab_open != 'coming' %} hidden{% endif %}>
+{% for p in coming %}<details class="tv-passrow" data-pass-row id="row-{{ p.pk }}"><summary><span><b>{{ p.booking.start_date|date:"D j M" }}</b> {{ p.booking.start_time|time:"H:i" }}</span><span>{{ p.frm|default:"–" }} &rarr; {{ p.to|default:"–" }} · {{ p.flight }}</span><span class="tv-muted tv-small">{{ p.name|default:"–" }}{% if p.mine %} (you){% endif %}{% if p.seat_shown %} · seat {{ p.seat_shown }}{% endif %}</span></summary>{% include 'travel/m/_pass.html' with lead=False %}</details>
+{% empty %}<p class="tv-muted" data-none-coming>Nothing after the next flight.</p>{% endfor %}
+</section>
+<section data-tab-panel="used"{% if tab_open != 'used' %} hidden{% endif %}>
+{% for p in used %}<details class="tv-passrow" data-pass-row id="row-{{ p.pk }}"><summary><span><b>{{ p.booking.start_date|date:"D j M Y" }}</b></span><span>{{ p.frm|default:"–" }} &rarr; {{ p.to|default:"–" }} · {{ p.flight }}</span><span class="tv-muted tv-small">{{ p.name|default:"–" }}{% if p.mine %} (you){% endif %}{% if p.stamped %} · <span style="color: #B3261E; font-weight: 600">USED</span>{% endif %}</span></summary>{% include 'travel/m/_pass.html' with lead=False %}</details>
+{% empty %}<p class="tv-muted" data-none-used>No used passes yet. Once a flight is over its pass moves here, stamped USED, and is kept.</p>{% endfor %}
+</section>
 {% endblock %}

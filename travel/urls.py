@@ -12,6 +12,8 @@ urlpatterns = [
     # TR-4, 15 Nov 2026 - stage 4: the itinerary, the wish list, places.
     path('<int:trip_id>/itinerary/', views.trip, name='trip_itinerary'),
     path('passes/', phone.passes, name='passes'),
+    path('pass/<int:pass_id>/wallet/', phone.pass_wallet, name='pass_wallet'),
+    path('pass/<int:pass_id>/<str:how>/', phone.pass_mark, name='pass_mark'),
     path('<int:trip_id>/pdf/', report.trip_pdf, name='trip_pdf'),
     # TR-7 - settling up after a trip; comparing trips.
     path('<int:trip_id>/settle/', compare.trip_settle, name='trip_settle'),
@@ -80,6 +82,10 @@ urlpatterns = [
     path('m/trip/<int:trip_id>/', phone.trip, name='m_trip'),
     path('m/booking/<int:booking_id>/', phone.booking, name='m_booking'),
     path('m/passes/', phone.passes, name='m_passes'),
+    path('m/pass/<int:pass_id>/wallet/', phone.pass_wallet,
+         name='m_pass_wallet'),
+    path('m/pass/<int:pass_id>/<str:how>/', phone.pass_mark,
+         name='m_pass_mark'),
     path('m/check/', phone.check, name='m_check'),
     path('m/check/<int:item_id>/<str:action>/', phone.check_action,
          name='m_check_action'),

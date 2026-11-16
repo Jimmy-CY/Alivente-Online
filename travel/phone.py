@@ -35,7 +35,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from . import barcodes, fx, inbox
+from . import barcodes, boarding, fx, inbox
 from .models import (BoardingPass, Booking, CheckItem, InboundEmail,
                      trips_for)
 from .views import (coming_up, eur, included, requests_for, shape, span,
@@ -53,7 +53,7 @@ ASSET_TYPES = {
 # Bump this AND the ?v= in travel/m/base.html together whenever the style
 # or script changes: an installed app keeps the old files until it moves.
 # test_travel_three.py checks the two agree.
-SW_VERSION = 'tv4-1'
+SW_VERSION = 'tv8-1'
 
 
 def page(request, template, ctx):
@@ -273,10 +273,11 @@ def pass_card(p):
     p.flight = ('%s %s' % (info.get('carrier', ''), info.get('flight', ''))
                 ).strip() or b.segment or b.title
     p.seat_shown = p.seat or info.get('seat', '')
-    # TR-7, 16 Nov 2026 - an airline's own "Add to Google Wallet" link stops
-    # working once the flight is over (Cyprus Airways answers
-    # CKI_BOARDINGPASS_NONEFOUND), so it is offered only before then.
-    p.over = flown(b, timezone.localtime().replace(tzinfo=None))
+    # TR-7/TR-8, 16 Nov 2026 - an airline's own "Add to Google Wallet" link
+    # stops working once the flight is over (Cyprus Airways answers
+    # CKI_BOARDINGPASS_NONEFOUND). p.over says so; the Passes page settles
+    # it again with every pass in view, so connections count.
+    boarding.settle([p], timezone.localtime().replace(tzinfo=None), None)
     return p
 
 
@@ -315,39 +316,79 @@ def flown(b, now):
 
 @travel_view
 def passes(request):
+    """TR-8, 16 Nov 2026 - three tabs at the top: Next, Coming up, Used
+    (Demetri: "Selection is hidden at the bottom"). Your own pass first;
+    Used ones kept for good, stamped. The rules are in boarding.py."""
     day = _today()
-    every = request.GET.get('show') == 'all'
-    qs = BoardingPass.objects.filter(
+    rows = BoardingPass.objects.filter(
         booking__trip__in=trips_for(request.user)).exclude(
         booking__status='cancelled').select_related('booking__trip')
-    if not every:
-        # The week behind stays a swipe back; older trips under Earlier.
-        qs = qs.filter(booking__start_date__gte=day - dt.timedelta(days=7))
-    rows = sorted(qs, key=lambda p: (p.booking.start_date or dt.date.max,
-                                     p.booking.start_time or dt.time(0),
-                                     p.booking_id, p.name))
-    if every:
-        rows.reverse()
     cards = [pass_card(p) for p in rows]
-    # DEMETRI, 15 Nov: "We don't have to hide the flights ... the next
-    # required boarding pass should always show." Nothing is left out; the
-    # page OPENS on the first pass whose flight is not over yet - over
-    # once it has landed, by the arrival on the booking, or with no
-    # arrival three hours after it left. Earlier ones are a swipe back.
     now = timezone.localtime().replace(tzinfo=None)
-    first = 0
-    if not every:
-        first = next((i for i, p in enumerate(cards)
-                      if not flown(p.booking, now)), max(len(cards) - 1, 0))
-    for i, p in enumerate(cards):
-        p.is_next = i == first
-    ctx = {'cards': cards, 'every': every, 'tab': 'passes', 'day': day,
-           'first': first}
+    nxt, coming, used, earlier, then = boarding.settle(cards, now,
+                                                       request.user)
+    for p in nxt:
+        p.boards = boarding.boards_in(p, now)
+    tab = request.GET.get('tab')
+    if tab not in ('next', 'coming', 'used'):
+        tab = 'next'
+    ctx = {'nxt': nxt, 'coming': coming, 'used': used, 'earlier': earlier,
+           'then': then, 'last': used[0] if used else None, 'tab_open': tab,
+           'tab': 'passes', 'day': day, 'cards': cards}
     # TR-4 (Demetri, 15 Nov: "I want to be able to view boarding passes on
     # the desktop app as well") - the same passes, laid out for a screen.
     if request.resolver_match.url_name == 'passes':
         return render(request, 'travel/passes.html', ctx)
     return page(request, 'travel/m/passes.html', ctx)
+
+
+def _back(request, phone):
+    nxt = request.POST.get('next') or request.GET.get('next') or ''
+    if nxt.startswith('/travel/') and '//' not in nxt:
+        return nxt
+    return reverse('travel:m_passes' if phone else 'travel:passes')
+
+
+@require_POST
+@travel_view
+def pass_mark(request, pass_id, how):
+    """"Done with this pass" (how='used') and "Not flown yet" (how='open')
+    - Demetri, 16 Nov: nothing is ever switched off by the clock alone."""
+    p = get_object_or_404(BoardingPass.objects.filter(
+        booking__trip__in=trips_for(request.user)), pk=pass_id)
+    if how not in ('used', 'open'):
+        raise Http404
+    p.marked, p.marked_at = how, timezone.now()
+    p.save(update_fields=['marked', 'marked_at', 'updated_at'])
+    phone = request.resolver_match.url_name.startswith('m_')
+    return redirect(_back(request, phone))
+
+
+@travel_view
+def pass_wallet(request, pass_id):
+    """Add to Google Wallet, through here first (Demetri, 16 Nov: "we need
+    to give a nice message explaining this to people. Not have the system
+    error out"). Before the flight is over: straight on to the airline.
+    After: a card that says why, instead of the airline's error."""
+    p = get_object_or_404(BoardingPass.objects.filter(
+        booking__trip__in=trips_for(request.user)).select_related(
+        'booking__trip'), pk=pass_id)
+    if not p.wallet_link:
+        raise Http404
+    mine = [pass_card(x) for x in BoardingPass.objects.filter(
+        booking__trip__in=trips_for(request.user)).exclude(
+        booking__status='cancelled').select_related('booking__trip')]
+    boarding.settle(mine, timezone.localtime().replace(tzinfo=None),
+                    request.user)
+    card = next((x for x in mine if x.pk == p.pk), pass_card(p))
+    phone = request.resolver_match.url_name.startswith('m_')
+    if not card.over:
+        return redirect(p.wallet_link)
+    ctx = {'p': card, 'tab': 'passes',
+           'back': reverse('travel:m_passes' if phone else 'travel:passes')}
+    if phone:
+        return page(request, 'travel/m/pass_wallet.html', ctx)
+    return render(request, 'travel/pass_wallet.html', ctx)
 
 
 # --------------------------------------------------------------- To check

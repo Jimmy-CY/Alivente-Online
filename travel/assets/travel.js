@@ -74,6 +74,44 @@
       dots.forEach(function (d, n) { d.classList.toggle('on', n === i); });
     }, {passive: true});
   }
+  // TR-8, 16 Nov 2026 - Passes: the three tabs at the top, a pass opened
+  // from "Then" / "Earlier today", and "Show the barcode anyway" on a
+  // used pass (nothing is ever switched off).
+  var tabs = document.querySelectorAll('[data-tab]');
+  function showTab(name) {
+    tabs.forEach(function (t) {
+      var on = t.getAttribute('data-tab') === name;
+      t.classList.toggle('on', on);
+      if (on) { t.setAttribute('aria-selected', 'true'); } else { t.removeAttribute('aria-selected'); }
+    });
+    document.querySelectorAll('[data-tab-panel]').forEach(function (p) {
+      p.hidden = p.getAttribute('data-tab-panel') !== name;
+    });
+    try { history.replaceState(null, '', '?tab=' + name + window.location.hash); } catch (e) {}
+  }
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function (e) { e.preventDefault(); showTab(t.getAttribute('data-tab')); });
+  });
+  document.querySelectorAll('[data-tab-link]').forEach(function (a) {
+    a.addEventListener('click', function (e) { e.preventDefault(); showTab(a.getAttribute('data-tab-link')); });
+  });
+  function openHash() {
+    var m = /^#pass-(\d+)$/.exec(window.location.hash);
+    if (!m) { return; }
+    var card = document.getElementById('pass-' + m[1]);
+    var row = card && card.closest('details');
+    if (row) { row.open = true; }
+    if (card) { card.scrollIntoView({block: 'start'}); }
+  }
+  openHash();
+  window.addEventListener('hashchange', openHash);
+  document.querySelectorAll('[data-show-anyway]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var card = b.closest('[data-pass]');
+      var on = card.classList.toggle('show-anyway');
+      b.textContent = on ? 'Grey it out again' : 'Show the barcode anyway';
+    });
+  });
   // TR-4 - a trip's PDF to the phone's share sheet; opened where the phone
   // cannot share files.
   document.querySelectorAll('[data-share-pdf]').forEach(function (b) {

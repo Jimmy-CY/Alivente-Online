@@ -1,0 +1,17 @@
+{% comment %} TR-8, 16 Nov 2026 - one boarding pass on the computer; Used ones stamped USED in red and the barcode greyed, one click shows it again. {% endcomment %}
+<article class="tv-wpass{% if lead %} is-next{% endif %}{% if p.stamped %} is-used{% endif %}" data-pass{% if lead %} data-next{% endif %} id="pass-{{ p.pk }}" aria-label="Boarding pass, {{ p.name|default:'passenger' }}{% if p.stamped %}, used{% endif %}">
+    {% if lead %}<div class="tv-wpass-flag">Next{% if p.boards %} · boards {{ p.boards }}{% endif %}</div>{% endif %}
+    <div class="tv-wpass-top">
+      <div class="tv-row"><b>{{ p.booking.provider|default:p.booking.title }}</b><span class="small">{{ p.booking.start_date|date:"D j M Y" }}</span></div>
+      <div class="tv-row" style="align-items: flex-end"><div><div class="small">From</div><div class="tv-wpass-code">{{ p.frm|default:"–" }}</div></div><i class="fas fa-plane" aria-hidden="true" style="margin-bottom: 10px"></i><div style="text-align: right"><div class="small">To</div><div class="tv-wpass-code">{{ p.to|default:"–" }}</div></div></div>
+      <div class="tv-wpass-grid"><div><small>FLIGHT</small><b>{{ p.flight }}</b></div><div><small>LEAVES</small><b>{{ p.booking.start_time|time:"H:i"|default:"–" }}</b></div><div><small>SEAT</small><b>{{ p.seat_shown|default:"–" }}</b></div><div><small>REF</small><b>{{ p.info.pnr|default:p.booking.reference|default:"–" }}</b></div></div>
+    </div>
+    <div class="tv-wpass-foot">
+      {% if p.stamped %}<div class="tv-used-stamp" data-used-stamp aria-hidden="true">USED</div>{% endif %}
+      <div class="tv-row" style="width: 100%"><div><div class="tv-sub small">Passenger{% if p.mine %} &middot; you{% endif %}</div><b>{{ p.name|default:"–" }}</b></div><a href="{% url 'travel:booking' p.booking.pk %}" class="small">The booking</a></div>
+      {% if p.svg %}<div class="tv-passcode tv-code-box" data-barcode="{{ p.format }}" style="max-width: 240px; margin: 6px auto 0">{{ p.svg|safe }}</div>{% else %}<p class="tv-sub small" style="margin: 0">This barcode cannot be drawn here &mdash; open the airline&rsquo;s PDF on the booking.</p>{% endif %}
+      {% if p.stamped %}<button type="button" class="btn btn-sm action-secondary" data-show-anyway>Show the barcode anyway</button>{% endif %}
+      {% if p.wallet_link %}<a href="{% url 'travel:pass_wallet' p.pk %}" target="_blank" rel="noopener" class="small" data-wallet>Add to Google Wallet</a>{% endif %}
+      {% if p.is_next %}<form method="post" action="{% url 'travel:pass_mark' p.pk 'used' %}" style="margin: 0">{% csrf_token %}<button class="btn btn-sm action-secondary" data-pass-done>Done with this pass</button></form>{% elif p.recent %}<form method="post" action="{% url 'travel:pass_mark' p.pk 'open' %}" style="margin: 0">{% csrf_token %}<button class="btn btn-sm action-secondary" data-pass-notyet>Not flown yet</button></form>{% endif %}
+    </div>
+</article>

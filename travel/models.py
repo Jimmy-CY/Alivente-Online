@@ -406,6 +406,10 @@ class BoardingPass(models.Model):
     format = models.CharField(max_length=12, default='aztec')
     seat = models.CharField(max_length=8, blank=True, default='')
     wallet_link = models.URLField(max_length=1000, blank=True, default='')
+    # TR-8, 16 Nov 2026 - put right by hand: 'used' ("Done with this
+    # pass") or 'open' ("Not flown yet", holds a day); '' = by the clock.
+    marked = models.CharField(max_length=8, blank=True, default='')
+    marked_at = models.DateTimeField(null=True, blank=True)
     added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
                                  blank=True, related_name='+')
     updated_at = models.DateTimeField(auto_now=True)

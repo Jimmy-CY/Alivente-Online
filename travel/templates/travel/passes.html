@@ -1,39 +1,59 @@
 {% extends 'base.html' %}
 {% load help_modal_tags %}
 {% block title %}Boarding passes - Travel{% endblock %}
-{% comment %} TRAVEL - TR-4, 15 Nov 2026. Boarding passes on the computer (Demetri: "I want to be able to view boarding passes on the desktop app as well"): the same passes as the phone, the next one needed first and marked. {% endcomment %}
+{% comment %} TRAVEL - TR-4, 15 Nov 2026. Boarding passes on the computer (Demetri: "I want to be able to view boarding passes on the desktop app as well"). TR-8, 16 Nov 2026 - the phone's three tabs at the top here too: Next, Coming up, Used; your own pass first; Used ones kept, stamped. Rules in travel/boarding.py. {% endcomment %}
 {% block content %}
 {% include 'travel/_style.html' %}
 <h2 class="page-title-h2">TRAVEL</h2>
 <h4 class="page-subtitle-h4">BOARDING PASSES</h4>
 <div class="page-action-buttons">
-    <a href="{% if every %}{% url 'travel:passes' %}{% else %}?show=all{% endif %}" class="btn action-secondary">{% if every %}Only the ones to come{% else %}Earlier passes{% endif %}</a>
     <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
     <a href="{% url 'travel:trips' %}" class="btn action-back" aria-label="Back to Travel"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
 </div>
 <div class="tv-wrap">
-{% if cards %}
+<nav class="tv-chips" role="tablist" aria-label="Boarding passes" data-pass-tabs style="margin-bottom: 14px">
+  <a href="?tab=next" role="tab" data-tab="next" class="tv-chip{% if tab_open == 'next' %} is-on{% endif %}">Next</a>
+  <a href="?tab=coming" role="tab" data-tab="coming" class="tv-chip{% if tab_open == 'coming' %} is-on{% endif %}">Coming up{% if coming %} &middot; {{ coming|length }}{% endif %}</a>
+  <a href="?tab=used" role="tab" data-tab="used" class="tv-chip{% if tab_open == 'used' %} is-on{% endif %}">Used{% if used %} &middot; {{ used|length }}{% endif %}</a>
+</nav>
+<section data-tab-panel="next"{% if tab_open != 'next' %} hidden{% endif %}>
+{% if nxt %}
 <div class="tv-passgrid" data-passes>
-{% for p in cards %}
-  <article class="tv-wpass{% if p.is_next %} is-next{% endif %}" data-pass{% if p.is_next %} data-next{% endif %} aria-label="Boarding pass {{ forloop.counter }} of {{ cards|length }}">
-    {% if p.is_next %}<div class="tv-wpass-flag">Next</div>{% endif %}
-    <div class="tv-wpass-top">
-      <div class="tv-row"><b>{{ p.booking.provider|default:p.booking.title }}</b><span class="small">{{ p.booking.start_date|date:"D j M Y" }}</span></div>
-      <div class="tv-row" style="align-items: flex-end"><div><div class="small">From</div><div class="tv-wpass-code">{{ p.frm|default:"–" }}</div></div><i class="fas fa-plane" aria-hidden="true" style="margin-bottom: 10px"></i><div style="text-align: right"><div class="small">To</div><div class="tv-wpass-code">{{ p.to|default:"–" }}</div></div></div>
-      <div class="tv-wpass-grid"><div><small>FLIGHT</small><b>{{ p.flight }}</b></div><div><small>LEAVES</small><b>{{ p.booking.start_time|time:"H:i"|default:"–" }}</b></div><div><small>SEAT</small><b>{{ p.seat_shown|default:"–" }}</b></div><div><small>REF</small><b>{{ p.info.pnr|default:p.booking.reference|default:"–" }}</b></div></div>
-    </div>
-    <div class="tv-wpass-foot">
-      <div class="tv-row" style="width: 100%"><div><div class="tv-sub small">Passenger</div><b>{{ p.name|default:"–" }}</b></div><a href="{% url 'travel:booking' p.booking.pk %}" class="small">The booking</a></div>
-      {% if p.svg %}<div class="tv-passcode" data-barcode="{{ p.format }}" style="max-width: 240px; margin: 6px auto 0">{{ p.svg|safe }}</div>{% else %}<p class="tv-sub small" style="margin: 0">This barcode cannot be drawn here &mdash; open the airline&rsquo;s PDF on the booking.</p>{% endif %}
-      {% if p.wallet_link and not p.over %}<a href="{{ p.wallet_link }}" target="_blank" rel="noopener" class="small">Add to Google Wallet</a>{% endif %}
-    </div>
-  </article>
-{% endfor %}
+{% for p in nxt %}{% include 'travel/_pass_desk.html' with lead=forloop.first %}{% endfor %}
 </div>
-<p class="tv-sub small" style="margin-top: 12px">The barcodes are drawn from the airline&rsquo;s own code and scan from a screen. On the phone, Travel &rarr; Passes shows them one a screen and keeps them for when there is no signal.</p>
+{% if then %}<p style="margin-top: 14px" data-then><a href="?tab=coming#pass-{{ then.pk }}">Then: {{ then.frm|default:"–" }} &rarr; {{ then.to|default:"–" }} {{ then.booking.start_time|time:"H:i" }} ({{ then.flight }})</a></p>{% endif %}
+{% if earlier %}<p style="margin-top: 6px" data-earlier><a href="?tab=used#pass-{{ earlier.pk }}">Earlier today: {{ earlier.frm|default:"–" }} &rarr; {{ earlier.to|default:"–" }} ({{ earlier.flight }})</a></p>{% endif %}
+{% elif cards %}
+<section class="form-card" data-no-next><p style="margin: 0"><b>No flight coming up.</b> {% if last %}Your last pass was {{ last.flight }}, {{ last.frm }} &rarr; {{ last.to }} on {{ last.booking.start_date|date:"j M Y" }}. {% endif %}Every pass is kept under <a href="?tab=used" data-tab-link="used">Used</a>.</p></section>
 {% else %}
 <section class="form-card" data-no-passes><p style="margin: 0">No boarding passes yet. Forward the airline&rsquo;s boarding-pass email to <b>trips@alivente.online</b> and it shows here and on the phone.</p></section>
 {% endif %}
+</section>
+<section data-tab-panel="coming"{% if tab_open != 'coming' %} hidden{% endif %}>
+{% if coming %}<div class="tv-passgrid">{% for p in coming %}{% include 'travel/_pass_desk.html' with lead=False %}{% endfor %}</div>{% else %}<p class="tv-sub" data-none-coming>Nothing after the next flight.</p>{% endif %}
+</section>
+<section data-tab-panel="used"{% if tab_open != 'used' %} hidden{% endif %}>
+{% if used %}<div class="tv-passgrid">{% for p in used %}{% include 'travel/_pass_desk.html' with lead=False %}{% endfor %}</div>{% else %}<p class="tv-sub" data-none-used>No used passes yet. Once a flight is over its pass moves here, stamped USED, and is kept.</p>{% endif %}
+</section>
+<p class="tv-sub small" style="margin-top: 12px">The barcodes are drawn from the airline&rsquo;s own code and scan from a screen. On the phone, Travel &rarr; Passes shows them one a screen and keeps them for when there is no signal.</p>
 </div>
+<script>
+(function () {
+  var tabs = document.querySelectorAll('[data-tab]');
+  function show(name) {
+    tabs.forEach(function (t) { t.classList.toggle('is-on', t.getAttribute('data-tab') === name); });
+    document.querySelectorAll('[data-tab-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-tab-panel') !== name; });
+    try { history.replaceState(null, '', '?tab=' + name); } catch (e) {}
+  }
+  tabs.forEach(function (t) { t.addEventListener('click', function (e) { e.preventDefault(); show(t.getAttribute('data-tab')); }); });
+  document.querySelectorAll('[data-tab-link]').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); show(a.getAttribute('data-tab-link')); }); });
+  document.querySelectorAll('[data-show-anyway]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var on = b.closest('[data-pass]').classList.toggle('show-anyway');
+      b.textContent = on ? 'Grey it out again' : 'Show the barcode anyway';
+    });
+  });
+})();
+</script>
 {% render_help_modal "travel" %}
 {% endblock %}

@@ -85,3 +85,21 @@ html.tv-turn-90 body.tv-holding .tv-nav, html.tv-turn-270 body.tv-holding .tv-na
   a { color: #7CC9D2; }
   .tv-tab.on, .tv-nav a.on { color: #7CC9D2; }
 }
+/* TR-8, 16 Nov 2026 - Passes: Next / Coming up / Used at the top
+   (Demetri: "Selection is hidden at the bottom"); USED stamped in red
+   diagonally, the barcode greyed, one tap shows it again. */
+.tv-seg { display: flex; gap: 4px; margin: 8px 14px 0; padding: 4px; background: #E6ECEE; border-radius: 12px; }
+.tv-seg a { flex: 1 1 0; text-align: center; padding: 9px 4px; border-radius: 9px; font-weight: 600; font-size: 14px; color: var(--tv-ink); text-decoration: none; }
+.tv-seg a.on { background: #fff; color: var(--tv-teal); box-shadow: 0 1px 3px rgba(16,34,40,.15); }
+.tv-pass-foot { position: relative; }
+.tv-used-stamp { position: absolute; top: 46%; left: 50%; transform: translate(-50%, -50%) rotate(-28deg); z-index: 2; pointer-events: none; color: #C62828; border: 5px solid #C62828; border-radius: 10px; padding: 2px 18px; font-size: 54px; font-weight: 800; letter-spacing: .12em; opacity: .88; background: rgba(255,255,255,.35); }
+.tv-pass.is-used .tv-code-box { opacity: .22; filter: grayscale(1); }
+.tv-pass.is-used.show-anyway .tv-code-box { opacity: 1; filter: none; }
+.tv-pass.is-used.show-anyway .tv-used-stamp { opacity: .25; }
+.tv-pass.is-used .tv-pass-head, .tv-pass.is-used .tv-pass-route, .tv-pass.is-used .tv-pass-grid { filter: grayscale(.7); }
+.tv-then { margin-top: 10px; gap: 2px; border-left: 4px solid var(--tv-teal); }
+.tv-passrow { background: #fff; border: 1px solid var(--tv-line); border-radius: 14px; margin-bottom: 8px; }
+.tv-passrow > summary { list-style: none; cursor: pointer; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+.tv-passrow > summary::-webkit-details-marker { display: none; }
+.tv-passrow[open] > summary { border-bottom: 1px solid var(--tv-line); }
+.tv-passrow .tv-pass { border-radius: 0 0 14px 14px; box-shadow: none; }

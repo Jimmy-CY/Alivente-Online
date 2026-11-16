@@ -64,7 +64,7 @@
         <div style="border-top: 1px solid var(--alv-line-soft); padding-top: 8px; margin-top: 8px">
             <div class="tv-row small"><b>{{ p.name|default:"Passenger" }}</b><span>{{ p.flight }}{% if p.seat_shown %} &middot; seat {{ p.seat_shown }}{% endif %}</span></div>
             {% if p.svg %}<div class="tv-passcode" data-barcode="{{ p.format }}">{{ p.svg|safe }}</div>{% endif %}
-            {% if p.wallet_link and not p.over %}<a href="{{ p.wallet_link }}" target="_blank" rel="noopener" class="small">Add to Google Wallet</a>{% endif %}
+            {% if p.wallet_link %}<a href="{% url 'travel:pass_wallet' p.pk %}" target="_blank" rel="noopener" class="small" data-wallet>Add to Google Wallet</a>{% endif %}
         </div>
         {% endfor %}
         <p class="tv-sub small" style="margin: 8px 0 0">On the phone, Travel &rarr; Passes shows them one a screen, and keeps them for when there is no signal.</p>

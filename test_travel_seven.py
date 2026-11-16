@@ -127,9 +127,14 @@ ok(read(J(TT, 'trip.html')).count("this.closest('details').open = false")
        "this.closest('details').open = false") == 2,
    'PDF: the Summary / Detailed choice closes once one is picked (Demetri, '
    '16 Nov)')
-ok(all('{% if p.wallet_link and not p.over %}' in read(J(TT, *x))
-        for x in (('passes.html',), ('m', 'passes.html'), ('booking.html',)))
-   and 'p.over = flown(b,' in read(J(TA, 'phone.py')),
+# TR-8 (16 Nov) moved this on: the button now goes through Alivente's own
+# page, which explains instead of hiding (test_travel_eight.py).
+ok((all('{% if p.wallet_link and not p.over %}' in read(J(TT, *x))
+         for x in (('passes.html',), ('m', 'passes.html'),
+                   ('booking.html',)))
+    and 'p.over = flown(b,' in read(J(TA, 'phone.py')))
+   or ("travel:pass_wallet" in read(J(TT, 'booking.html')) and
+       'boarding.settle([p]' in read(J(TA, 'phone.py'))),
    'GOOGLE WALLET: the airline\'s link only before the flight - after it, '
    'the airline answers with an error (Demetri, 16 Nov)')
 hp = read(J(ROOT, 'pages', 'help_content', 'administration.html'))

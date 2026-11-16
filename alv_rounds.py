@@ -1627,6 +1627,9 @@ ROUNDS = [
     '.bak_travel6',
     # TR-7, 16 Nov 2026 - Release 88: settling up, comparing trips.
     '.bak_travel7',
+    # TR-8, 16 Nov 2026 - Release 88 (TR-6 and TR-7 shipped together as
+    # R87): boarding passes - Next, Coming up, Used.
+    '.bak_travel8',
 ]
 
 

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}Google Wallet - Travel{% endblock %}
+{% comment %} TR-8, 16 Nov 2026 - "Add to Google Wallet" after the flight: a friendly page instead of the airline's error (Demetri: "we need to give a nice message explaining this to people. Not have the system error out"). {% endcomment %}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">GOOGLE WALLET</h4>
+<div class="page-action-buttons">
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
+    <a href="{{ back }}?tab=used" class="btn action-back" aria-label="Back to Boarding passes"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+<div class="tv-wrap">
+<section class="form-card" data-wallet-over style="max-width: 620px">
+  <p style="margin: 0 0 6px; font-weight: 600; font-size: 1.1rem">This flight has already flown</p>
+  <p style="margin: 0 0 6px"><b>{{ p.flight }}</b>, {{ p.frm|default:"–" }} &rarr; {{ p.to|default:"–" }} on {{ p.booking.start_date|date:"D j M Y" }}{% if p.name %} &ndash; {{ p.name }}{% endif %}.</p>
+  <p class="tv-sub" style="margin: 0 0 6px">Airlines stop offering boarding passes to Google Wallet once the flight is over, so there is nothing to add any more. Your pass is still kept here, under <b>Used</b>.</p>
+  <p class="tv-sub small" style="margin: 0">Not flown yet &ndash; a delay, say? Press <b>Not flown yet</b> on the pass under Used: it goes back to Next and the Wallet button works again.</p>
+</section>
+</div>
+{% render_help_modal "travel" %}
+{% endblock %}
