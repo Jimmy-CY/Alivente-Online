@@ -2,7 +2,7 @@
 {% comment %} TR-4 - Add a place on the phone (typed, pasted, or shared from Google Maps), or one place: what is known, where it goes. {% endcomment %}
 {% block title %}{% if p %}{{ p.name }}{% else %}Add a place{% endif %} - Travel{% endblock %}
 {% block top %}<div style="min-width: 0"><a class="tv-back" href="{% url 'travel:m_trip' trip.pk %}?tab={% if p and p.day %}itinerary{% else %}wish{% endif %}"><span aria-hidden="true">‹</span> {{ trip.name }}</a><h1>{% if p %}{{ p.name }}{% else %}Add a place{% endif %}</h1></div>{% endblock %}
-{% block sub %}<div class="sub">{% if p %}{% if p.day %}{{ p.day|date:"D j M" }}{% if p.time %} · {{ p.time|time:"H:i" }}{% endif %}{% else %}On the wish list{% endif %}{% else %}No booking needed · museums, gardens, restaurants{% endif %}</div>{% endblock %}
+{% block sub %}<div class="sub">{% if p %}{% if p.day %}{{ p.day|date:"D j M" }}{% if p.time %} · {{ p.time|time:"H:i" }}{% endif %}{% else %}In Things to do{% endif %}{% else %}No booking needed · museums, gardens, restaurants{% endif %}</div>{% endblock %}
 {% block content %}
 {% if p and p.lookup == 'waiting' %}<meta http-equiv="refresh" content="5"><div class="tv-msg" data-looking>Looking it up on the web&hellip; this refreshes by itself.</div>{% endif %}
 {% if not p %}
@@ -10,7 +10,7 @@
   <label for="q" class="tv-muted tv-small">Type a name, or paste a Google Maps or website link</label>
   <textarea id="q" name="q" class="tv-input" rows="{% if q %}3{% else %}1{% endif %}" style="padding: 10px" maxlength="500" required placeholder="e.g. Gulbenkian museum">{{ q }}</textarea>
   <label for="d" class="tv-muted tv-small">Where should it go?</label>
-  <select id="d" name="day" class="tv-select"><option value="">The wish list</option>{% for d in days %}<option value="{{ d|date:'Y-m-d' }}"{% if d|date:'Y-m-d' == day_pick %} selected{% endif %}>{{ d|date:"D j M" }}</option>{% endfor %}</select>
+  <select id="d" name="day" class="tv-select"><option value="">Things to do (no day yet)</option>{% for d in days %}<option value="{{ d|date:'Y-m-d' }}"{% if d|date:'Y-m-d' == day_pick %} selected{% endif %}>{{ d|date:"D j M" }}</option>{% endfor %}</select>
   <label for="t" class="tv-muted tv-small">Time (optional)</label><input id="t" type="time" name="time" class="tv-input">
   <label for="n" class="tv-muted tv-small">Note</label><input id="n" name="notes" class="tv-input" maxlength="500">
   <input type="hidden" name="lookup" value="1">
@@ -18,7 +18,15 @@
   <p class="tv-muted tv-small" style="margin: 0; text-align: center">Its address, hours, price and website are looked up for you. In Google Maps: Share &rarr; Travel.</p>
 </form>
 {% else %}
-{% if p.lookup == 'failed' %}<div class="tv-msg err" data-lookup-failed>{{ p.lookup_note|default:"It could not be looked up." }}</div>{% endif %}
+{% if p.lookup == 'failed' %}<div class="tv-msg err" data-lookup-failed>{{ p.lookup_note|default:"It could not be looked up." }}</div>
+<form method="post" action="{% url 'travel:m_place_again' p.pk %}" class="tv-card tv-form">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
+  <label for="rn" class="tv-muted tv-small">Name (add the town to help)</label><input id="rn" name="name" class="tv-input" maxlength="160" value="{{ p.name }}" required>
+  <button type="submit" class="tv-btn">Look it up again</button></form>{% endif %}
+{% if p.lookup == 'choose' %}{% comment %} TR-5 - which of two or three places was meant. {% endcomment %}<section class="tv-card" data-choose><p class="tv-h2">Which one did you mean?</p>
+  {% for o in p.options %}<form method="post" action="{% url 'travel:m_place_pick' p.pk %}" style="margin: 0">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><input type="hidden" name="pick" value="{{ forloop.counter0 }}"><button type="submit" class="tv-btn sec wide" style="text-align: left; white-space: normal; height: auto; padding: 10px" data-option><b>{{ o.name }}</b>{% if o.city or o.country %} · {{ o.city }}{% if o.city and o.country %}, {% endif %}{{ o.country }}{% endif %}{% if o.address %}<span class="tv-muted tv-small" style="display: block">{{ o.address }}</span>{% endif %}</button></form>{% endfor %}
+  <form method="post" action="{% url 'travel:m_place_pick' p.pk %}" style="margin: 0">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><input type="hidden" name="pick" value="none"><button type="submit" class="tv-btn sec wide" data-none>None of these</button></form>
+</section>{% endif %}
+{% if p.booking %}<div class="tv-msg" data-booked>Booked: <a href="{% url 'travel:m_booking' p.booking.pk %}">{{ p.booking.title }}</a> &mdash; on the itinerary as the booking.</div>{% endif %}
 <div class="tv-btns">
   <a class="tv-btn sec" href="{{ p.map_url }}" target="_blank" rel="noopener">Map</a>
   {% if p.website %}<a class="tv-btn sec" href="{{ p.website }}" target="_blank" rel="noopener">Website</a>{% endif %}
@@ -36,7 +44,7 @@
 </section>
 <form method="post" action="{% url 'travel:m_place_move' p.pk %}" class="tv-card tv-form" data-place-move>{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
   <p class="tv-h2">When</p>
-  <select name="day" class="tv-select" aria-label="Day"><option value="">The wish list</option>{% for d in days %}<option value="{{ d|date:'Y-m-d' }}"{% if p.day == d %} selected{% endif %}>{{ d|date:"D j M" }}</option>{% endfor %}</select>
+  <select name="day" class="tv-select" aria-label="Day"><option value="">Things to do (no day yet)</option>{% for d in days %}<option value="{{ d|date:'Y-m-d' }}"{% if p.day == d %} selected{% endif %}>{{ d|date:"D j M" }}</option>{% endfor %}</select>
   <input type="time" name="time" class="tv-input" value="{{ p.time|time:'H:i' }}" aria-label="Time (optional)">
   <button type="submit" class="tv-btn">Save</button>
 </form>

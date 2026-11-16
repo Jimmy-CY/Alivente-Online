@@ -28,7 +28,8 @@ PERM = 'auth.can_access_travel'
 MAX_FILE = 15 * 1024 * 1024
 ICONS = {'flight': 'fa-plane', 'stay': 'fa-bed', 'car': 'fa-car',
          'train': 'fa-train', 'ferry': 'fa-ship', 'transfer': 'fa-taxi',
-         'activity': 'fa-ticket-alt', 'other': 'fa-map-marker-alt'}
+         'activity': 'fa-ticket-alt', 'restaurant': 'fa-utensils',
+         'other': 'fa-map-marker-alt'}
 
 
 def travel_view(fn):
@@ -116,10 +117,21 @@ def span(trip, bookings):
         start, end = min(days), max(days)
     else:
         start, end = trip.start_date, trip.end_date or trip.start_date
-    seen = []
-    for c in [getattr(b, 'country', '') for b in sorted(
-            live, key=lambda b: b.start_date or dt.date.max)] + \
-            trip.country_list:
+    # TR-5, 16 Nov 2026 (Demetri, looking at "Greece, Cyprus, Paphos" on
+    # his Greece - Ireland trip): a booking with no country of its own -
+    # every one from before Release 85 - says where it is through its
+    # address, its airport or its city (travel/where.py); and "Don't keep
+    # home countries in" - Cyprus only came from the flights home. Home is
+    # kept only when the trip has nowhere else (a weekend in Paphos).
+    from .where import country_of, is_home
+    found = []
+    for b in sorted(live, key=lambda b: b.start_date or dt.date.max):
+        c = country_of(b)
+        if c and c.lower() not in [x.lower() for x in found]:
+            found.append(c)
+    away = [c for c in found if not is_home(c)]
+    seen = away or found
+    for c in trip.country_list:
         c = (c or '').strip()
         if c and c.lower() not in [x.lower() for x in seen]:
             seen.append(c)
@@ -179,10 +191,30 @@ def shape(b):
         names = [u.get_full_name() or u.username for u in b.travellers.all()]
         names += [x.strip() for x in (b.traveller_names or '').split(',')
                   if x.strip()]
-        b.who = ', '.join(names)
+        b.who = ', '.join(same_people(names))
     else:
         b.who = ''
     return b
+
+
+def name_key(n):
+    """A person's name as a set of words, any order, any case: a boarding
+    pass writes MANIAS/DIMITRIOS for the Dimitrios Manias of the
+    confirmation (TR-5, 16 Nov: "Dimitrios Manias, Manias Dimitrios" on
+    one flight)."""
+    import re
+    return frozenset(re.findall(r'[^\W\d_]+', (n or '').lower()))
+
+
+def same_people(names):
+    """The names, each person once - the first spelling kept."""
+    out, keys = [], set()
+    for n in names:
+        k = name_key(n)
+        if k and k not in keys:
+            keys.add(k)
+            out.append(n)
+    return out
 
 
 def included(bs):
@@ -303,6 +335,9 @@ def trip(request, trip_id):
                                         'bookings')
     bs = list(t.bookings.prefetch_related('travellers'))
     fx.convert_pending(bs)
+    # TR-5 - a hotel's or a restaurant's missing details, looked up once.
+    from .places import start_details
+    start_details(bs)
     bs = included([shape(b) for b in bs])
     start, end = span(t, bs)
     pl = list(t.places.all())
@@ -338,7 +373,6 @@ def trip(request, trip_id):
         # wish list (places with no day yet).
         'itinerary': itinerary(t, bs, pl) if tab == 'itinerary' else [],
         'wish': [p for p in pl if not p.day],
-        'planned': len([p for p in pl if p.day]),
         'trip_days': days_of(start, end)})
 
 
@@ -558,6 +592,12 @@ def booking_form(request, trip_id=None, booking_id=None):
                         booking=b, by=request.user, source='edit',
                         changes=changed)
             add_files(request, b)
+            # TR-5 - a table at a restaurant on the wish list takes that
+            # place onto its day; a hotel's or restaurant's missing
+            # address, phone and times are looked up.
+            from . import places as P
+            P.link_booking(b)
+            P.start_details([b], limit=1)
             messages.success(request, 'Booking saved.')
             return redirect('travel:booking', booking_id=b.pk)
     return render(request, 'travel/booking_form.html', {
@@ -597,6 +637,9 @@ def booking_delete(request, booking_id):
     t = b.trip
     for f in list(b.files.all()):
         drop_file(f)
+    # TR-5 - a place it was booked for goes back to the wish list.
+    from .places import unlink_deleted
+    unlink_deleted(b)
     b.delete()
     messages.success(request, 'Booking deleted.')
     return redirect('travel:trip', trip_id=t.pk)

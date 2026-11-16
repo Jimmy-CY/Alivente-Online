@@ -3,7 +3,7 @@
 {% block title %}{{ trip.name }} - Travel{% endblock %}
 {% block top %}<div style="min-width: 0"><a class="tv-back" href="{% url 'travel:m_trips' %}"><span aria-hidden="true">‹</span> Trips</a><h1>{{ trip.name }}</h1></div>{% endblock %}
 {% block sub %}<div class="sub">{% if trip.start %}{{ trip.start|date:"D j M" }}{% if trip.end and trip.end != trip.start %} – {{ trip.end|date:"D j M Y" }}{% endif %}{% endif %}{% if trip.where %} · {{ trip.where }}{% endif %}</div>{% endblock %}
-{% block tabs %}<nav class="tv-tabs" aria-label="Trip" style="overflow-x: auto"><a class="tv-tab{% if sub == 'bookings' %} on{% endif %}" href="{% url 'travel:m_trip' trip.pk %}">Bookings</a><a class="tv-tab{% if sub == 'itinerary' %} on{% endif %}" href="?tab=itinerary">Itinerary</a><a class="tv-tab{% if sub == 'wish' %} on{% endif %}" href="?tab=wish">Wish list</a><a class="tv-tab{% if sub == 'costs' %} on{% endif %}" href="?tab=costs">Costs</a></nav>{% endblock %}
+{% block tabs %}<nav class="tv-tabs" aria-label="Trip" style="overflow-x: auto"><a class="tv-tab{% if sub == 'bookings' %} on{% endif %}" href="{% url 'travel:m_trip' trip.pk %}">Bookings</a><a class="tv-tab{% if sub == 'itinerary' %} on{% endif %}" href="?tab=itinerary">Itinerary</a><a class="tv-tab{% if sub == 'wish' %} on{% endif %}" href="?tab=wish">Things to do</a><a class="tv-tab{% if sub == 'costs' %} on{% endif %}" href="?tab=costs">Costs</a></nav>{% endblock %}
 {% block content %}
 {% if sub == 'itinerary' %}
 {% comment %} TR-4 - the itinerary: every day, bookings and places in time order. {% endcomment %}
@@ -14,15 +14,18 @@
 <p class="tv-h3" id="d{{ day|date:'Ymd' }}">{{ day|date:"l j F" }}</p>
 <section class="tv-card" data-itinerary-day>{% for b in rows %}{% include 'travel/m/_row.html' %}{% empty %}<p class="tv-muted" style="margin: 0">Nothing planned. <a href="{% url 'travel:m_place_new' trip.pk %}?day={{ day|date:'Y-m-d' }}">Add a place</a></p>{% endfor %}</section>
 {% endfor %}
+{% comment %} TR-5 - what is not on a day yet, at the bottom of the itinerary. {% endcomment %}
+{% if wish %}<p class="tv-h3" id="todo">Things to do &mdash; no day yet</p>
+<section class="tv-card" data-itinerary-todo>{% for b in wish %}{% include 'travel/m/_row.html' %}{% endfor %}<a href="?tab=wish" class="tv-muted tv-small">Put them on a day</a></section>{% endif %}
 {% else %}<section class="tv-card"><p class="tv-muted" style="margin: 0">The itinerary needs the trip&rsquo;s dates &mdash; they come from its bookings.</p></section>{% endif %}
 {% elif sub == 'wish' %}
-{% comment %} TR-4 - the wish list: places with no day yet. {% endcomment %}
+{% comment %} TR-4 - Things to do: places with no day yet. {% endcomment %}
 <a href="{% url 'travel:m_place_new' trip.pk %}" class="tv-btn wide" data-add-place>+ Add a place</a>
 {% for p in wish %}
 <section class="tv-card" data-wish-item>
   {% include 'travel/m/_row.html' with b=p %}
-  {% if trip_days %}<form method="post" action="{% url 'travel:m_place_move' p.pk %}" class="tv-inline">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
-    <select name="day" class="tv-select" style="flex: 1" aria-label="Put {{ p.name }} on a day">{% for d in trip_days %}<option value="{{ d|date:'Y-m-d' }}">{{ d|date:"D j M" }}</option>{% endfor %}</select>
+  {% if trip_days %}<form method="post" action="{% url 'travel:m_place_move' p.pk %}" class="tv-inline" data-move-form>{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><input type="hidden" name="need_day" value="1">
+    <select name="day" class="tv-select" style="flex: 1" aria-label="Put {{ p.name }} on a day" required><option value="" selected>Choose a day&hellip;</option>{% for d in trip_days %}<option value="{{ d|date:'Y-m-d' }}">{{ d|date:"D j M" }}</option>{% endfor %}</select>
     <button type="submit" class="tv-btn sec">Put on the day</button></form>{% endif %}
 </section>
 {% empty %}
@@ -48,9 +51,12 @@
 {% if not bookings %}<section class="tv-card"><p class="tv-muted" style="margin: 0">No bookings yet.</p></section>{% endif %}
 {% endif %}
 {% comment %} TR-4 - the trip as a PDF, straight to the phone's share sheet (WhatsApp, mail...); opened instead where sharing files is not possible. {% endcomment %}
-<div class="tv-btns" data-trip-pdf-phone>
-  <button type="button" class="tv-btn sec" data-share-pdf="{% url 'travel:m_trip_pdf' trip.pk %}?kind=summary" data-share-name="trip_{{ trip.name|slugify }}_summary.pdf" data-share-title="{{ trip.name }}">PDF summary</button>
-  <button type="button" class="tv-btn sec" data-share-pdf="{% url 'travel:m_trip_pdf' trip.pk %}?kind=detailed" data-share-name="trip_{{ trip.name|slugify }}_detailed.pdf" data-share-title="{{ trip.name }}">PDF detailed</button>
-</div>
+{% comment %} TR-5 (Demetri, 16 Nov): one PDF button with the choice of Summary or Detailed, as on the computer. {% endcomment %}<details class="tv-card" data-trip-pdf-phone style="padding: 0">
+  <summary class="tv-btn sec wide" style="list-style: none">PDF &#9662;</summary>
+  <div class="tv-btns" style="padding: 10px">
+    <button type="button" class="tv-btn sec" data-share-pdf="{% url 'travel:m_trip_pdf' trip.pk %}?kind=summary" data-share-name="trip_{{ trip.name|slugify }}_summary.pdf" data-share-title="{{ trip.name }}">Summary</button>
+    <button type="button" class="tv-btn sec" data-share-pdf="{% url 'travel:m_trip_pdf' trip.pk %}?kind=detailed" data-share-name="trip_{{ trip.name|slugify }}_detailed.pdf" data-share-title="{{ trip.name }}">Detailed</button>
+  </div>
+</details>
 <p class="tv-muted tv-small" style="text-align: center; margin: 0">On this trip: {% for p in people %}{{ p.get_full_name|default:p.username }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
 {% endblock %}

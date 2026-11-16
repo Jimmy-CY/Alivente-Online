@@ -120,7 +120,8 @@ def day_rows(bs, places, day):
     places planned for it, in time order; places with no time at the end."""
     rows = [(b.when or dt.time(0, 0), 0, b) for b in on_day(bs, day)]
     for p in places:
-        if p.day == day:
+        # TR-5 - a place with its booking shows once: as the booking.
+        if p.day == day and not p.booking_id:
             p.is_place = True
             rows.append((p.time or dt.time(23, 59, 59), 1, p))
     rows.sort(key=lambda r: (r[0], r[1]))

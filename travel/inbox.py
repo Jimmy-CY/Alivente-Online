@@ -488,10 +488,13 @@ def travellers(b, item):
         else:
             left.append(n.title() if n.isupper() else n)
     if left:
+        from .views import name_key
         have = [x.strip() for x in (b.traveller_names or '').split(',')
                 if x.strip()]
+        # TR-5 - the same person in another order (a boarding pass's
+        # MANIAS/DIMITRIOS) is not a second traveller.
         for n in left:
-            if n not in have:
+            if name_key(n) not in [name_key(x) for x in have]:
                 have.append(n)
         b.traveller_names = ', '.join(have)[:255]
         b.save(update_fields=['traveller_names'])
@@ -547,6 +550,10 @@ def apply(b, item, user, e, files):
     attach(b, files, user)
     travellers(b, item)
     keep_pass(b, item, user)
+    # TR-5 - a place booked for moves with its booking, or back to the
+    # wish list when the booking is cancelled.
+    from .places import link_booking
+    link_booking(b)
     changes = diff(before, b)
     if was_status != b.status:
         changes.append({'label': 'Status',
@@ -580,6 +587,11 @@ def create(trip, item, user, e=None, files=()):
     attach(b, files, user)
     travellers(b, item)
     keep_pass(b, item, user)
+    # TR-5 - a table at a restaurant on the wish list takes that place;
+    # a hotel's or restaurant's missing details are looked up.
+    from .places import link_booking, start_details
+    link_booking(b)
+    start_details([b], limit=1)
     return b
 
 

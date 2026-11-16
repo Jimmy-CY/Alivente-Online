@@ -5,7 +5,7 @@ A place is somewhere to go with no booking - a museum, a garden, a
 restaurant. It is added by name, by link, or from Google Maps on the
 phone (Share -> Travel); Claude looks it up (travel/places.py). With a day
 it sits on the itinerary among the bookings; without one, on the trip's
-wish list. Everyone on the trip can add, move, tick off and remove them -
+things to do. Everyone on the trip can add, move, tick off and remove them -
 the same as bookings.
 
 The same views serve the computer and the phone: a form posted from the
@@ -111,8 +111,10 @@ def place_new(request, trip_id):
         p.save()
         if p.lookup == 'waiting':
             P.start(p)
+        else:
+            P.link_place(p)
         messages.success(request, '%s added to %s.' % (
-            p.name, 'the wish list' if not p.day else
+            p.name, 'Things to do' if not p.day else
             p.day.strftime('%a %d %b').replace(' 0', ' ')))
         if request.path.startswith('/travel/m/'):
             return redirect('travel:m_place', place_id=p.pk)
@@ -157,12 +159,25 @@ def _stale():
 @travel_view
 @require_POST
 def place_move(request, place_id):
-    """To a day (and a time), or back to the wish list."""
+    """To a day (and a time), or back to the wish list.
+
+    TR-5 (Demetri, 16 Nov: "To Move, you should at least need as a minimum
+    to have a date"): Things to do's Move sends need_day, and is refused
+    without one - the day list starts on "Choose a day..." and is
+    required. Back to Things to do is its own button (to_wish)."""
     p = _place(request, place_id)
+    if request.POST.get('need_day') and not _date(request.POST.get('day')):
+        messages.error(request, 'Choose a day first.')
+        return _next(request, '/travel/%d/wish-list/' % p.trip_id)
+    if request.POST.get('to_wish'):
+        p.day, p.time = None, None
+        p.save(update_fields=['day', 'time', 'updated_at'])
+        messages.success(request, '%s: in Things to do.' % p.name)
+        return _next(request, '/travel/%d/wish-list/' % p.trip_id)
     p.day = _date(request.POST.get('day'))
     p.time = _time(request.POST.get('time')) if p.day else None
     p.save(update_fields=['day', 'time', 'updated_at'])
-    messages.success(request, '%s: %s.' % (p.name, 'on the wish list'
+    messages.success(request, '%s: %s.' % (p.name, 'in Things to do'
                                            if not p.day else
                                            p.day.strftime('%a %d %b')
                                            .replace(' 0', ' ')))
@@ -181,12 +196,53 @@ def place_done(request, place_id):
 @travel_view
 @require_POST
 def place_again(request, place_id):
-    """Look it up again."""
+    """Look it up again - TR-5: by what is in the Name box now, so a name
+    with the town added is the one searched for."""
     p = _place(request, place_id)
+    if 'address' in request.POST:
+        # Pressed on the place's own form: what is in its boxes now.
+        _fields(p, request.POST)
+    elif (request.POST.get('name') or '').strip():
+        p.name = request.POST['name'].strip()[:160]
+    if P.edited(p) or not p.query:
+        p.query = ', '.join(x for x in (p.name, p.address) if x)[:500] \
+            if not p.maps_link else p.query
+    p.options = []
     p.lookup, p.started, p.lookup_note = 'waiting', None, ''
-    p.save(update_fields=['lookup', 'started', 'lookup_note',
-                          'updated_at'])
+    p.save()
     P.start(p)
+    return _next(request, '/travel/place/%d/' % p.pk)
+
+
+@travel_view
+@require_POST
+def place_pick(request, place_id):
+    """TR-5 - which of the two or three places was meant (Demetri: "if
+    it finds two or three options, then maybe the user must be given
+    these options to choose from"). Picking one looks THAT place up;
+    None of these keeps the place as it was typed."""
+    p = _place(request, place_id)
+    opts = p.options or []
+    pick = request.POST.get('pick', '')
+    if pick.isdigit() and int(pick) < len(opts):
+        o = opts[int(pick)]
+        p.name = o['name'][:160]
+        p.address = o.get('address', '')[:255]
+        p.query = ', '.join(x for x in (o['name'], o.get('address'),
+                                         o.get('city'), o.get('country'))
+                            if x)[:500]
+        p.options = []
+        p.lookup, p.started, p.lookup_note = 'waiting', None, ''
+        p.save()
+        P.start(p)
+    else:
+        p.options = []
+        p.lookup = ''
+        p.lookup_note = ''
+        p.save(update_fields=['options', 'lookup', 'lookup_note',
+                              'updated_at'])
+        messages.success(request, 'Kept as you typed it - add the town to '
+                         'the name and look it up again if you like.')
     return _next(request, '/travel/place/%d/' % p.pk)
 
 

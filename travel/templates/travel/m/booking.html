@@ -8,9 +8,9 @@
 {% if b.start_date %}
 <section class="tv-card" data-when>
   <div class="tv-row" style="align-items: flex-start">
-    <div><div class="tv-muted">{% if b.kind == 'stay' %}Check in{% elif b.kind == 'car' %}Pick up{% else %}Leaves{% endif %}</div><b>{{ b.start_date|date:"D j M" }}</b>{% if b.start_time %}<div class="tv-time" style="font-size: 22px">{{ b.start_time|time:"H:i" }}</div>{% endif %}{% if b.from_place %}<div class="tv-muted">{{ b.from_place }}</div>{% endif %}</div>
+    <div><div class="tv-muted">{% if b.kind == 'stay' %}Check in{% elif b.kind == 'car' %}Pick up{% elif b.kind == 'restaurant' %}Table{% elif b.kind == 'flight' or b.kind == 'train' or b.kind == 'ferry' %}Leaves{% else %}Starts{% endif %}</div><b>{{ b.start_date|date:"D j M" }}</b>{% if b.start_time %}<div class="tv-time" style="font-size: 22px">{{ b.start_time|time:"H:i" }}</div>{% endif %}{% if b.from_place %}<div class="tv-muted">{{ b.from_place }}</div>{% endif %}</div>
     {% if nights %}<span class="tv-tag sh">{{ nights }} night{{ nights|pluralize }}</span>{% endif %}
-    {% if b.end_date or b.end_time or b.to_place %}<div style="text-align: right"><div class="tv-muted">{% if b.kind == 'stay' %}Check out{% elif b.kind == 'car' %}Drop off{% else %}Arrives{% endif %}</div><b>{{ b.end_date|default:b.start_date|date:"D j M" }}</b>{% if b.end_time %}<div class="tv-time" style="font-size: 22px">{{ b.end_time|time:"H:i" }}</div>{% endif %}{% if b.to_place %}<div class="tv-muted">{{ b.to_place }}</div>{% endif %}</div>{% endif %}
+    {% if b.end_date or b.end_time or b.to_place %}<div style="text-align: right"><div class="tv-muted">{% if b.kind == 'stay' %}Check out{% elif b.kind == 'car' %}Drop off{% elif b.kind == 'flight' or b.kind == 'train' or b.kind == 'ferry' %}Arrives{% else %}Ends{% endif %}</div><b>{{ b.end_date|default:b.start_date|date:"D j M" }}</b>{% if b.end_time %}<div class="tv-time" style="font-size: 22px">{{ b.end_time|time:"H:i" }}</div>{% endif %}{% if b.to_place %}<div class="tv-muted">{{ b.to_place }}</div>{% endif %}</div>{% endif %}
   </div>
 </section>
 {% endif %}

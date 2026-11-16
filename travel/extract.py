@@ -39,7 +39,7 @@ class ExtractError(Exception):
 
 
 KINDS = ['flight', 'stay', 'car', 'train', 'ferry', 'transfer', 'activity',
-         'other']
+         'restaurant', 'other']
 
 BOOKING = {
     'type': 'object',
@@ -139,6 +139,17 @@ or the traveller's own email address or phone number - anywhere, \
 including details.
 - The email may be forwarded: read the forwarded booking, not the \
 forwarding note."""
+# TR-5, 16 Nov 2026 - restaurants (Demetri: "Let's do a Restaurant type"),
+# and a hotel's own check-in and check-out times.
+SYSTEM += """
+- A table booked at a restaurant (from the restaurant itself, TheFork, \
+OpenTable or the like) is kind "restaurant": the restaurant's name as \
+title, the date and time of the table as start, its address and phone, \
+how many people and any notes (terrace, occasion, deposit terms) in \
+details. A deposit taken is paid "part" with paid_amount; nothing paid \
+yet is "due" with no amount unless a price is set.
+- A stay: check-in and check-out times go in start_time and end_time \
+when the email gives them."""
 
 
 def _text_block(info):

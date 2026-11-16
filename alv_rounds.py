@@ -1621,6 +1621,8 @@ ROUNDS = [
     '.bak_travel3',
     # TR-4, 15 Nov 2026 - Release 85: Travel, stage 4 - places.
     '.bak_travel4',
+    # TR-5, 16 Nov 2026 - Release 86: Travel - restaurants, and the review.
+    '.bak_travel5',
 ]
 
 

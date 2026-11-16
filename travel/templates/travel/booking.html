@@ -19,9 +19,10 @@
 <div class="tv-main">
     <section class="form-card" data-booking-detail>
         <div class="tv-row"><h3 class="form-section-title" style="margin: 0"><i class="fas {{ b.icon }}" aria-hidden="true"></i> {{ b.title }}</h3><span>{% if b.cancelled %}<span class="tv-tag tv-due" data-cancelled>Cancelled</span> {% endif %}<span class="tv-tag tv-shared">{{ b.kind_label }}</span></span></div>
+        {% for p in b.places.all %}<p class="small" style="margin: 6px 0 0" data-booked-place><i class="fas fa-map-marker-alt" aria-hidden="true"></i> For <a href="{% url 'travel:place' p.pk %}">{{ p.name }}</a> from Things to do{% if p.hours %} &middot; <span class="tv-sub">{{ p.hours }}</span>{% endif %}</p>{% endfor %}
         {% if b.start_date %}
         <div class="tv-row" style="margin-top: 10px">
-            <div><div class="tv-sub">{% if b.kind == 'stay' %}Check-in{% elif b.kind == 'car' %}Pick-up{% else %}Starts{% endif %}</div><b>{{ b.start_date|date:"D j M Y" }}</b>{% if b.start_time %}<div class="tv-sub">{{ b.start_time|time:"H:i" }}</div>{% endif %}</div>
+            <div><div class="tv-sub">{% if b.kind == 'stay' %}Check-in{% elif b.kind == 'car' %}Pick-up{% elif b.kind == 'restaurant' %}Table{% else %}Starts{% endif %}</div><b>{{ b.start_date|date:"D j M Y" }}</b>{% if b.start_time %}<div class="tv-sub">{{ b.start_time|time:"H:i" }}</div>{% endif %}</div>
             {% if nights %}<div class="tv-sub">{{ nights }} night{{ nights|pluralize }}</div>{% endif %}
             {% if b.end_date or b.end_time %}<div style="text-align: right"><div class="tv-sub">{% if b.kind == 'stay' %}Check-out{% elif b.kind == 'car' %}Drop-off{% else %}Ends{% endif %}</div><b>{{ b.end_date|default:b.start_date|date:"D j M Y" }}</b>{% if b.end_time %}<div class="tv-sub">{{ b.end_time|time:"H:i" }}</div>{% endif %}</div>{% endif %}
         </div>

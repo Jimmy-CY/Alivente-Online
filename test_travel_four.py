@@ -237,6 +237,14 @@ if have_db:
     class Rollback(Exception):
         pass
     real_call = PL.call
+    # TR-5 (Release 86) looks up a stay's missing address and times when
+    # its trip is opened - never on the web from this suite.
+    real_details = getattr(PL, 'call_details', None)
+
+    def _no_web(b, client=None):
+        raise PL.LookupError_('not from the test suite')
+    if real_details is not None:
+        PL.call_details = _no_web
     PL.SYNC = True
     try:
         with transaction.atomic():
@@ -487,6 +495,8 @@ if have_db:
         pass
     finally:
         PL.call = real_call
+        if real_details is not None:
+            PL.call_details = real_details
         PL.SYNC = False
 
 # ==========================================================================

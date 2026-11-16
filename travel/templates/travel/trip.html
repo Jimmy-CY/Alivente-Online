@@ -12,9 +12,13 @@
     <a href="{% url 'travel:place_new' trip.pk %}" class="btn action-secondary"><i class="fas fa-map-marker-alt"></i> Add a place</a>
     {% if is_owner %}<a href="{% url 'travel:trip_share' trip.pk %}" class="btn action-secondary"><i class="fas fa-share-alt"></i> Share</a>{% endif %}
     <a href="{% url 'travel:trip_edit' trip.pk %}" class="btn action-secondary"><i class="fas fa-pen"></i> Edit trip</a>
-    {% comment %} TR-4 (Demetri, 15 Nov): the trip as a PDF, summary or detailed, to download or share (WhatsApp, mail) through the house PDF viewer. {% endcomment %}
-    <button type="button" class="btn action-secondary" data-trip-pdf="summary" onclick="openPdfViewer('{% url 'travel:trip_pdf' trip.pk %}?kind=summary', '{{ trip.name|escapejs }} - summary', 'trip_{{ trip.name|slugify }}_summary.pdf')"><i class="fas fa-file-pdf"></i> PDF summary</button>
-    <button type="button" class="btn action-secondary" data-trip-pdf="detailed" onclick="openPdfViewer('{% url 'travel:trip_pdf' trip.pk %}?kind=detailed', '{{ trip.name|escapejs }} - detailed', 'trip_{{ trip.name|slugify }}_detailed.pdf')"><i class="fas fa-file-pdf"></i> PDF detailed</button>
+    {% comment %} TR-4 (Demetri, 15 Nov): the trip as a PDF, summary or detailed, to download or share (WhatsApp, mail) through the house PDF viewer. TR-5 (16 Nov: "I don't want two buttons for PDF. It should be one, but with a choice of Summary or Detailed"). {% endcomment %}
+    <details class="tv-menu" data-pdf-menu><summary class="btn action-secondary" title="Make the trip into a PDF"><i class="fas fa-file-pdf"></i> PDF <i class="fas fa-caret-down" aria-hidden="true"></i></summary>
+        <div class="tv-menu-pop">
+            <button type="button" data-trip-pdf="summary" onclick="openPdfViewer('{% url 'travel:trip_pdf' trip.pk %}?kind=summary', '{{ trip.name|escapejs }} - summary', 'trip_{{ trip.name|slugify }}_summary.pdf')"><b>Summary</b><small>Day by day, the places, the costs</small></button>
+            <button type="button" data-trip-pdf="detailed" onclick="openPdfViewer('{% url 'travel:trip_pdf' trip.pk %}?kind=detailed', '{{ trip.name|escapejs }} - detailed', 'trip_{{ trip.name|slugify }}_detailed.pdf')"><b>Detailed</b><small>Every day with addresses, phones and times, then every booking in full</small></button>
+        </div>
+    </details>
     {% if is_owner %}<a href="{% url 'travel:trip_merge' trip.pk %}" class="btn action-secondary"><i class="fas fa-object-group"></i> Merge</a>{% endif %}
     <a href="{% url 'travel:trips' %}" class="btn action-back" aria-label="Back to Travel">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
@@ -27,8 +31,8 @@
 
 <nav class="tv-tabs" aria-label="Trip">
     <a class="tv-chip{% if tab == 'bookings' %} is-on{% endif %}" href="{% url 'travel:trip' trip.pk %}"{% if tab == 'bookings' %} aria-current="page"{% endif %}>Bookings <span class="tv-sub">{{ bookings|length }}</span></a>
-    <a class="tv-chip{% if tab == 'itinerary' %} is-on{% endif %}" href="{% url 'travel:trip_itinerary' trip.pk %}"{% if tab == 'itinerary' %} aria-current="page"{% endif %}>Itinerary{% if planned %} <span class="tv-sub">{{ planned }}</span>{% endif %}</a>
-    <a class="tv-chip{% if tab == 'wish' %} is-on{% endif %}" href="{% url 'travel:trip_wishlist' trip.pk %}"{% if tab == 'wish' %} aria-current="page"{% endif %}>Wish list{% if wish %} <span class="tv-sub">{{ wish|length }}</span>{% endif %}</a>
+    <a class="tv-chip{% if tab == 'itinerary' %} is-on{% endif %}" href="{% url 'travel:trip_itinerary' trip.pk %}"{% if tab == 'itinerary' %} aria-current="page"{% endif %}>Itinerary</a>
+    <a class="tv-chip{% if tab == 'wish' %} is-on{% endif %}" href="{% url 'travel:trip_wishlist' trip.pk %}"{% if tab == 'wish' %} aria-current="page"{% endif %}>Things to do{% if wish %} <span class="tv-sub">{{ wish|length }}</span>{% endif %}</a>
     <a class="tv-chip{% if tab == 'costs' %} is-on{% endif %}" href="{% url 'travel:trip_costs' trip.pk %}"{% if tab == 'costs' %} aria-current="page"{% endif %}>Costs</a>
 </nav>
 
@@ -61,28 +65,33 @@
 {% elif tab == 'itinerary' %}
     {% comment %} TR-4 - every day of the trip: the bookings (shaded) and the places planned, in time order. {% endcomment %}
     {% if itinerary %}
-    <nav class="tv-chips" aria-label="Days">{% for day, rows in itinerary %}<a class="tv-chip" href="#d{{ day|date:'Ymd' }}">{{ day|date:"D j" }}</a>{% endfor %}</nav>
+    <nav class="tv-chips" aria-label="Days">{% for day, rows in itinerary %}<a class="tv-chip" href="#d{{ day|date:'Ymd' }}">{{ day|date:"D j" }}</a>{% endfor %}{% if wish %}<a class="tv-chip" href="#todo">Things to do</a>{% endif %}</nav>
     {% for day, rows in itinerary %}
     <section class="form-card tv-day" id="d{{ day|date:'Ymd' }}" data-itinerary-day>
         <div class="tv-row"><h3>{{ day|date:"l j F" }}</h3><a href="{% url 'travel:place_new' trip.pk %}?day={{ day|date:'Y-m-d' }}" class="small"><i class="fas fa-plus" aria-hidden="true"></i> Add a place</a></div>
-        {% for r in rows %}{% if r.is_place %}{% include 'travel/_place_row.html' with p=r %}{% else %}{% include 'travel/_booking_row.html' with b=r %}{% endif %}{% empty %}<p class="tv-sub small" style="margin: 0">Nothing planned{% if wish %} &mdash; move something here from the <a href="{% url 'travel:trip_wishlist' trip.pk %}">wish list</a>{% endif %}.</p>{% endfor %}
+        {% for r in rows %}{% if r.is_place %}{% include 'travel/_place_row.html' with p=r %}{% else %}{% include 'travel/_booking_row.html' with b=r %}{% endif %}{% empty %}<p class="tv-sub small" style="margin: 0">Nothing planned{% if wish %} &mdash; move something here from the <a href="{% url 'travel:trip_wishlist' trip.pk %}">things to do</a>{% endif %}.</p>{% endfor %}
     </section>
     {% endfor %}
+    {% comment %} TR-5 (Demetri, 16 Nov: "would it not make sense for the items in the wish list that have not been allocated a specific day to appear at the bottom of the itinerary just as things to do"). {% endcomment %}
+    {% if wish %}<section class="form-card tv-day" id="todo" data-itinerary-todo>
+        <div class="tv-row"><h3>Things to do &mdash; no day yet</h3><a href="{% url 'travel:trip_wishlist' trip.pk %}" class="small">Put them on a day</a></div>
+        {% for p in wish %}{% include 'travel/_place_row.html' %}{% endfor %}
+    </section>{% endif %}
     {% else %}
     <section class="form-card"><p style="margin: 0">The itinerary needs the trip&rsquo;s dates: add a booking, or set From and To under Edit trip.</p></section>
     {% endif %}
 {% elif tab == 'wish' %}
     {% comment %} TR-4 - places with no day yet. {% endcomment %}
     <section class="form-card" data-wishlist>
-        <div class="tv-row"><h3 class="form-section-title" style="margin: 0">Wish list</h3><a href="{% url 'travel:place_new' trip.pk %}" class="btn action-primary btn-sm"><i class="fas fa-plus"></i> Add a place</a></div>
+        <div class="tv-row"><h3 class="form-section-title" style="margin: 0">Things to do</h3><a href="{% url 'travel:place_new' trip.pk %}" class="btn action-primary btn-sm"><i class="fas fa-plus"></i> Add a place</a></div>
         {% for p in wish %}
         <div data-wish-item>
             {% include 'travel/_place_row.html' %}
-            {% if trip_days %}<form method="post" action="{% url 'travel:place_move' p.pk %}" class="tv-acts" style="margin: 0 0 8px 52px">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+            {% if trip_days %}{% comment %} TR-5 (Demetri, 16 Nov: "To Move, you should at least need as a minimum to have a date"): no day is chosen for you. {% endcomment %}<form method="post" action="{% url 'travel:place_move' p.pk %}" class="tv-acts" style="margin: 0 0 8px 52px" data-move-form>{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><input type="hidden" name="need_day" value="1">
                 <label for="mv{{ p.pk }}" class="small" style="margin: 0">Put on</label>
-                <select id="mv{{ p.pk }}" name="day" class="form-control form-control-sm" style="max-width: 170px">{% for d in trip_days %}<option value="{{ d|date:'Y-m-d' }}">{{ d|date:"D j M" }}</option>{% endfor %}</select>
-                <input type="time" name="time" class="form-control form-control-sm" style="max-width: 120px" aria-label="Time (optional)">
-                <button type="submit" class="btn action-secondary btn-sm">Move</button></form>{% endif %}
+                <select id="mv{{ p.pk }}" name="day" class="form-control form-control-sm" style="max-width: 170px" required><option value="" selected>Choose a day&hellip;</option>{% for d in trip_days %}<option value="{{ d|date:'Y-m-d' }}">{{ d|date:"D j M" }}</option>{% endfor %}</select>
+                <input type="time" name="time" class="form-control form-control-sm" style="max-width: 120px" aria-label="Time (optional)" title="Time (optional)">
+                <button type="submit" class="btn action-secondary btn-sm" title="Put it on the day chosen">Move</button></form>{% endif %}
         </div>
         {% empty %}<p class="tv-sub" style="margin: 8px 0 0">Nothing yet. Add a museum, a garden, a restaurant &mdash; type its name or paste a link, and its address, hours and price are looked up for you. On the phone, share a place from Google Maps to Travel.</p>{% endfor %}
     </section>

@@ -24,6 +24,9 @@ urlpatterns = [
          name='place_done'),
     path('place/<int:place_id>/again/', views_places.place_again,
          name='place_again'),
+    # TR-5 - which of two or three places was meant.
+    path('place/<int:place_id>/pick/', views_places.place_pick,
+         name='place_pick'),
     path('place/<int:place_id>/delete/', views_places.place_delete,
          name='place_delete'),
     path('m/trip/<int:trip_id>/place/new/', views_places.place_new,
@@ -36,6 +39,8 @@ urlpatterns = [
          name='m_place_done'),
     path('m/place/<int:place_id>/again/', views_places.place_again,
          name='m_place_again'),
+    path('m/place/<int:place_id>/pick/', views_places.place_pick,
+         name='m_place_pick'),
     path('m/place/<int:place_id>/delete/', views_places.place_delete,
          name='m_place_delete'),
     path('<int:trip_id>/edit/', views.trip_edit, name='trip_edit'),

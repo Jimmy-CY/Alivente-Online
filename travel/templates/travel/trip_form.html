@@ -20,7 +20,7 @@
         <div><label for="ts">From</label><input id="ts" type="date" name="start_date" class="form-control" value="{{ trip.start_date|date:'Y-m-d' }}"></div>
         <div><label for="te">To</label><input id="te" type="date" name="end_date" class="form-control" value="{{ trip.end_date|date:'Y-m-d' }}"></div>
         {% endif %}
-        <div class="tv-wide"><label for="tc">Countries</label><input id="tc" name="countries" class="form-control" maxlength="200" value="{{ trip.countries }}">{% if trip.where and trip.where != trip.countries %}<div class="tv-sub small">Shown as <b>{{ trip.where }}</b> &mdash; the bookings&rsquo; countries with any you type here.</div>{% endif %}</div>
+        <div class="tv-wide"><label for="tc">Other countries</label><input id="tc" name="countries" class="form-control" maxlength="200" value="{{ trip.countries }}" placeholder="Only countries with nothing booked yet"><div class="tv-sub small" data-countries-hint>{% comment %} TR-5, 16 Nov 2026. {% endcomment %}The countries come from the bookings &mdash; the hotels, the cars, where the flights land &mdash; and your home country is left out. Type a country here only if you are going there with nothing booked yet.{% if trip.where %} Shown now as <b>{{ trip.where }}</b>.{% endif %}</div></div>
         <div class="tv-wide"><label for="no">Notes</label><textarea id="no" name="notes" class="form-control" rows="4">{{ trip.notes }}</textarea></div>
         {% if not trip.by_bookings %}<div class="tv-wide tv-sub small">For planning before anything is booked. Once the trip has bookings with dates, its dates come from them.</div>{% endif %}
         <div class="tv-wide"><button type="submit" class="btn action-primary">Save trip</button>

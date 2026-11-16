@@ -56,6 +56,10 @@ class Booking(models.Model):
         ('ferry', 'Ferry'),
         ('transfer', 'Transfer'),
         ('activity', 'Activity'),
+        # TR-5, 16 Nov 2026 - a table booked at a restaurant (Demetri:
+        # "Let's do a Restaurant type"), from the restaurant, TheFork or
+        # OpenTable.
+        ('restaurant', 'Restaurant'),
         ('other', 'Other'),
     ]
     PAID = [
@@ -131,6 +135,11 @@ class Booking(models.Model):
     # the From and To Dates be based on uploaded reservations?").
     city = models.CharField(max_length=80, blank=True, default='')
     country = models.CharField(max_length=60, blank=True, default='')
+    # TR-5, 16 Nov 2026 - when a stay's or a restaurant's missing details
+    # (address, phone, check-in and check-out times) were last looked up
+    # on the web (Demetri: "more details for like hotels (address, phone
+    # number, check in and check out time, etc.)"). Once per booking.
+    web_checked = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -412,7 +421,12 @@ class Place(models.Model):
              ('nature', 'Park & nature'), ('shop', 'Shopping'),
              ('activity', 'Activity'), ('other', 'Other')]
     LOOKUP = [('', 'Typed'), ('waiting', 'Looking it up'),
-              ('found', 'Found'), ('failed', 'Not found')]
+              ('found', 'Found'), ('failed', 'Not found'),
+              # TR-5 - two or three places could be meant: the person
+              # picks one (Demetri, 16 Nov: "if it finds two or three
+              # options, then maybe the user must be given these options
+              # to choose from").
+              ('choose', 'Which one?')]
     trip = models.ForeignKey(Trip, on_delete=models.CASCADE,
                              related_name='places')
     name = models.CharField(max_length=160)
@@ -434,6 +448,15 @@ class Place(models.Model):
     started = models.DateTimeField(null=True, blank=True)
     added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
                                  blank=True, related_name='+')
+    # TR-5 - [{name, city, country, address, about}], at most three, while
+    # lookup is 'choose'.
+    options = models.JSONField(default=list, blank=True)
+    # TR-5 - the booking that made it real: a table booked at a restaurant
+    # on the wish list (Demetri: "Matching to the Wish List is
+    # necessary"). It then sits on the booking's day and time and shows
+    # once on the itinerary - as the booking.
+    booking = models.ForeignKey(Booking, on_delete=models.SET_NULL,
+                                null=True, blank=True, related_name='places')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
