@@ -302,7 +302,12 @@ def day_order(request, trip_id):
             trip=t, day=day, defaults={'keys': ','.join(keys),
                                        'updated_by': request.user})
     if request.headers.get('x-requested-with') == 'fetch':
-        return JsonResponse({'ok': True, 'keys': keys or []})
+        # TR-10 - whether the day now differs from the automatic order, so
+        # the page shows or hides "Your order" without reloading.
+        rows = day_rows(list(t.bookings.prefetch_related('travellers')),
+                        list(t.places.all()), day, saved_for(t))
+        return JsonResponse({'ok': True, 'keys': keys or [],
+                             'custom': bool(rows.custom)})
     if request.resolver_match.url_name.startswith('m_'):
         return _next(request, '/travel/m/trip/%d/?tab=itinerary' % t.pk)
     return _next(request, '/travel/%d/itinerary/' % t.pk)

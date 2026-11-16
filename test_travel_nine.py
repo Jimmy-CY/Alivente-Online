@@ -108,13 +108,19 @@ u = read(J(TA, 'urls.py'))
 ok("name='day_order'" in u and "name='m_day_order'" in u,
    'routes: the day\'s order, computer and phone')
 tp = read(J(TT, 'trip.html'))
-ok('data-grip' in tp and 'data-order-form' in tp and
-   "'X-Requested-With': 'fetch'" in tp and 'data-order-reset' in tp,
+# TR-10 (16 Nov) moved the dragging into travel/_reorder.html, shared with
+# the phone; the up / down buttons are gone (test_travel_ten.py).
+ok('data-grip' in tp and 'data-order-reset' in tp and
+   ('data-order-form' in tp or "include 'travel/_reorder.html'" in tp) and
+   "'X-Requested-With': 'fetch'" in (tp + read(J(TT, '_reorder.html'))
+                                      if os.path.isfile(J(TT, '_reorder.html'))
+                                      else tp),
    'COMPUTER: a grip to drag by; the order saved on drop; Back to automatic')
 mt = read(J(TT, 'm', 'trip.html'))
-ok('data-order-change' in mt and 'data-order-up' in mt and
-   'data-order-down' in mt and 'data-order-done' in mt,
-   'PHONE: Change order -> up / down buttons -> Done')
+ok(('data-order-change' in mt and 'data-order-up' in mt and
+    'data-order-down' in mt and 'data-order-done' in mt) or
+   ('data-grip' in mt and 'data-reorder' in mt),
+   'PHONE: a way to put a day in order (TR-10: drag the grip)')
 ok('data-arrive' in read(J(TT, '_booking_row.html')) and
    'data-arrive' in read(J(TT, 'm', '_row.html')) and
    'r.arrive' in read(J(TT, 'trip_pdf.html')),
@@ -126,7 +132,7 @@ hp = read(J(ROOT, 'pages', 'help_content', 'administration.html'))
 mh = read(J(TT, 'm', 'help.html'))
 ok('<strong>The order of a day.</strong>' in hp and
    'Back to automatic</strong>' in hp and
-   '<b>Change order</b>' in mh,
+   ('<b>Change order</b>' in mh or 'grip' in mh),
    'HELP: smart order, dragging, Change order, Back to automatic')
 
 # ==========================================================================
@@ -292,7 +298,8 @@ if have_db:
                'then the place with no time')
             ok('After you land, about 00:35 (after midnight)' in h and
                'check-in from 15:00' in h, '  "After you land, about 00:35"')
-            ok(h.count('data-grip') == 5 and 'data-custom-order' not in h,
+            ok(h.count('data-grip') == 5 and ('data-custom-order' not in h or
+                'data-order-status="2026-11-09" hidden' in h),
                '  a grip on every row; not "Your order" yet')
             keys = [k.split('"')[0] for k in h.split('data-key="')[1:]]
             mine = [keys[3], keys[4]] + keys[:3] + ['b999-start', 'junk']
@@ -306,19 +313,22 @@ if have_db:
                'the day dropped')
             h = day9(A.get(url).content.decode())
             ok(h.index('PAREA') < h.index('Kylemore') < h.index('Clybaun')
-               and 'data-custom-order' in h and 'data-order-reset' in h,
+               and 'data-custom-order' in h and
+               'data-order-status="2026-11-09" hidden' not in h and 'data-order-reset' in h,
                '  the itinerary in that order, "Your order · Back to '
                'automatic"')
             hm = M.get('/travel/m/trip/%d/?tab=itinerary' % t.pk
                        ).content.decode()
             m9 = hm.split('id="d20261109"', 1)[1].split('</section>', 1)[0]
             ok(m9.index('PAREA') < m9.index('Clybaun') and
-               'data-order-change' in hm and 'data-order-reset' in hm,
-               'THE PHONE shows the same order, with Change order')
+               ('data-order-change' in hm or 'data-grip' in hm) and
+               'data-order-reset' in hm,
+               'THE PHONE shows the same order, with a way to change it')
             hm = M.get('/travel/m/trip/%d/?tab=itinerary&order=2026-11-09'
                        % t.pk).content.decode()
-            ok(hm.count('data-order-up') == 5 and 'data-order-done' in hm,
-               '  Change order: up / down on each row of the day, Done')
+            m9 = hm.split('id="d20261109"', 1)[1].split('</section>', 1)[0]
+            ok(m9.count('data-order-up') == 5 or m9.count('data-grip') == 5,
+               '  every row of the day can be moved')
             k_parea = 'b%d-start' % parea.pk
             r = M.post('/travel/m/trip/%d/day-order/' % t.pk,
                        {'day': '2026-11-09', 'move': k_parea, 'dir': 'down',
@@ -333,7 +343,8 @@ if have_db:
             h = day9(A.get(url).content.decode())
             ok(not DayOrder.objects.filter(trip=t, day=D9).exists() and
                h.index('Clybaun') < h.index('PAREA') and
-               'data-custom-order' not in h,
+               ('data-custom-order' not in h or
+                'data-order-status="2026-11-09" hidden' in h),
                'BACK TO AUTOMATIC: the order gone, time order again')
             other = User.objects.create_user('tv9b', 'tv9b@example.com', 'x')
             other.user_permissions.add(perm)

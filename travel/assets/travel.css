@@ -110,3 +110,18 @@ html.tv-turn-90 body.tv-holding .tv-nav, html.tv-turn-270 body.tv-holding .tv-na
 .tv-order-row .tv-btn { min-width: 44px; padding: 8px 0; }
 .tv-order-row .tv-btn[disabled] { opacity: .35; }
 .tv-linkbtn { background: none; border: 0; padding: 0; color: var(--tv-teal); text-decoration: underline; font: inherit; cursor: pointer; }
+/* TR-10, 16 Nov 2026 - a day put in order by dragging the grip on the right of a row (Demetri: "cumbersome and not user intuitive" - the up / down buttons are gone). Only the grip drags; the rest of the row scrolls and opens as before. */
+.tv-drag { display: flex; align-items: center; gap: 2px; border-top: 1px solid var(--tv-line); transition: transform .16s ease; position: relative; }
+.tv-drag:first-of-type { border-top: 0; }
+.tv-drag > .tv-item { flex: 1 1 auto; min-width: 0; border-top: 0; padding: 10px 0; }
+.tv-drag:first-of-type > .tv-item { padding-top: 0; }
+.tv-grip { flex: none; display: flex; align-items: center; justify-content: center; width: 44px; height: 48px; margin-right: -10px; color: #9AA9AE; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: grab; }
+.tv-grip svg { fill: currentColor; }
+.tv-grip:focus-visible { outline: 2px solid var(--tv-teal); border-radius: 8px; }
+[data-reorder].tv-still .tv-drag { transition: none; }
+.tv-drag.is-lifted { transition: none; z-index: 5; background: #fff; border-radius: 12px; box-shadow: 0 10px 26px rgba(16,34,40,.25); border-top-color: transparent; }
+.tv-drag.is-lifted .tv-grip { color: var(--tv-teal); }
+[data-reorder].is-sorting { user-select: none; -webkit-user-select: none; }
+.tv-toast { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); transform: translate(-50%, 220%); display: flex; gap: 18px; align-items: center; background: #1D2B31; color: #fff; padding: 12px 18px; border-radius: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.25); z-index: 50; transition: transform .2s ease; font-size: 15px; white-space: nowrap; }
+.tv-toast.on { transform: translate(-50%, 0); }
+.tv-toast button { background: none; border: 0; color: #7FD3DA; font-weight: 700; font-size: 15px; padding: 0; }

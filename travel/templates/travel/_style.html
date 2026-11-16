@@ -114,8 +114,16 @@ a.tv-bk:hover b { color: var(--alv-accent); }
 .tv-drag > .tv-bk { flex: 1 1 auto; min-width: 0; }
 .tv-grip { flex: none; display: flex; align-items: center; padding: 0 8px 0 0; color: #9AA9AE; cursor: grab; }
 .tv-grip:hover { color: #0F6E77; }
-.tv-drag.is-dragging { opacity: .45; }
-.tv-drag.tv-drop-above { box-shadow: inset 0 3px 0 #0F6E77; }
-.tv-drag.tv-drop-below { box-shadow: inset 0 -3px 0 #0F6E77; }
+/* TR-10 - the row lifts and follows the pointer; the others slide aside; "Order saved - Undo". */
+.tv-grip { touch-action: none; user-select: none; -webkit-user-select: none; }
+.tv-grip:focus-visible { outline: 2px solid #0F6E77; outline-offset: 2px; border-radius: 4px; }
+[data-reorder] .tv-drag { transition: transform .16s ease; }
+[data-reorder].tv-still .tv-drag { transition: none; }
+.tv-drag.is-lifted { transition: none; z-index: 5; background: #fff; border-radius: 10px; box-shadow: 0 8px 22px rgba(16,34,40,.22); }
+.tv-drag.is-lifted .tv-grip { cursor: grabbing; color: #0F6E77; }
+[data-reorder].is-sorting { user-select: none; -webkit-user-select: none; }
+.tv-toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 140%); display: flex; gap: 16px; align-items: center; background: #1D2B31; color: #fff; padding: 10px 16px; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,.25); z-index: 2000; transition: transform .2s ease; font-size: .95rem; }
+.tv-toast.on { transform: translate(-50%, 0); }
+.tv-toast button { background: none; border: 0; color: #7FD3DA; font-weight: 700; padding: 0; cursor: pointer; }
 .tv-linkbtn { background: none; border: 0; padding: 0; color: #0F6E77; text-decoration: underline; cursor: pointer; font: inherit; }
 </style>

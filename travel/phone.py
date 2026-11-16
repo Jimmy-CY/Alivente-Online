@@ -53,7 +53,7 @@ ASSET_TYPES = {
 # Bump this AND the ?v= in travel/m/base.html together whenever the style
 # or script changes: an installed app keeps the old files until it moves.
 # test_travel_three.py checks the two agree.
-SW_VERSION = 'tv9-1'
+SW_VERSION = 'tv10-1'
 
 
 def page(request, template, ctx):
@@ -268,8 +268,6 @@ def trip(request, trip_id):
     return page(request, 'travel/m/trip.html', {
         'sub': sub, 'wish': [p for p in pl if not p.day],
         'itinerary': itinerary(t, bs, pl) if sub == 'itinerary' else [],
-        # TR-9 - the day being put in order (?order=YYYY-MM-DD): up / down.
-        'order_day': (request.GET.get('order') or '')[:10],
         'trip_days': [d for d, _ in itinerary(t, [], [])] if sub == 'wish'
         else [],
         'trip': t, 'days': list(days.items()), 'undated': undated,

@@ -1633,6 +1633,8 @@ ROUNDS = [
     # TR-9, 16 Nov 2026 - Release 89: the order of a day on the itinerary
     # (smart order; dragged, or up / down on the phone).
     '.bak_travel9',
+    # TR-10, 16 Nov 2026 - Release 90: drag a day into order, phone too.
+    '.bak_travel10',
 ]
 
 

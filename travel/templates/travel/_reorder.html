@@ -1,0 +1,161 @@
+{% comment %} TR-10, 16 Nov 2026 - the order of a day, by dragging a grip; the same on the phone and the computer.
+Demetri, 16 Nov: "I am not happy how the sorting happens on the mobile. It is cumbersome and not user intuitive."
+Each day is a [data-reorder] box (data-url, data-day, data-custom) holding rows [data-key], each with a grip [data-grip].
+Only the grip starts a drag (touch-action: none on it), so the rest of the row still scrolls the page and opens the booking.
+The row lifts and follows the finger; the others slide aside; near the top or bottom of the screen the page scrolls.
+On release the order is saved at once, and "Order saved - Undo" shows for a few seconds. Arrow keys on a focused grip move it too. {% endcomment %}
+<script>
+(function () {
+  if (window.__tvReorder) { return; }
+  window.__tvReorder = true;
+  var toast = null, toastTimer = null;
+
+  function rowsOf(box) {
+    return Array.prototype.filter.call(box.children, function (c) { return c.hasAttribute('data-key'); });
+  }
+  function keysOf(box) {
+    return rowsOf(box).map(function (r) { return r.getAttribute('data-key'); });
+  }
+  function arrange(box, keys) {
+    var rows = rowsOf(box), anchor = rows.length ? rows[rows.length - 1].nextSibling : null;
+    keys.forEach(function (k) {
+      var r = rows.filter(function (x) { return x.getAttribute('data-key') === k; })[0];
+      if (r) { box.insertBefore(r, anchor); }
+    });
+  }
+  function setCustom(box, on) {
+    box.setAttribute('data-custom', on ? '1' : '');
+    document.querySelectorAll('[data-order-status="' + box.getAttribute('data-day') + '"]').forEach(function (s) { s.hidden = !on; });
+  }
+  function post(box, fields) {
+    var data = new FormData(), tok = box.querySelector('input[name=csrfmiddlewaretoken]');
+    data.append('csrfmiddlewaretoken', tok ? tok.value : '');
+    data.append('day', box.getAttribute('data-day'));
+    Object.keys(fields).forEach(function (k) { data.append(k, fields[k]); });
+    return fetch(box.getAttribute('data-url'), {method: 'POST', body: data, credentials: 'same-origin',
+                                                headers: {'X-Requested-With': 'fetch'}})
+      .then(function (r) { if (!r.ok) { throw new Error(r.status); } return r.json(); });
+  }
+  function say(msg, undo) {
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'tv-toast';
+      toast.setAttribute('role', 'status');
+      document.body.appendChild(toast);
+    }
+    toast.innerHTML = '';
+    var t = document.createElement('span');
+    t.textContent = msg;
+    toast.appendChild(t);
+    if (undo) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = 'Undo';
+      b.setAttribute('data-order-undo', '');
+      b.addEventListener('click', function () { clearTimeout(toastTimer); toast.classList.remove('on'); undo(); });
+      toast.appendChild(b);
+    }
+    toast.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('on'); }, 5000);
+  }
+  function saved(box, before, wasCustom, custom) {
+    setCustom(box, custom !== false);
+    say('Order saved', function () {
+      var now = keysOf(box);
+      arrange(box, before);
+      (wasCustom ? post(box, {keys: before.join(',')}) : post(box, {reset: '1'}))
+        .then(function () { setCustom(box, wasCustom); say('Back as it was'); })
+        .catch(function () { arrange(box, now); say('Could not undo - please try again'); });
+    });
+  }
+  function commit(box, before, wasCustom) {
+    var after = keysOf(box);
+    if (after.join(',') === before.join(',')) { return; }
+    post(box, {keys: after.join(',')})
+      .then(function (j) { saved(box, before, wasCustom, j && j.custom); })
+      .catch(function () { arrange(box, before); say('The new order could not be saved - please try again'); });
+  }
+
+  function start(box, row, grip, e) {
+    var rows = rowsOf(box), idx = rows.indexOf(row);
+    if (rows.length < 2 || idx < 0) { return; }
+    var before = keysOf(box), wasCustom = box.getAttribute('data-custom') === '1';
+    var y0 = window.scrollY, rects = rows.map(function (r) { return r.getBoundingClientRect(); });
+    var mids = rects.map(function (r) { return r.top + y0 + r.height / 2; });
+    var gap = rects.length > 1 ? Math.max(0, rects[1].top - rects[0].bottom) : 0;
+    var step = rects[idx].height + gap, startY = e.clientY, lastY = e.clientY, target = idx, raf = null;
+    row.classList.add('is-lifted');
+    box.classList.add('is-sorting');
+    try { grip.setPointerCapture(e.pointerId); } catch (x) {}
+
+    function place() {
+      var dy = (lastY - startY) + (window.scrollY - y0), mid = mids[idx] + dy;
+      row.style.transform = 'translateY(' + dy + 'px)';
+      target = idx;
+      mids.forEach(function (m, i) {
+        if (i < idx && mid < m) { target = Math.min(target, i); }
+        if (i > idx && mid > m) { target = Math.max(target, i); }
+      });
+      rows.forEach(function (r, i) {
+        if (r === row) { return; }
+        var shift = (i > idx && i <= target) ? -step : (i < idx && i >= target) ? step : 0;
+        r.style.transform = shift ? 'translateY(' + shift + 'px)' : '';
+      });
+    }
+    function edge() {
+      var pad = 70, v = lastY < pad ? -10 : lastY > window.innerHeight - pad ? 10 : 0;
+      if (v) { window.scrollBy(0, v); place(); }
+      raf = window.requestAnimationFrame(edge);
+    }
+    function move(ev) { lastY = ev.clientY; place(); ev.preventDefault(); }
+    function end() {
+      grip.removeEventListener('pointermove', move);
+      grip.removeEventListener('pointerup', end);
+      grip.removeEventListener('pointercancel', end);
+      if (raf) { window.cancelAnimationFrame(raf); }
+      box.classList.add('tv-still');
+      rows.forEach(function (r) { r.style.transform = ''; });
+      row.classList.remove('is-lifted');
+      box.classList.remove('is-sorting');
+      if (target !== idx) {
+        var ref = rows[target];
+        box.insertBefore(row, target > idx ? ref.nextSibling : ref);
+      }
+      void box.offsetHeight;
+      box.classList.remove('tv-still');
+      commit(box, before, wasCustom);
+    }
+    grip.addEventListener('pointermove', move);
+    grip.addEventListener('pointerup', end);
+    grip.addEventListener('pointercancel', end);
+    raf = window.requestAnimationFrame(edge);
+  }
+
+  document.querySelectorAll('[data-reorder]').forEach(function (box) {
+    box.addEventListener('pointerdown', function (e) {
+      var grip = e.target.closest('[data-grip]');
+      if (!grip || !box.contains(grip) || (e.pointerType === 'mouse' && e.button !== 0)) { return; }
+      var row = grip.closest('[data-key]');
+      if (!row || row.parentNode !== box) { return; }
+      e.preventDefault();
+      start(box, row, grip, e);
+    });
+    box.addEventListener('click', function (e) {
+      if (e.target.closest('[data-grip]')) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+    box.addEventListener('keydown', function (e) {
+      var grip = e.target.closest('[data-grip]');
+      if (!grip || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) { return; }
+      e.preventDefault();
+      var row = grip.closest('[data-key]'), rows = rowsOf(box), i = rows.indexOf(row);
+      var j = e.key === 'ArrowUp' ? i - 1 : i + 1;
+      if (j < 0 || j >= rows.length) { return; }
+      var before = keysOf(box), wasCustom = box.getAttribute('data-custom') === '1';
+      box.insertBefore(row, j < i ? rows[j] : rows[j].nextSibling);
+      grip.focus();
+      commit(box, before, wasCustom);
+    });
+  });
+})();
+</script>

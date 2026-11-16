@@ -3331,7 +3331,9 @@ $suites = @(
     # Used; your own pass first; Google Wallet explained after the flight.
     'test_travel_eight.py',
     # TR-9, 16 Nov 2026 - Release 89: the order of a day on the itinerary.
-    'test_travel_nine.py'
+    'test_travel_nine.py',
+    # TR-10, 16 Nov 2026 - Release 90: drag a day into order, phone too.
+    'test_travel_ten.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can
