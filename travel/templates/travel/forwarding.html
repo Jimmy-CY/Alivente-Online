@@ -9,6 +9,7 @@
 
 <div class="page-action-buttons">
     <a href="{% url 'travel:check' %}" class="btn action-secondary"><i class="fas fa-inbox"></i> To check</a>
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
     <a href="{% url 'travel:trips' %}" class="btn action-back" aria-label="Back to Travel">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>

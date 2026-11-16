@@ -8,6 +8,16 @@
 {% if checks %}<a href="{% url 'travel:m_check' %}" class="tv-card tv-banner" data-to-check><span class="tv-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span><span style="flex: 1"><b>{{ checks }} to check</b><span class="tv-muted" style="display: block">Read from emails you forwarded</span></span><span class="tv-btn" style="min-height: 36px">Review</span></a>{% endif %}
 
 {% if not trip %}
+{% if last %}{% comment %} TR-7, 16 Nov 2026 - nothing ahead: the last trip, then the earlier ones. {% endcomment %}
+<a href="{% url 'travel:m_trip' last.pk %}" class="tv-card" data-last-trip>
+  <div class="tv-row"><p class="tv-h2">{{ last.name }}</p><span class="tv-tag">Last trip</span></div>
+  <div class="tv-muted">{{ last.start|date:"j M" }}{% if last.end and last.end != last.start %} – {{ last.end|date:"j M Y" }}{% endif %}{% if last.where %} · {{ last.where }}{% endif %}</div>
+  {% if last.money.any %}<div class="tv-row"><span>Total</span><b>{{ last.money.total }}</b></div>{% endif %}
+  {% if last.owing %}<div style="color: var(--tv-warn); font-weight: 600" data-owing>{{ last.owing }} still To pay &middot; settle up on the trip</div>{% endif %}
+</a>
+{% if earlier %}<p class="tv-h3">Earlier trips</p>
+<section class="tv-card" data-earlier>{% for t in earlier %}<a href="{% url 'travel:m_trip' t.pk %}" class="tv-item" style="grid-template-columns: minmax(0, 1fr) auto"><span><b>{{ t.name }}</b><span class="tv-muted" style="display: block">{{ t.start|date:"j M" }}{% if t.end and t.end != t.start %} – {{ t.end|date:"j M Y" }}{% endif %}</span></span><span class="tv-muted" aria-hidden="true">›</span></a>{% endfor %}</section>{% endif %}
+{% endif %}
 <section class="tv-card" data-no-trip><p class="tv-h2">No trip coming up</p><p class="tv-muted" style="margin: 0">Forward a booking email to <b>{{ address|default:"the trips address" }}</b>, or share a ticket to Travel, and it will be waiting under To check.</p></section>
 {% elif on_now %}
 {% if passes_today %}<a href="{% url 'travel:m_passes' %}" class="tv-btn wide" data-passes-today><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M16 12h2M3 9h15"/></svg> Boarding passes</a>{% endif %}

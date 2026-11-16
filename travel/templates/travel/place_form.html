@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
 {% load help_modal_tags %}
-{% block title %}{% if p %}{{ p.name }}{% else %}Add a place{% endif %} - Travel{% endblock %}
+{% block title %}{% if p %}{{ p.name }}{% else %}Things to do{% endif %} - Travel{% endblock %}
 {% comment %} TRAVEL - TR-4, 15 Nov 2026. Add a place (a name, a link, or what Google Maps shared) - Claude looks it up - or change one. {% endcomment %}
 {% block content %}
 {% include 'travel/_style.html' %}
 {% if p and p.lookup == 'waiting' %}<meta http-equiv="refresh" content="5">{% endif %}
 <h2 class="page-title-h2">TRAVEL</h2>
-<h4 class="page-subtitle-h4">{% if p %}{{ p.name|upper }}{% else %}ADD A PLACE &middot; {{ trip.name|upper }}{% endif %}</h4>
+<h4 class="page-subtitle-h4">{% if p %}{{ p.name|upper }}{% else %}THINGS TO DO &middot; {{ trip.name|upper }}{% endif %}</h4>
 <div class="page-action-buttons">
     {% if p %}<a href="{{ p.map_url }}" target="_blank" rel="noopener" class="btn action-secondary"><i class="fas fa-map"></i> Map</a>{% if p.website %}<a href="{{ p.website }}" target="_blank" rel="noopener" class="btn action-secondary"><i class="fas fa-globe"></i> Website</a>{% endif %}{% endif %}
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
     <a href="{% if p and not p.day %}{% url 'travel:trip_wishlist' trip.pk %}{% else %}{% url 'travel:trip_itinerary' trip.pk %}{% endif %}" class="btn action-back" aria-label="Back to the trip"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
 </div>
 <div class="tv-wrap" style="max-width: 820px; display: flex; flex-direction: column; gap: 14px">

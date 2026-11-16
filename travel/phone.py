@@ -111,6 +111,12 @@ def on_day(bs, day):
             b.kind, ''), 'during': 'Staying at'}[what]
         b.when = '' if what == 'during' else (
             (b.start_time if what == 'start' else b.end_time) or '')
+        # TR-6, 16 Nov 2026 - which night of the stay this is (Demetri:
+        # the stay's cost on all three days "looks deceiving").
+        b.nights = (b.end_date - b.start_date).days \
+            if b.kind == 'stay' and b.start_date and b.end_date else None
+        b.night = (day - b.start_date).days + 1 \
+            if what == 'during' and b.nights else None
         out.append(b)
     return out
 
@@ -177,6 +183,19 @@ def today(request):
         ctx['passes_today'] = BoardingPass.objects.filter(
             booking__trip=trip, booking__start_date__in=(
                 day, day + dt.timedelta(days=1))).count()
+    if not trip:
+        # TR-7, 16 Nov 2026 (Demetri: "on the Today Page of the App, I
+        # don't like that it is blank. The same principle must apply"):
+        # nothing on or ahead - the last trip, then the ones before it.
+        past = sorted([t for t in trips if t.end and t.end < day],
+                      key=lambda t: t.start, reverse=True)
+        if past:
+            from .compare import unsettled
+            last = past[0]
+            due = unsettled(last, list(last.bookings.all()), day)
+            last.owing = eur(sum((b.due_eur or 0) for b in due)) \
+                if due else ''
+            ctx['last'], ctx['earlier'] = last, past[1:6]
     return page(request, 'travel/m/today.html', ctx)
 
 
@@ -193,8 +212,17 @@ def trips(request):
     else:
         sel = sorted([t for t in rows if not (t.end and t.end < day)],
                      key=lambda t: t.start or far)
+    # TR-7 - nothing ahead: the past trips, newest first, said so.
+    auto_past = not past and not sel and any(t.end and t.end < day
+                                             for t in rows)
+    if auto_past:
+        sel = sorted([t for t in rows if t.end and t.end < day],
+                     key=lambda t: t.start or far, reverse=True)
+    for t in sel:
+        t.past = bool(t.end and t.end < day)
     return page(request, 'travel/m/trips.html', {
-        'trips': sel, 'past': past, 'tab': 'trips',
+        'trips': sel, 'past': past, 'tab': 'trips', 'auto_past': auto_past,
+        'can_compare': len(rows) > 1,
         'checks': inbox.open_count(request.user)})
 
 
@@ -245,6 +273,10 @@ def pass_card(p):
     p.flight = ('%s %s' % (info.get('carrier', ''), info.get('flight', ''))
                 ).strip() or b.segment or b.title
     p.seat_shown = p.seat or info.get('seat', '')
+    # TR-7, 16 Nov 2026 - an airline's own "Add to Google Wallet" link stops
+    # working once the flight is over (Cyprus Airways answers
+    # CKI_BOARDINGPASS_NONEFOUND), so it is offered only before then.
+    p.over = flown(b, timezone.localtime().replace(tzinfo=None))
     return p
 
 

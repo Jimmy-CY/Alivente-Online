@@ -8,6 +8,7 @@
 <h4 class="page-subtitle-h4">BOARDING PASSES</h4>
 <div class="page-action-buttons">
     <a href="{% if every %}{% url 'travel:passes' %}{% else %}?show=all{% endif %}" class="btn action-secondary">{% if every %}Only the ones to come{% else %}Earlier passes{% endif %}</a>
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
     <a href="{% url 'travel:trips' %}" class="btn action-back" aria-label="Back to Travel"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
 </div>
 <div class="tv-wrap">
@@ -24,7 +25,7 @@
     <div class="tv-wpass-foot">
       <div class="tv-row" style="width: 100%"><div><div class="tv-sub small">Passenger</div><b>{{ p.name|default:"–" }}</b></div><a href="{% url 'travel:booking' p.booking.pk %}" class="small">The booking</a></div>
       {% if p.svg %}<div class="tv-passcode" data-barcode="{{ p.format }}" style="max-width: 240px; margin: 6px auto 0">{{ p.svg|safe }}</div>{% else %}<p class="tv-sub small" style="margin: 0">This barcode cannot be drawn here &mdash; open the airline&rsquo;s PDF on the booking.</p>{% endif %}
-      {% if p.wallet_link %}<a href="{{ p.wallet_link }}" target="_blank" rel="noopener" class="small">Add to Google Wallet</a>{% endif %}
+      {% if p.wallet_link and not p.over %}<a href="{{ p.wallet_link }}" target="_blank" rel="noopener" class="small">Add to Google Wallet</a>{% endif %}
     </div>
   </article>
 {% endfor %}

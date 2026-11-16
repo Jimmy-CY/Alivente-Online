@@ -1623,6 +1623,10 @@ ROUNDS = [
     '.bak_travel4',
     # TR-5, 16 Nov 2026 - Release 86: Travel - restaurants, and the review.
     '.bak_travel5',
+    # TR-6, 16 Nov 2026 - Release 87: a stay's cost once on the itinerary.
+    '.bak_travel6',
+    # TR-7, 16 Nov 2026 - Release 88: settling up, comparing trips.
+    '.bak_travel7',
 ]
 
 

@@ -9,17 +9,18 @@
 
 <div class="page-action-buttons">
     <a href="{% url 'travel:booking_new' trip.pk %}" class="btn action-primary"><i class="fas fa-plus"></i> Add booking</a>
-    <a href="{% url 'travel:place_new' trip.pk %}" class="btn action-secondary"><i class="fas fa-map-marker-alt"></i> Add a place</a>
+    <a href="{% url 'travel:place_new' trip.pk %}" class="btn action-secondary"><i class="fas fa-plus"></i> Things to do</a>
     {% if is_owner %}<a href="{% url 'travel:trip_share' trip.pk %}" class="btn action-secondary"><i class="fas fa-share-alt"></i> Share</a>{% endif %}
     <a href="{% url 'travel:trip_edit' trip.pk %}" class="btn action-secondary"><i class="fas fa-pen"></i> Edit trip</a>
     {% comment %} TR-4 (Demetri, 15 Nov): the trip as a PDF, summary or detailed, to download or share (WhatsApp, mail) through the house PDF viewer. TR-5 (16 Nov: "I don't want two buttons for PDF. It should be one, but with a choice of Summary or Detailed"). {% endcomment %}
     <details class="tv-menu" data-pdf-menu><summary class="btn action-secondary" title="Make the trip into a PDF"><i class="fas fa-file-pdf"></i> PDF <i class="fas fa-caret-down" aria-hidden="true"></i></summary>
         <div class="tv-menu-pop">
-            <button type="button" data-trip-pdf="summary" onclick="openPdfViewer('{% url 'travel:trip_pdf' trip.pk %}?kind=summary', '{{ trip.name|escapejs }} - summary', 'trip_{{ trip.name|slugify }}_summary.pdf')"><b>Summary</b><small>Day by day, the places, the costs</small></button>
-            <button type="button" data-trip-pdf="detailed" onclick="openPdfViewer('{% url 'travel:trip_pdf' trip.pk %}?kind=detailed', '{{ trip.name|escapejs }} - detailed', 'trip_{{ trip.name|slugify }}_detailed.pdf')"><b>Detailed</b><small>Every day with addresses, phones and times, then every booking in full</small></button>
+            <button type="button" data-trip-pdf="summary" onclick="this.closest('details').open = false; openPdfViewer('{% url 'travel:trip_pdf' trip.pk %}?kind=summary', '{{ trip.name|escapejs }} - summary', 'trip_{{ trip.name|slugify }}_summary.pdf')"><b>Summary</b><small>Day by day, the places, the costs</small></button>
+            <button type="button" data-trip-pdf="detailed" onclick="this.closest('details').open = false; openPdfViewer('{% url 'travel:trip_pdf' trip.pk %}?kind=detailed', '{{ trip.name|escapejs }} - detailed', 'trip_{{ trip.name|slugify }}_detailed.pdf')"><b>Detailed</b><small>Every day with addresses, phones and times, then every booking in full</small></button>
         </div>
     </details>
     {% if is_owner %}<a href="{% url 'travel:trip_merge' trip.pk %}" class="btn action-secondary"><i class="fas fa-object-group"></i> Merge</a>{% endif %}
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
     <a href="{% url 'travel:trips' %}" class="btn action-back" aria-label="Back to Travel">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
@@ -27,6 +28,25 @@
 
 <div class="tv-wrap">
 {% include 'travel/_requests.html' %}
+{% if settle %}{% comment %} TR-7, 16 Nov 2026 (Demetri: "Once all the trip days have passed, would it make sense for the system to set all Reservations as paid (maybe to ask first)?"). Asked - never done by itself. {% endcomment %}
+<section class="form-card tv-settle" data-settle style="margin-bottom: 14px">
+    <h3 class="form-section-title" style="margin: 0 0 6px">This trip ended on {{ end|date:"D j M" }} &mdash; is everything paid?</h3>
+    <p style="margin: 0 0 6px">{{ settle|length }} booking{{ settle|pluralize }} still say{{ settle|length|pluralize:"s," }} <b>To pay</b>. Marking them paid makes the trip&rsquo;s costs final, so it compares fairly with your other trips.</p>
+    <form method="post" action="{% url 'travel:trip_settle' trip.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+        {% for b in settle %}<div class="tv-settle-row">
+            <input type="checkbox" name="b" value="{{ b.pk }}" checked aria-label="{{ b.title }} paid" style="width: 18px; height: 18px">
+            <span><b>{{ b.title }}</b><span class="tv-sub" style="display: block">{{ b.kind_label }}{% if b.start_date %} &middot; {{ b.start_date|date:"j M" }}{% endif %} &middot; {{ b.status_label }}</span></span>
+            <b style="text-align: right">{{ b.eur_label|default:"rate pending" }}</b>
+            <label class="small" style="margin: 0">Paid in euros<input name="eur_{{ b.pk }}" value="{{ b.amount_eur|default_if_none:'' }}" inputmode="decimal" class="form-control form-control-sm" aria-label="{{ b.title }} - amount paid in euros"></label>
+        </div>{% endfor %}
+        <div class="tv-acts">
+            <button type="submit" name="what" value="paid" class="btn action-primary" title="Mark the ticked bookings Paid">Mark ticked ones paid</button>
+            <button type="submit" name="what" value="leave" class="btn action-secondary" title="Keep them as they are and do not ask again">Leave as it is</button>
+            <button type="submit" name="what" value="later" class="btn btn-link" title="Ask again in seven days">Ask me again in a week</button>
+        </div>
+    </form>
+</section>
+{% endif %}
 <p class="tv-sub" data-trip-span>{% if start %}{{ start|date:"D j M" }}{% if end and end != start %} – {{ end|date:"D j M Y" }}{% if nights %} · {{ nights }} night{{ nights|pluralize }}{% endif %}{% else %} {{ start|date:"Y" }}{% endif %}{% else %}No dates yet{% endif %}{% if trip.where %} · {{ trip.where }}{% endif %}</p>
 
 <nav class="tv-tabs" aria-label="Trip">
@@ -68,7 +88,7 @@
     <nav class="tv-chips" aria-label="Days">{% for day, rows in itinerary %}<a class="tv-chip" href="#d{{ day|date:'Ymd' }}">{{ day|date:"D j" }}</a>{% endfor %}{% if wish %}<a class="tv-chip" href="#todo">Things to do</a>{% endif %}</nav>
     {% for day, rows in itinerary %}
     <section class="form-card tv-day" id="d{{ day|date:'Ymd' }}" data-itinerary-day>
-        <div class="tv-row"><h3>{{ day|date:"l j F" }}</h3><a href="{% url 'travel:place_new' trip.pk %}?day={{ day|date:'Y-m-d' }}" class="small"><i class="fas fa-plus" aria-hidden="true"></i> Add a place</a></div>
+        <div class="tv-row"><h3>{{ day|date:"l j F" }}</h3><a href="{% url 'travel:place_new' trip.pk %}?day={{ day|date:'Y-m-d' }}" class="small"><i class="fas fa-plus" aria-hidden="true"></i> Things to do</a></div>
         {% for r in rows %}{% if r.is_place %}{% include 'travel/_place_row.html' with p=r %}{% else %}{% include 'travel/_booking_row.html' with b=r %}{% endif %}{% empty %}<p class="tv-sub small" style="margin: 0">Nothing planned{% if wish %} &mdash; move something here from the <a href="{% url 'travel:trip_wishlist' trip.pk %}">things to do</a>{% endif %}.</p>{% endfor %}
     </section>
     {% endfor %}
@@ -83,7 +103,7 @@
 {% elif tab == 'wish' %}
     {% comment %} TR-4 - places with no day yet. {% endcomment %}
     <section class="form-card" data-wishlist>
-        <div class="tv-row"><h3 class="form-section-title" style="margin: 0">Things to do</h3><a href="{% url 'travel:place_new' trip.pk %}" class="btn action-primary btn-sm"><i class="fas fa-plus"></i> Add a place</a></div>
+        <div class="tv-row"><h3 class="form-section-title" style="margin: 0">Things to do</h3><a href="{% url 'travel:place_new' trip.pk %}" class="btn action-primary btn-sm"><i class="fas fa-plus"></i> Things to do</a></div>
         {% for p in wish %}
         <div data-wish-item>
             {% include 'travel/_place_row.html' %}

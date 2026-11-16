@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import phone, report, views, views_inbox, views_places
+from . import compare, phone, report, views, views_inbox, views_places
 
 app_name = 'travel'
 
@@ -13,6 +13,10 @@ urlpatterns = [
     path('<int:trip_id>/itinerary/', views.trip, name='trip_itinerary'),
     path('passes/', phone.passes, name='passes'),
     path('<int:trip_id>/pdf/', report.trip_pdf, name='trip_pdf'),
+    # TR-7 - settling up after a trip; comparing trips.
+    path('<int:trip_id>/settle/', compare.trip_settle, name='trip_settle'),
+    path('compare/', compare.compare, name='compare'),
+    path('m/compare/', compare.compare, name='m_compare'),
     path('m/trip/<int:trip_id>/pdf/', report.trip_pdf, name='m_trip_pdf'),
     path('<int:trip_id>/wish-list/', views.trip, name='trip_wishlist'),
     path('<int:trip_id>/place/new/', views_places.place_new,

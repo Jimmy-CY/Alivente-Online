@@ -3321,7 +3321,12 @@ $suites = @(
     'test_travel_four.py',
     # TR-5, 16 Nov 2026 - Release 86: Travel - restaurants, the wish list
     # matched to bookings, one PDF button, countries without home.
-    'test_travel_five.py'
+    'test_travel_five.py',
+    # TR-6, 16 Nov 2026 - Release 87: a stay's cost once on the itinerary.
+    'test_travel_six.py',
+    # TR-7, 16 Nov 2026 - Release 88: settling up after a trip, comparing
+    # trips, past trips when nothing is ahead.
+    'test_travel_seven.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

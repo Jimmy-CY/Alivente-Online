@@ -287,8 +287,15 @@ def trips(request):
         countries.update(t.where_list)
         t.past = bool(end and end < today)
         rows.append(t)
+    auto_past = False
     if show == 'upcoming':
         sel = [t for t in rows if not t.past]
+        # TR-7, 16 Nov 2026 (Demetri: "I don't like that Personal ->
+        # Travel is blank until I press Past. If there are not upcoming,
+        # then it must show the past ones in descending date order
+        # (highlighting that they are Past).")
+        if not sel and any(t.past for t in rows):
+            sel, auto_past = [t for t in rows if t.past], True
     elif show == 'past':
         sel = [t for t in rows if t.past]
     elif show.isdigit():
@@ -298,9 +305,19 @@ def trips(request):
     else:
         show, sel = 'all', rows
     far = dt.date(9999, 1, 1)
-    sel.sort(key=lambda t: (t.start or far), reverse=(show == 'past'))
+    sel.sort(key=lambda t: (t.start or far),
+             reverse=(show == 'past' or auto_past))
+    # TR-7 - a finished trip with something still To pay says so.
+    from .compare import unsettled
+    for t in sel:
+        due = unsettled(t, list(t.bookings.all()), today) if t.past else []
+        t.owing = eur(sum((b.due_eur or Decimal('0')) for b in due)) \
+            if due else ''
     return render(request, 'travel/trips.html', {
         'trips': sel, 'show': show, 'years': sorted(years, reverse=True),
+        'auto_past': auto_past,
+        'n_upcoming': len([t for t in rows if not t.past]),
+        'n_past': len([t for t in rows if t.past]),
         'countries': sorted(countries), 'count': len(rows),
         'checks': inbox.open_count(request.user),
         'address': inbox.inbox_address(),
@@ -373,7 +390,14 @@ def trip(request, trip_id):
         # wish list (places with no day yet).
         'itinerary': itinerary(t, bs, pl) if tab == 'itinerary' else [],
         'wish': [p for p in pl if not p.day],
-        'trip_days': days_of(start, end)})
+        'trip_days': days_of(start, end),
+        # TR-7 - after the trip: still To pay? (asked, never done alone)
+        'settle': settle_rows(t, bs)})
+
+
+def settle_rows(t, bs):
+    from .compare import unsettled
+    return unsettled(t, bs)
 
 
 @travel_view

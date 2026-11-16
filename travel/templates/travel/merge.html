@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load help_modal_tags %}
 {% block title %}Merge trips - Travel{% endblock %}
 {% comment %} TRAVEL - TR-2, 15 Nov 2026. Merge another trip into this one: a preview first; the other trip's owner is asked when it is not yours. {% endcomment %}
 {% block content %}
@@ -7,6 +8,7 @@
 <h4 class="page-subtitle-h4">MERGE INTO {{ trip.name|upper }}</h4>
 
 <div class="page-action-buttons">
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
     <a href="{% url 'travel:trip' trip.pk %}" class="btn action-back" aria-label="Back to the trip">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
@@ -33,4 +35,5 @@
 </section>
 {% endif %}
 </div>
+{% render_help_modal "travel" %}
 {% endblock %}

@@ -16,7 +16,7 @@
       <div class="tv-row" style="width: 100%"><div><div class="tv-muted tv-small">Passenger</div><b>{{ p.name|default:"–" }}</b></div>{% if p.info.seq %}<div style="text-align: right"><div class="tv-muted tv-small">Seq</div><b>{{ p.info.seq }}</b></div>{% endif %}</div>
       {% if p.svg %}<div data-barcode="{{ p.format }}" style="width: 100%; display: flex; justify-content: center">{{ p.svg|safe }}</div>{% else %}<p class="tv-muted" style="margin: 0">This barcode cannot be drawn here - open the airline&rsquo;s PDF on the booking.</p>{% endif %}
       <div class="tv-muted tv-small" style="text-align: center">Show at security and the gate · turn the screen brightness up</div>
-      {% if p.wallet_link %}<a href="{{ p.wallet_link }}" class="tv-btn wide" style="background: #1D2B31; border-color: #1D2B31" target="_blank" rel="noopener">Add to Google Wallet</a>{% endif %}
+      {% if p.wallet_link and not p.over %}<a href="{{ p.wallet_link }}" class="tv-btn wide" style="background: #1D2B31; border-color: #1D2B31" target="_blank" rel="noopener">Add to Google Wallet</a>{% endif %}
       <a href="{% url 'travel:m_booking' p.booking.pk %}" class="tv-small">The booking</a>
     </div>
   </article>

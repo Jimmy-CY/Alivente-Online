@@ -72,6 +72,29 @@ a.tv-bk:hover b { color: var(--alv-accent); }
 .tv-menu-pop button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--alv-ink); text-align: left; }
 .tv-menu-pop button:hover, .tv-menu-pop button:focus { background: var(--alv-surface); }
 .tv-menu-pop small { color: var(--alv-ink-soft); }
+/* TR-7, 16 Nov 2026 - past trips, ticking trips to compare, settling up. */
+.tv-steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+@media screen and (max-width: 575.98px) { .tv-phone.tv-phone-wide { grid-template-columns: 1fr !important; } }
+.tv-pickcard { display: flex; flex-direction: column; gap: 6px; }
+.tv-pickcard > .tv-card { flex: 1; }
+.tv-pick { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; margin: 0; padding-left: 4px; cursor: pointer; }
+.tv-pick input { width: 18px; height: 18px; }
+.tv-pasttag { color: var(--alv-ink-soft); }
+.tv-note { padding: 10px 14px; border-radius: var(--alv-radius); border: 1px solid var(--alv-line); background: var(--alv-surface); }
+.tv-settle { border: 2px solid var(--alv-warn-ink); }
+.tv-settle-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) 110px 130px; gap: 8px 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--alv-line-soft); }
+.tv-cmp { width: 100%; border-collapse: collapse; min-width: 640px; }
+.tv-cmp th, .tv-cmp td { padding: 9px 8px; text-align: left; vertical-align: top; border-top: 1px solid var(--alv-line-soft); }
+.tv-cmp thead th { border-top: 0; color: var(--alv-ink-soft); font-weight: 600; font-size: 0.85rem; }
+.tv-cmp tr.is-strong td, .tv-cmp tr.is-strong th { border-top: 2px solid var(--alv-ink); font-weight: 700; }
+.tv-low { color: var(--alv-good); font-weight: 700; font-size: 0.78rem; }
+.tv-more { color: var(--alv-warn-ink); font-weight: 700; font-size: 0.78rem; }
+.tv-split { display: flex; height: 22px; border-radius: 6px; overflow: hidden; min-width: 4px; }
+.tv-split span { display: block; height: 100%; }
+.tv-key { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; }
+@media screen and (max-width: 575.98px) {
+  .tv-settle-row { grid-template-columns: 28px minmax(0, 1fr); }
+}
 .tv-detail { display: block; color: var(--alv-ink-soft); font-size: 0.85rem; }
 .tv-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.2rem; font-weight: 700; letter-spacing: .06em; }
 @media screen and (max-width: 575.98px) {

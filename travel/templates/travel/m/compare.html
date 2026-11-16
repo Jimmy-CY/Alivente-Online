@@ -1,0 +1,21 @@
+{% extends 'travel/m/base.html' %}
+{% comment %} TR-7, 16 Nov 2026 - trips side by side on the phone: tick them, then the main figures. The full report is on the computer. {% endcomment %}
+{% block title %}Compare trips - Travel{% endblock %}
+{% block top %}<div style="min-width: 0"><a class="tv-back" href="{% url 'travel:m_trips' %}"><span aria-hidden="true">‹</span> Trips</a><h1>Compare{% if figs %} {{ figs|length }} trips{% endif %}</h1></div>{% endblock %}
+{% block content %}
+{% if not figs %}
+<form method="get" class="tv-card tv-form" data-compare-pick>
+  <p class="tv-h2">Tick two or more trips</p>
+  {% for t in every %}<label style="display: flex; gap: 10px; align-items: center; min-height: 40px"><input type="checkbox" name="t" value="{{ t.pk }}"{% if t.pk in ids %} checked{% endif %} style="width: 20px; height: 20px"> <span><b>{{ t.name }}</b>{% if t.start %} <span class="tv-muted tv-small">{{ t.start|date:"M Y" }}</span>{% endif %}</span></label>{% empty %}<p class="tv-muted" style="margin: 0">No trips yet.</p>{% endfor %}
+  <button type="submit" class="tv-btn wide">Compare</button>
+</form>
+{% else %}
+{% for f in figs %}<section class="tv-card" style="border-top: 4px solid {{ f.colour }}"><div class="tv-row"><b>{{ f.trip.name }}</b><b>{{ f.total_label }}</b></div><div class="tv-muted tv-small">{{ f.nights }} night{{ f.nights|pluralize }}{% if f.per_day_label %} · {{ f.per_day_label }} a day{% endif %}{% if f.per_person_label %} · {{ f.per_person_label }} each{% endif %}</div></section>{% endfor %}
+{% for r in rows %}<section class="tv-card" data-compare-row>
+  <b>{{ r.label }}</b>
+  <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; font-size: 14px">{% for c in r.cells %}<span style="color: {{ c.colour }}">{{ c.name }}</span><b>{% if c.v %}{{ c.v }}{% if c.low %} <span style="color: var(--tv-good)">lowest</span>{% endif %}{% else %}<span class="tv-muted">none</span>{% endif %}</b>{% endfor %}</div>
+</section>{% endfor %}
+{% if notes %}<section class="tv-card">{% for n in notes %}<p style="margin: 0">• {{ n }}</p>{% endfor %}</section>{% endif %}
+<p class="tv-muted tv-small" style="text-align: center; margin: 0">The full report, with every hotel per night, is on the computer under Travel → Compare.</p>
+{% endif %}
+{% endblock %}

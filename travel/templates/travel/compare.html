@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}Compare trips - Travel{% endblock %}
+{% comment %} TRAVEL - TR-7, 16 Nov 2026. Trips side by side (Demetri: "compare flight costs, accommodation costs (per night), car rental (per day), trains, etc."). travel/compare.py works the figures out. {% endcomment %}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">COMPARE TRIPS</h4>
+<div class="page-action-buttons">
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
+    <a href="{% url 'travel:trips' %}?show=all" class="btn action-back" aria-label="Back to Travel"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+<div class="tv-wrap" style="display: flex; flex-direction: column; gap: 14px">
+{% if not figs %}
+<form method="get" class="form-card" data-compare-pick>
+    <h3 class="form-section-title">Tick two or more trips</h3>
+    {% for t in every %}<label class="tv-pick" style="display: flex"><input type="checkbox" name="t" value="{{ t.pk }}"{% if t.pk in ids %} checked{% endif %}> {{ t.name }} <span class="tv-sub">{% if t.start %}{{ t.start|date:"j M Y" }}{% endif %}</span></label>{% empty %}<p class="tv-sub" style="margin: 0">No trips yet.</p>{% endfor %}
+    <div class="tv-acts"><button type="submit" class="btn action-primary"><i class="fas fa-balance-scale"></i> Compare</button></div>
+</form>
+{% else %}
+<form method="get" class="tv-row" style="align-items: center" data-compare-chips>
+    <div class="tv-chips" style="margin: 0">{% for f in figs %}<input type="hidden" name="t" value="{{ f.trip.pk }}"><span class="tv-chip is-on" style="color: {{ f.colour }}; border-color: {{ f.colour }}">{{ f.trip.name }} <a href="?{% for g in figs %}{% if g.trip.pk != f.trip.pk %}t={{ g.trip.pk }}&amp;{% endif %}{% endfor %}" title="Take {{ f.trip.name }} out of the comparison" aria-label="Take {{ f.trip.name }} out" style="color: inherit">&times;</a></span>{% endfor %}</div>
+    <span class="tv-acts" style="margin: 0"><select name="t" class="form-control form-control-sm" aria-label="Add a trip to the comparison" style="max-width: 240px"><option value="">+ Add a trip&hellip;</option>{% for t in every %}{% if t.pk not in ids %}<option value="{{ t.pk }}">{{ t.name }}</option>{% endif %}{% endfor %}</select><button type="submit" class="btn action-secondary btn-sm">Add</button></span>
+</form>
+
+<div class="tv-grid" data-compare-totals>
+{% for f in figs %}<a class="tv-card form-card" href="{% url 'travel:trip_costs' f.trip.pk %}" style="border-top: 4px solid {{ f.colour }}">
+    <p class="tv-name">{{ f.trip.name }}</p>
+    <span class="tv-sub">{% if f.start %}{{ f.start|date:"j M" }}{% if f.end and f.end != f.start %} – {{ f.end|date:"j M Y" }}{% endif %}{% endif %} &middot; {{ f.nights }} night{{ f.nights|pluralize }} &middot; {{ f.people }} {% if f.people == 1 %}person{% else %}people{% endif %}</span>
+    <b style="font-size: 1.6rem">{{ f.total_label|default:"€0" }}</b>
+    <span class="tv-sub">{% if f.per_day_label %}{{ f.per_day_label }} a day{% endif %}{% if f.per_person_label %} &middot; {{ f.per_person_label }} each{% endif %}</span>
+    {% if f.pending %}<span class="tv-sub small">{{ f.pending }} cost{{ f.pending|pluralize }} waiting for an exchange rate, not counted</span>{% endif %}
+</a>{% endfor %}
+</div>
+
+<section class="form-card" data-compare-table>
+    <h3 class="form-section-title">Like for like</h3>
+    <div style="overflow-x: auto">
+    <table class="tv-cmp">
+        <thead><tr><th scope="col">Measure</th>{% for f in figs %}<th scope="col" style="color: {{ f.colour }}">{{ f.trip.name }}</th>{% endfor %}<th scope="col">Average</th></tr></thead>
+        <tbody>{% for r in rows %}<tr{% if r.strong %} class="is-strong"{% endif %}>
+            <th scope="row"><b>{{ r.label }}</b>{% if r.note %}<span class="tv-sub small" style="display: block">{{ r.note }}</span>{% endif %}</th>
+            {% for c in r.cells %}<td>{% if c.v %}{{ c.v }}{% if c.low %} <span class="tv-low">lowest</span>{% endif %}{% if c.more %} <span class="tv-more">{{ c.more }}</span>{% endif %}{% else %}<span class="tv-sub">none</span>{% endif %}</td>{% endfor %}
+            <td class="tv-sub">{{ r.avg }}</td>
+        </tr>{% endfor %}</tbody>
+    </table>
+    </div>
+    <p class="tv-sub small" style="margin: 8px 0 0">In euros, cancelled bookings left out. <span class="tv-low">lowest</span> is the cheapest of these trips; <span class="tv-more">+%</span> is 20% or more above their average.</p>
+</section>
+
+<section class="form-card" data-compare-split>
+    <h3 class="form-section-title">Where the money went</h3>
+    <div style="display: grid; grid-template-columns: minmax(120px, 200px) minmax(0, 1fr) 90px; gap: 10px 14px; align-items: center">
+    {% for f in figs %}<b>{{ f.trip.name }}</b><div class="tv-split" style="width: {{ f.bar }}%">{% for k in f.kinds %}<span style="flex: {{ k.pct }}; background: {{ k.colour }}" title="{{ k.label }}: {{ k.pct }}%"></span>{% endfor %}</div><b class="tv-money">{{ f.total_label }}</b>{% endfor %}
+    </div>
+    <div class="tv-chips small" style="margin: 12px 0 0">{% for l in legend %}<span><span class="tv-key" style="background: {{ l.colour }}"></span> {{ l.label }}</span>{% endfor %}</div>
+</section>
+
+{% if notes %}<section class="form-card" data-compare-notes>
+    <h3 class="form-section-title">What stands out</h3>
+    {% for n in notes %}<p style="margin: 0 0 6px">&bull; {{ n }}</p>{% endfor %}
+    <p class="tv-sub small" style="margin: 0">Written from the figures above, each time you open the comparison.</p>
+</section>{% endif %}
+
+{% if hotels %}<section class="form-card" data-compare-hotels>
+    <div class="tv-row"><h3 class="form-section-title" style="margin: 0">Every hotel, per night</h3><span class="tv-sub small">cheapest first</span></div>
+    <div style="overflow-x: auto"><table class="tv-cmp">
+        <thead><tr><th scope="col">Hotel</th><th scope="col">Trip</th><th scope="col">Nights</th><th scope="col" style="text-align: right">Per night</th></tr></thead>
+        <tbody>{% for h in hotels %}<tr><td>{{ h.title }}</td><td style="color: {{ h.colour }}">{{ h.trip }}</td><td>{{ h.nights }}</td><td style="text-align: right">{{ h.night_label }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+</section>{% endif %}
+{% endif %}
+</div>
+{% render_help_modal "travel" %}
+{% endblock %}

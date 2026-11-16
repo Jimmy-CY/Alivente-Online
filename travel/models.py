@@ -22,6 +22,13 @@ class Trip(models.Model):
     notes = models.TextField(blank=True, default='')
     shared_with = models.ManyToManyField(User, blank=True,
                                          related_name='shared_trips')
+    # TR-7, 16 Nov 2026 - SETTLING UP AFTER A TRIP (Demetri: "Once all the
+    # trip days have passed, would it make sense for the system to set all
+    # Reservations as paid (maybe to ask first)?"). Asked, never done by
+    # itself: settle_off once someone says Leave as it is; settle_after
+    # for Ask me again in a week.
+    settle_off = models.BooleanField(default=False)
+    settle_after = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

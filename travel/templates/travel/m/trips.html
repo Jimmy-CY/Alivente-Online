@@ -4,10 +4,11 @@
 {% block top %}<h1>My trips</h1>{% endblock %}
 {% block sub %}<div class="sub">Yours and the ones shared with you</div>{% endblock %}
 {% block content %}
-<nav class="tv-chips" aria-label="Show"><a class="tv-chip{% if not past %} on{% endif %}" href="{% url 'travel:m_trips' %}">Upcoming</a><a class="tv-chip{% if past %} on{% endif %}" href="?show=past">Past</a></nav>
+<nav class="tv-chips" aria-label="Show"><a class="tv-chip{% if not past and not auto_past %} on{% endif %}" href="{% url 'travel:m_trips' %}">Upcoming</a><a class="tv-chip{% if past or auto_past %} on{% endif %}" href="?show=past">Past</a>{% if can_compare %}<a class="tv-chip" href="{% url 'travel:m_compare' %}" data-compare-link>Compare</a>{% endif %}</nav>
+{% if auto_past %}<section class="tv-card" data-auto-past><p class="tv-muted" style="margin: 0">Nothing coming up &mdash; your past trips, newest first.</p></section>{% endif %}
 {% for t in trips %}
 <a href="{% url 'travel:m_trip' t.pk %}" class="tv-card" data-trip>
-  <div class="tv-row"><p class="tv-h2">{{ t.name }}</p>{% if t.people|length > 1 %}<span class="tv-tag sh">Shared</span>{% endif %}</div>
+  <div class="tv-row"><p class="tv-h2">{{ t.name }}</p><span>{% if t.past %}<span class="tv-tag" data-past>Past</span> {% endif %}{% if t.people|length > 1 %}<span class="tv-tag sh">Shared</span>{% endif %}</span></div>
   <div class="tv-muted">{% if t.start %}{{ t.start|date:"j M" }}{% if t.end and t.end != t.start %} – {{ t.end|date:"j M Y" }}{% else %} {{ t.start|date:"Y" }}{% endif %}{% else %}No dates yet{% endif %}{% if t.where %} · {{ t.where }}{% endif %}</div>
   <div class="tv-row tv-small"><span>{{ t.n }} booking{{ t.n|pluralize }}</span><span style="display: flex; padding-left: 6px">{% for p in t.people %}<span class="tv-av" title="{{ p.get_full_name|default:p.username }}">{{ p.first_name|default:p.username|slice:":1"|upper }}{{ p.last_name|slice:":1"|upper }}</span>{% endfor %}</span></div>
   {% if t.money.any %}<div class="tv-meter" aria-hidden="true"><span style="width: {{ t.money.pct }}%"></span></div>

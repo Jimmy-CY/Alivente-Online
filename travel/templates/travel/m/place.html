@@ -1,7 +1,7 @@
 {% extends 'travel/m/base.html' %}
 {% comment %} TR-4 - Add a place on the phone (typed, pasted, or shared from Google Maps), or one place: what is known, where it goes. {% endcomment %}
-{% block title %}{% if p %}{{ p.name }}{% else %}Add a place{% endif %} - Travel{% endblock %}
-{% block top %}<div style="min-width: 0"><a class="tv-back" href="{% url 'travel:m_trip' trip.pk %}?tab={% if p and p.day %}itinerary{% else %}wish{% endif %}"><span aria-hidden="true">‹</span> {{ trip.name }}</a><h1>{% if p %}{{ p.name }}{% else %}Add a place{% endif %}</h1></div>{% endblock %}
+{% block title %}{% if p %}{{ p.name }}{% else %}Things to do{% endif %} - Travel{% endblock %}
+{% block top %}<div style="min-width: 0"><a class="tv-back" href="{% url 'travel:m_trip' trip.pk %}?tab={% if p and p.day %}itinerary{% else %}wish{% endif %}"><span aria-hidden="true">‹</span> {{ trip.name }}</a><h1>{% if p %}{{ p.name }}{% else %}Things to do{% endif %}</h1></div>{% endblock %}
 {% block sub %}<div class="sub">{% if p %}{% if p.day %}{{ p.day|date:"D j M" }}{% if p.time %} · {{ p.time|time:"H:i" }}{% endif %}{% else %}In Things to do{% endif %}{% else %}No booking needed · museums, gardens, restaurants{% endif %}</div>{% endblock %}
 {% block content %}
 {% if p and p.lookup == 'waiting' %}<meta http-equiv="refresh" content="5"><div class="tv-msg" data-looking>Looking it up on the web&hellip; this refreshes by itself.</div>{% endif %}
