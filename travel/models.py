@@ -126,6 +126,11 @@ class Booking(models.Model):
                                         related_name='travel_bookings')
     traveller_names = models.CharField(max_length=255, blank=True,
                                        default='')
+    # TR-4, 15 Nov 2026 - where it is, as the email said: the trip's
+    # countries come from its bookings (Demetri: "Should the Trip Name and
+    # the From and To Dates be based on uploaded reservations?").
+    city = models.CharField(max_length=80, blank=True, default='')
+    country = models.CharField(max_length=60, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -395,3 +400,55 @@ class BoardingPass(models.Model):
 
     def __str__(self):
         return '%s %s' % (self.booking, self.name)
+
+
+class Place(models.Model):
+    """TR-4, 15 Nov 2026 - somewhere to go with no booking: a museum, a
+    garden, a restaurant, a viewpoint. Typed, pasted as a link, or shared
+    from Google Maps on the phone; Claude looks it up on the web for the
+    address, hours, price and website. With a day it is on the itinerary;
+    without one it is on the trip's wish list."""
+    KINDS = [('sight', 'Sight'), ('museum', 'Museum'), ('food', 'Food & drink'),
+             ('nature', 'Park & nature'), ('shop', 'Shopping'),
+             ('activity', 'Activity'), ('other', 'Other')]
+    LOOKUP = [('', 'Typed'), ('waiting', 'Looking it up'),
+              ('found', 'Found'), ('failed', 'Not found')]
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE,
+                             related_name='places')
+    name = models.CharField(max_length=160)
+    kind = models.CharField(max_length=10, choices=KINDS, default='sight')
+    address = models.CharField(max_length=255, blank=True, default='')
+    website = models.URLField(max_length=500, blank=True, default='')
+    maps_link = models.URLField(max_length=500, blank=True, default='')
+    hours = models.CharField(max_length=255, blank=True, default='')
+    price = models.CharField(max_length=120, blank=True, default='')
+    about = models.CharField(max_length=300, blank=True, default='')
+    notes = models.TextField(blank=True, default='')
+    day = models.DateField(null=True, blank=True)
+    time = models.TimeField(null=True, blank=True)
+    done = models.BooleanField(default=False)
+    query = models.CharField(max_length=500, blank=True, default='')
+    lookup = models.CharField(max_length=8, choices=LOOKUP, blank=True,
+                              default='')
+    lookup_note = models.CharField(max_length=255, blank=True, default='')
+    started = models.DateTimeField(null=True, blank=True)
+    added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
+                                 blank=True, related_name='+')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'travel_places'
+        ordering = ['day', 'time', 'id']
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def map_url(self):
+        """The place on Google Maps: its own link, else a search."""
+        if self.maps_link:
+            return self.maps_link
+        from urllib.parse import quote
+        q = ', '.join(x for x in (self.name, self.address) if x)
+        return 'https://www.google.com/maps/search/?api=1&query=' + quote(q)

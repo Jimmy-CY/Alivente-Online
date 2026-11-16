@@ -49,6 +49,8 @@
         <div><label for="fp">From</label><input id="fp" name="from_place" class="form-control" maxlength="120" value="{{ b.from_place }}" placeholder="e.g. Larnaca (LCA)"></div>
         <div><label for="tp">To</label><input id="tp" name="to_place" class="form-control" maxlength="120" value="{{ b.to_place }}" placeholder="e.g. Lisbon (LIS)"></div>
         <div class="tv-wide"><label for="ad">Address</label><input id="ad" name="address" class="form-control" maxlength="255" value="{{ b.address }}"></div>
+        <div><label for="cy">City</label><input id="cy" name="city" class="form-control" maxlength="80" value="{{ b.city }}"></div>
+        <div><label for="cn">Country</label><input id="cn" name="country" class="form-control" maxlength="60" value="{{ b.country }}" placeholder="The trip&rsquo;s countries come from these"></div>
         <div><label for="ph">Phone</label><input id="ph" name="phone" class="form-control" maxlength="40" value="{{ b.phone }}" inputmode="tel"></div>
         <div><label for="lk">Manage-booking link</label><input id="lk" name="link" class="form-control" maxlength="500" value="{{ b.link }}" inputmode="url"></div>
         <div class="tv-wide"><label for="dt">Details</label><textarea id="dt" name="details" class="form-control" rows="3" placeholder="Seats, room type, baggage, what's included&hellip;">{{ b.details }}</textarea></div>

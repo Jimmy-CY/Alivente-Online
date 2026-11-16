@@ -1,0 +1,9 @@
+{% comment %} TR-4 - one place on the itinerary or the wish list (computer). {% endcomment %}<div class="tv-bk tv-place{% if p.done %} tv-off{% endif %}" data-place>
+  <span class="tv-ico"><i class="fas {% if p.kind == 'food' %}fa-utensils{% elif p.kind == 'museum' %}fa-landmark{% elif p.kind == 'nature' %}fa-tree{% elif p.kind == 'shop' %}fa-shopping-bag{% elif p.kind == 'activity' %}fa-hiking{% else %}fa-map-marker-alt{% endif %}" aria-hidden="true"></i></span>
+  <span style="min-width: 0"><a href="{% url 'travel:place' p.pk %}" style="color: inherit"><b>{% if p.time %}{{ p.time|time:"H:i" }} &middot; {% endif %}{{ p.name }}</b></a>{% if p.lookup == 'waiting' %} <span class="tv-tag tv-shared">Looking it up&hellip;</span>{% endif %}
+    <span class="tv-sub" style="display: block">{% if p.hours %}{{ p.hours }}{% endif %}{% if p.price %}{% if p.hours %} &middot; {% endif %}{{ p.price }}{% endif %}{% if p.notes %}{% if p.hours or p.price %} &middot; {% endif %}{{ p.notes|truncatechars:80 }}{% endif %}</span></span>
+  <span class="tv-acts" style="margin: 0">
+    <a href="{{ p.map_url }}" target="_blank" rel="noopener" class="btn action-secondary btn-sm" aria-label="{{ p.name }} on the map"><i class="fas fa-map" aria-hidden="true"></i></a>
+    <form method="post" action="{% url 'travel:place_done' p.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="btn action-secondary btn-sm" aria-label="{% if p.done %}Not done{% else %}Done{% endif %}: {{ p.name }}"><i class="fas {% if p.done %}fa-undo{% else %}fa-check{% endif %}" aria-hidden="true"></i></button></form>
+  </span>
+</div>

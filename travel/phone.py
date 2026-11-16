@@ -19,6 +19,7 @@ working without a signal, "Share -> Alivente Travel".
 The pages are the same data through the same doors as the desktop:
 every trip through trips_for(user), every booking through its trip.
 """
+import copy
 import datetime as dt
 import json
 import os
@@ -29,6 +30,7 @@ from email.utils import make_msgid
 from django.contrib import messages
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -36,8 +38,8 @@ from django.views.decorators.http import require_POST
 from . import barcodes, fx, inbox
 from .models import (BoardingPass, Booking, CheckItem, InboundEmail,
                      trips_for)
-from .views import (coming_up, eur, requests_for, shape, span, totals,
-                    travel_view)
+from .views import (coming_up, eur, included, requests_for, shape, span,
+                    totals, travel_view)
 
 ASSETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
 ASSET_TYPES = {
@@ -51,7 +53,7 @@ ASSET_TYPES = {
 # Bump this AND the ?v= in travel/m/base.html together whenever the style
 # or script changes: an installed app keeps the old files until it moves.
 # test_travel_three.py checks the two agree.
-SW_VERSION = 'tv3-1'
+SW_VERSION = 'tv4-1'
 
 
 def page(request, template, ctx):
@@ -99,6 +101,9 @@ def on_day(bs, day):
     rows.sort(key=lambda r: (r[0], r[2].pk))
     out = []
     for when, what, b in rows:
+        # A copy: a stay is on several days - check in, staying, check out
+        # - and each day's row says its own thing (TR-4, the itinerary).
+        b = copy.copy(b)
         shape(b)
         b.what = what
         b.label = {'start': {'stay': 'Check in', 'car': 'Pick up'}.get(
@@ -108,6 +113,34 @@ def on_day(bs, day):
             (b.start_time if what == 'start' else b.end_time) or '')
         out.append(b)
     return out
+
+
+def day_rows(bs, places, day):
+    """TR-4 - a day of the itinerary: its bookings (as on_day) and the
+    places planned for it, in time order; places with no time at the end."""
+    rows = [(b.when or dt.time(0, 0), 0, b) for b in on_day(bs, day)]
+    for p in places:
+        if p.day == day:
+            p.is_place = True
+            rows.append((p.time or dt.time(23, 59, 59), 1, p))
+    rows.sort(key=lambda r: (r[0], r[1]))
+    return [r[2] for r in rows]
+
+
+def itinerary(trip, bs, places):
+    """Every day of the trip, first to last, each with its rows - empty
+    days too, so there is somewhere to put a place. (At most 60 days.)"""
+    start, end = span(trip, bs)
+    days = []
+    if start:
+        end = end or start
+        if (end - start).days > 60:
+            end = start + dt.timedelta(days=60)
+        d = start
+        while d <= end:
+            days.append((d, day_rows(bs, places, d)))
+            d += dt.timedelta(days=1)
+    return days
 
 
 # ------------------------------------------------------------------ Today
@@ -128,15 +161,17 @@ def today(request):
     if trip:
         bs = list(trip.bookings.prefetch_related('travellers'))
         fx.convert_pending(bs, limit=2)
+        pl = list(trip.places.all())
         if now:
             ctx['day_no'] = (day - trip.start).days + 1
             ctx['days'] = ((trip.end or trip.start) - trip.start).days + 1
-            ctx['today_rows'] = on_day(bs, day)
-            ctx['tomorrow_rows'] = on_day(bs, day + dt.timedelta(days=1))
+            ctx['today_rows'] = day_rows(bs, pl, day)
+            ctx['tomorrow_rows'] = day_rows(bs, pl,
+                                            day + dt.timedelta(days=1))
             ctx['tomorrow'] = day + dt.timedelta(days=1)
         else:
             ctx['in_days'] = (trip.start - day).days
-            ctx['first_rows'] = on_day(bs, trip.start)
+            ctx['first_rows'] = day_rows(bs, pl, trip.start)
         ctx['coming'] = coming_up(bs, day)
         ctx['passes_today'] = BoardingPass.objects.filter(
             booking__trip=trip, booking__start_date__in=(
@@ -167,7 +202,7 @@ def trip(request, trip_id):
     t = get_object_or_404(trips_for(request.user), pk=trip_id)
     bs = list(t.bookings.prefetch_related('travellers'))
     fx.convert_pending(bs, limit=3)
-    bs = [shape(b) for b in bs]
+    bs = included([shape(b) for b in bs])
     t.start, t.end = span(t, bs)
     days = OrderedDict()
     undated = []
@@ -177,7 +212,16 @@ def trip(request, trip_id):
         else:
             undated.append(b)
     costs = request.GET.get('tab') == 'costs'
+    sub = request.GET.get('tab') if request.GET.get('tab') in (
+        'costs', 'itinerary', 'wish') else 'bookings'
+    pl = list(t.places.all())
+    for p in pl:
+        p.is_place = True
     return page(request, 'travel/m/trip.html', {
+        'sub': sub, 'wish': [p for p in pl if not p.day],
+        'itinerary': itinerary(t, bs, pl) if sub == 'itinerary' else [],
+        'trip_days': [d for d, _ in itinerary(t, [], [])] if sub == 'wish'
+        else [],
         'trip': t, 'days': list(days.items()), 'undated': undated,
         'bookings': bs, 'money': totals(bs), 'costs': costs,
         'people': [t.owner] + list(t.shared_with.all()), 'tab': 'trips',
@@ -207,9 +251,13 @@ def pass_card(p):
 def booking(request, booking_id):
     b = get_object_or_404(_bookings(request.user), pk=booking_id)
     shape(b)
+    if b.amount is None:
+        included([x for x in b.trip.bookings.all() if x.pk != b.pk] + [b])
+    else:
+        b.included = None
     passes = [pass_card(p) for p in b.passes.all()]
-    nights = (b.end_date - b.start_date).days \
-        if b.kind == 'stay' and b.start_date and b.end_date else None
+    nights = ((b.end_date - b.start_date).days
+              if b.kind == 'stay' and b.start_date and b.end_date else None)
     return page(request, 'travel/m/booking.html', {
         'b': b, 'trip': b.trip, 'files': list(b.files.all()),
         'passes': passes, 'nights': nights, 'tab': 'trips',
@@ -260,9 +308,13 @@ def passes(request):
                       if not flown(p.booking, now)), max(len(cards) - 1, 0))
     for i, p in enumerate(cards):
         p.is_next = i == first
-    return page(request, 'travel/m/passes.html', {
-        'cards': cards, 'every': every, 'tab': 'passes', 'day': day,
-        'first': first})
+    ctx = {'cards': cards, 'every': every, 'tab': 'passes', 'day': day,
+           'first': first}
+    # TR-4 (Demetri, 15 Nov: "I want to be able to view boarding passes on
+    # the desktop app as well") - the same passes, laid out for a screen.
+    if request.resolver_match.url_name == 'passes':
+        return render(request, 'travel/passes.html', ctx)
+    return page(request, 'travel/m/passes.html', ctx)
 
 
 # --------------------------------------------------------------- To check
@@ -352,6 +404,30 @@ def share(request):
     title = (request.POST.get('title') or '').strip()
     text = (request.POST.get('text') or '').strip()
     link = (request.POST.get('url') or '').strip()
+    # TR-4 - A PLACE FROM GOOGLE MAPS ("Share -> Travel" in Maps): not an
+    # email to read but somewhere to go - Add a place, on the trip that is
+    # on now or the next one, with what Maps shared already filled in.
+    from . import places as PL
+    shared = '\n'.join(x for x in (title, text, link) if x)
+    if not files and PL.is_maps(shared):
+        day = _today()
+        rows = _trip_list(request.user)
+        now = [t for t in rows if t.start and t.start <= day <=
+               (t.end or t.start)]
+        nxt = sorted([t for t in rows if t.start and t.start > day],
+                     key=lambda t: t.start)
+        t = (now or nxt or [None])[0]
+        if t is None:
+            messages.error(request, 'Make a trip first - then share the '
+                           'place again.')
+            return redirect('travel:m_trips')
+        from urllib.parse import urlencode
+        q = text or title
+        if link and link not in q:
+            q = (q + '\n' + link).strip()
+        return redirect('%s?%s' % (reverse('travel:m_place_new',
+                                           args=[t.pk]),
+                                   urlencode({'q': q[:500]})))
     done = 0
     rest = []
     for f in files[:6]:
@@ -399,6 +475,9 @@ def manifest(request):
         'start_url': '/travel/m/?source=app',
         'scope': '/travel/m/',
         'display': 'standalone',
+        # TR-4 (Demetri, 15 Nov: "if I turn my phone, the pass flips. I
+        # don't want that.") - the installed app stays upright.
+        'orientation': 'portrait',
         'background_color': '#F3F5F6',
         'theme_color': '#0F7480',
         'icons': [

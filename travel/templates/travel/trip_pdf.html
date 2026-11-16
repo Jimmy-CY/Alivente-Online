@@ -1,0 +1,102 @@
+{% comment %}
+TRAVEL - TR-4, 15 Nov 2026. A trip as a PDF (travel/report.py), summary or
+detailed. xhtml2pdf takes a subset of HTML and CSS: tables for layout,
+plain class selectors, the PDF's standard fonts.
+{% endcomment %}<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    @page { size: A4; margin: 1.4cm; @frame footer { -pdf-frame-content: foot; bottom: 0.6cm; margin-left: 1.4cm; margin-right: 1.4cm; height: 0.8cm; } }
+    body { font-family: Helvetica, Arial, sans-serif; color: #1D2B31; font-size: 10px; line-height: 1.35; }
+    h1.title { font-size: 22px; color: #0F7480; margin: 0 0 2px 0; }
+    p.sub { color: #5B6B72; font-size: 11px; margin: 0 0 8px 0; }
+    h2.sec { font-size: 14px; color: #0F7480; margin: 14px 0 4px 0; padding-bottom: 2px; border-bottom: 1px solid #0F7480; }
+    h3.day { font-size: 11px; margin: 10px 0 2px 0; color: #1D2B31; }
+    table.rows { width: 100%; }
+    td.t { width: 42px; color: #5B6B72; vertical-align: top; padding: 3px 0; }
+    td.w { vertical-align: top; padding: 3px 4px; border-bottom: 0.5px solid #E1E6E8; }
+    td.c { width: 78px; text-align: right; vertical-align: top; padding: 3px 0; border-bottom: 0.5px solid #E1E6E8; }
+    span.muted { color: #5B6B72; }
+    span.paid { color: #1E7A46; font-weight: bold; }
+    span.due { color: #9A5B00; font-weight: bold; }
+    span.place { color: #0F7480; }
+    td.mlbl { color: #5B6B72; font-size: 8px; }
+    td.mval { font-size: 13px; font-weight: bold; }
+    table.kv { width: 100%; margin: 0 0 4px 0; }
+    td.k { width: 110px; color: #5B6B72; vertical-align: top; padding: 1px 0; }
+    td.v { vertical-align: top; padding: 1px 0; }
+    p.cardh { font-size: 11px; font-weight: bold; margin: 10px 0 3px 0; padding-top: 4px; border-top: 0.5px solid #C9D3D6; }
+</style>
+</head>
+<body>
+<h1 class="title">{{ trip.name }}</h1>
+<p class="sub">{% if start %}{{ start|date:"D j M" }}{% if end and end != start %} - {{ end|date:"D j M Y" }}{% if nights %} · {{ nights }} night{{ nights|pluralize }}{% endif %}{% else %} {{ start|date:"Y" }}{% endif %}{% endif %}{% if trip.where %} · {{ trip.where }}{% endif %}<br>
+On this trip: {% for p in people %}{{ p.get_full_name|default:p.username }}{% if not forloop.last %}, {% endif %}{% endfor %} · {% if kind == 'detailed' %}Detailed{% else %}Summary{% endif %}</p>
+
+{% if money.any %}
+<table style="width: 100%"><tr>
+  <td><table><tr><td class="mlbl">TOTAL</td></tr><tr><td class="mval">{{ money.total }}</td></tr></table></td>
+  <td><table><tr><td class="mlbl">PAID</td></tr><tr><td class="mval"><span class="paid">{{ money.paid }}</span></td></tr></table></td>
+  <td><table><tr><td class="mlbl">STILL TO PAY</td></tr><tr><td class="mval"><span class="due">{{ money.due }}</span></td></tr></table></td>
+</tr></table>
+{% endif %}
+
+<h2 class="sec">Day by day</h2>
+{% for day, rows in days %}
+<h3 class="day">{{ day|date:"l j F Y" }}</h3>
+<table class="rows">
+{% for r in rows %}
+{% if kind == 'summary' and not r.is_place and r.what != 'start' %}{% comment %} The summary is the trip page: what starts each day - no "staying at" or check-out lines. {% endcomment %}
+{% elif r.is_place %}
+<tr><td class="t">{% if r.time %}{{ r.time|time:"H:i" }}{% endif %}</td><td class="w"><span class="place">{{ r.name }}</span>{% if r.address %} <span class="muted">· {{ r.address }}</span>{% endif %}{% if r.hours %}<br><span class="muted">{{ r.hours }}{% if r.price %} · {{ r.price }}{% endif %}</span>{% endif %}</td><td class="c">{% if r.done %}<span class="muted">done</span>{% endif %}</td></tr>
+{% else %}
+<tr><td class="t">{% if r.when %}{{ r.when|time:"H:i" }}{% endif %}</td><td class="w">{% if r.label %}{{ r.label }}: {% endif %}<b>{{ r.title }}</b>{% if r.cancelled %} <span class="due">CANCELLED</span>{% endif %}<br><span class="muted">{% if r.route %}{{ r.route }} · {% endif %}{% if r.what == 'start' and r.end_time and r.end_date == r.start_date %}until {{ r.end_time|time:"H:i" }} · {% endif %}{% if r.reference %}ref {{ r.reference }}{% endif %}{% if r.who %} · {{ r.who }}{% endif %}</span></td><td class="c">{% if r.what != 'during' and r.what != 'end' %}{% if r.amount is not None %}<b>{{ r.eur_label|default:"rate pending" }}</b><br><span class="{% if r.paid == 'paid' %}paid{% else %}due{% endif %}">{{ r.status_label }}</span>{% elif r.included %}<span class="muted">incl. in {{ r.included.segment|default:r.included.title }}</span>{% endif %}{% endif %}</td></tr>
+{% endif %}
+{% empty %}<tr><td class="t"></td><td class="w"><span class="muted">Nothing planned.</span></td><td class="c"></td></tr>
+{% endfor %}
+</table>
+{% empty %}<p class="muted">No dates yet.</p>
+{% endfor %}
+{% if undated %}<h3 class="day">No date yet</h3><table class="rows">{% for r in undated %}<tr><td class="t"></td><td class="w"><b>{{ r.title }}</b>{% if r.reference %} <span class="muted">· ref {{ r.reference }}</span>{% endif %}</td><td class="c">{% if r.amount is not None %}<b>{{ r.eur_label|default:"rate pending" }}</b>{% endif %}</td></tr>{% endfor %}</table>{% endif %}
+
+{% if wish %}
+<h2 class="sec">Wish list</h2>
+<table class="rows">{% for p in wish %}<tr><td class="t"></td><td class="w"><span class="place">{{ p.name }}</span>{% if p.address %} <span class="muted">· {{ p.address }}</span>{% endif %}{% if p.hours or p.price %}<br><span class="muted">{{ p.hours }}{% if p.hours and p.price %} · {% endif %}{{ p.price }}</span>{% endif %}</td><td class="c"></td></tr>{% endfor %}</table>
+{% endif %}
+
+{% if money.by_kind %}
+<h2 class="sec">Costs by kind</h2>
+<table class="rows">{% for k in money.by_kind %}<tr><td class="w">{{ k.kind }}</td><td class="c"><b>{{ k.eur }}</b></td></tr>{% endfor %}</table>
+{% if money.pending %}<p class="muted">{{ money.pending }} cost{{ money.pending|pluralize }} waiting for an exchange rate - not counted yet.</p>{% endif %}
+{% endif %}
+
+{% if kind == 'detailed' %}
+<pdf:nextpage />
+<h2 class="sec">Every booking in full</h2>
+{% for b in bookings %}
+<p class="cardh">{{ b.title }}{% if b.cancelled %} <span class="due">CANCELLED</span>{% endif %} <span class="muted">· {{ b.kind_label }}</span></p>
+<table class="kv">
+{% if b.provider %}<tr><td class="k">With</td><td class="v">{{ b.provider }}</td></tr>{% endif %}
+{% if b.reference %}<tr><td class="k">Reference</td><td class="v"><b>{{ b.reference }}</b>{% if b.segment %} · {{ b.segment }}{% endif %}</td></tr>{% endif %}
+{% if b.start_date %}<tr><td class="k">{% if b.kind == 'stay' %}Check in{% elif b.kind == 'car' %}Pick up{% else %}Starts{% endif %}</td><td class="v">{{ b.start_date|date:"D j M Y" }}{% if b.start_time %} {{ b.start_time|time:"H:i" }}{% endif %}</td></tr>{% endif %}
+{% if b.end_date or b.end_time %}<tr><td class="k">{% if b.kind == 'stay' %}Check out{% elif b.kind == 'car' %}Drop off{% else %}Ends{% endif %}</td><td class="v">{{ b.end_date|default:b.start_date|date:"D j M Y" }}{% if b.end_time %} {{ b.end_time|time:"H:i" }}{% endif %}</td></tr>{% endif %}
+{% if b.route %}<tr><td class="k">Route</td><td class="v">{{ b.route }}</td></tr>{% endif %}
+{% if b.who %}<tr><td class="k">Travelling</td><td class="v">{{ b.who }}</td></tr>{% endif %}
+{% if b.address %}<tr><td class="k">Address</td><td class="v">{{ b.address }}</td></tr>{% endif %}
+{% if b.phone %}<tr><td class="k">Phone</td><td class="v">{{ b.phone }}</td></tr>{% endif %}
+{% if b.link %}<tr><td class="k">Manage it</td><td class="v">{{ b.link|truncatechars:90 }}</td></tr>{% endif %}
+{% if b.amount is not None %}<tr><td class="k">Cost</td><td class="v"><b>{{ b.eur_label|default:"rate pending" }}</b>{% if b.orig_label %} ({{ b.orig_label }}){% endif %} · <span class="{% if b.paid == 'paid' %}paid{% else %}due{% endif %}">{{ b.status_label }}</span>{% if b.paid == 'part' and b.paid_amount %} · {{ b.paid_amount }} paid{% endif %}</td></tr>{% elif b.included %}<tr><td class="k">Cost</td><td class="v">Included in {{ b.included.segment|default:b.included.title }}</td></tr>{% endif %}
+{% if b.pay_by and b.paid != 'paid' %}<tr><td class="k">Pay by</td><td class="v">{{ b.pay_by|date:"D j M Y" }}</td></tr>{% endif %}
+{% if b.cancel_until %}<tr><td class="k">Free cancellation</td><td class="v">until {{ b.cancel_until|date:"D j M Y" }}</td></tr>{% endif %}
+{% for p in b.passes.all %}<tr><td class="k">Boarding pass</td><td class="v">{{ p.name|default:"passenger" }}{% if p.seat %} · seat {{ p.seat }}{% endif %}</td></tr>{% endfor %}
+{% if b.files.all %}<tr><td class="k">Documents</td><td class="v">{% for f in b.files.all %}{{ f.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td></tr>{% endif %}
+{% if b.details %}<tr><td class="k">Details</td><td class="v">{{ b.details|linebreaksbr }}</td></tr>{% endif %}
+</table>
+{% empty %}<p class="muted">No bookings.</p>
+{% endfor %}
+{% endif %}
+
+<div id="foot" style="color: #5B6B72; font-size: 8px">Alivente Travel · {{ trip.name }} · made {{ made|date:"j M Y H:i" }} · page <pdf:pagenumber /></div>
+</body>
+</html>

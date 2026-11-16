@@ -321,9 +321,10 @@ if have_db:
             ok(D.session.get_expiry_age() < 29 * 86400,
                '  CONTROL: opened on a computer, the session is left alone')
 
-            t.start_date = day
-            t.end_date = day + dt.timedelta(days=5)
-            t.save()
+            # TR-4: a trip's dates now come from its bookings - the stay
+            # from today to day 5 makes it a six-day trip on now.
+            Booking.objects.filter(title='TV3 Parea').update(
+                start_date=day, end_date=day + dt.timedelta(days=5))
             fl.start_date = day + dt.timedelta(days=1)
             fl.save()
             h = A.get('/travel/m/').content.decode()
@@ -400,7 +401,7 @@ if have_db:
             hd = dk.get('/travel/booking/%d/' % fl.pk).content.decode()
             ok(hd.count('data-barcode=') == 2,
                'THE DESKTOP booking shows both passes too')
-            ht = dk.get('/travel/').content.decode()
+            ht = dk.get('/travel/?phone=1').content.decode()
             ok('data-phone-app' in ht and 'Scan to open Travel' in ht,
                '  and the Travel page a code to open the app on the phone')
 

@@ -1,6 +1,7 @@
 {% extends 'travel/m/base.html' %}
 {% comment %} TR-3 - boarding passes, wallet-style: one a screen, swiped sideways, the barcode drawn again from the airline's own code. Kept on the phone for when there is no signal. {% endcomment %}
 {% block title %}Passes - Travel{% endblock %}
+{% block body_attr %} class="tv-holding"{% endblock %}
 {% block top %}<h1>Passes</h1>{% endblock %}
 {% block sub %}<div class="sub">{% if every %}Every pass{% else %}The next one you need first{% endif %}</div>{% endblock %}
 {% block content %}

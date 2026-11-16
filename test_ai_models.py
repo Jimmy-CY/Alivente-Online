@@ -149,6 +149,9 @@ CALL_SITES = {
     # (and its PDF tickets) into Travel bookings. Sonnet, as the recipe
     # importer, for reading documents; changeable through TRAVEL_AI_MODEL.
     'travel/extract.py': 'reading booking emails into Travel',
+    # TR-4, 15 Nov 2026 - the ninth: looking a place up on the web (with
+    # Anthropic's web search tool) for Travel's "Add a place".
+    'travel/places.py': 'looking up places for Travel',
 }
 
 passed = failed = skipped = 0

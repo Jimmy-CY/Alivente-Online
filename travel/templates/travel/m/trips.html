@@ -8,7 +8,7 @@
 {% for t in trips %}
 <a href="{% url 'travel:m_trip' t.pk %}" class="tv-card" data-trip>
   <div class="tv-row"><p class="tv-h2">{{ t.name }}</p>{% if t.people|length > 1 %}<span class="tv-tag sh">Shared</span>{% endif %}</div>
-  <div class="tv-muted">{% if t.start %}{{ t.start|date:"j M" }}{% if t.end and t.end != t.start %} – {{ t.end|date:"j M Y" }}{% else %} {{ t.start|date:"Y" }}{% endif %}{% else %}No dates yet{% endif %}{% if t.countries %} · {{ t.countries }}{% endif %}</div>
+  <div class="tv-muted">{% if t.start %}{{ t.start|date:"j M" }}{% if t.end and t.end != t.start %} – {{ t.end|date:"j M Y" }}{% else %} {{ t.start|date:"Y" }}{% endif %}{% else %}No dates yet{% endif %}{% if t.where %} · {{ t.where }}{% endif %}</div>
   <div class="tv-row tv-small"><span>{{ t.n }} booking{{ t.n|pluralize }}</span><span style="display: flex; padding-left: 6px">{% for p in t.people %}<span class="tv-av" title="{{ p.get_full_name|default:p.username }}">{{ p.first_name|default:p.username|slice:":1"|upper }}{{ p.last_name|slice:":1"|upper }}</span>{% endfor %}</span></div>
   {% if t.money.any %}<div class="tv-meter" aria-hidden="true"><span style="width: {{ t.money.pct }}%"></span></div>
   <div class="tv-row tv-small"><span><b>{{ t.money.total }}</b> total</span><span style="color: var(--tv-good); font-weight: 600">{{ t.money.paid }} paid</span><span style="color: var(--tv-warn); font-weight: 600">{{ t.money.due }} to pay</span></div>{% endif %}

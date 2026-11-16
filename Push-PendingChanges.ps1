@@ -3315,7 +3315,10 @@ $suites = @(
     # forwarded emails.
     'test_travel_two.py',
     # TR-3, 15 Nov 2026 - Release 84: Travel, stage 3 - the phone app.
-    'test_travel_three.py'
+    'test_travel_three.py',
+    # TR-4, 15 Nov 2026 - Release 85: Travel, stage 4 - the itinerary, the
+    # wish list, places; trip dates from the bookings.
+    'test_travel_four.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

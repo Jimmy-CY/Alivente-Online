@@ -18,7 +18,7 @@
 {% else %}
 <a href="{% url 'travel:m_trip' trip.pk %}" class="tv-card" data-next-trip>
   <div class="tv-row"><p class="tv-h2">{{ trip.name }}</p><span class="tv-tag sh">{% if in_days == 1 %}Tomorrow{% else %}In {{ in_days }} days{% endif %}</span></div>
-  <div class="tv-muted">{{ trip.start|date:"D j M" }}{% if trip.end and trip.end != trip.start %} – {{ trip.end|date:"D j M Y" }}{% endif %}{% if trip.countries %} · {{ trip.countries }}{% endif %}</div>
+  <div class="tv-muted">{{ trip.start|date:"D j M" }}{% if trip.end and trip.end != trip.start %} – {{ trip.end|date:"D j M Y" }}{% endif %}{% if trip.where %} · {{ trip.where }}{% endif %}</div>
 </a>
 <p class="tv-h3">The first day · {{ trip.start|date:"D j M" }}</p>
 <section class="tv-card">{% for b in first_rows %}{% include 'travel/m/_row.html' %}{% empty %}<p class="tv-muted" style="margin: 0">Nothing booked for it yet.</p>{% endfor %}</section>

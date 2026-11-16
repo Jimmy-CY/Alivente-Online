@@ -13,11 +13,16 @@
     {% csrf_token %}
     <div class="tv-form-grid">
         <div class="tv-wide"><label for="tn">Name <span class="req-marker" aria-hidden="true">*</span></label><input id="tn" name="name" class="form-control" maxlength="120" required value="{{ trip.name }}"></div>
+        {% if trip.by_bookings %}
+        <div class="tv-wide" data-dates-by-bookings><label>Dates</label><p class="form-control-plaintext" style="margin: 0"><b>{{ trip.start|date:"D j M" }}{% if trip.end and trip.end != trip.start %} – {{ trip.end|date:"D j M Y" }}{% endif %}</b> <span class="tv-sub small">&middot; set by its bookings, first to last. They change when the bookings do.</span></p>
+        <input type="hidden" name="start_date" value="{{ trip.start_date|date:'Y-m-d' }}"><input type="hidden" name="end_date" value="{{ trip.end_date|date:'Y-m-d' }}"></div>
+        {% else %}
         <div><label for="ts">From</label><input id="ts" type="date" name="start_date" class="form-control" value="{{ trip.start_date|date:'Y-m-d' }}"></div>
         <div><label for="te">To</label><input id="te" type="date" name="end_date" class="form-control" value="{{ trip.end_date|date:'Y-m-d' }}"></div>
-        <div class="tv-wide"><label for="tc">Countries</label><input id="tc" name="countries" class="form-control" maxlength="200" value="{{ trip.countries }}"></div>
+        {% endif %}
+        <div class="tv-wide"><label for="tc">Countries</label><input id="tc" name="countries" class="form-control" maxlength="200" value="{{ trip.countries }}">{% if trip.where and trip.where != trip.countries %}<div class="tv-sub small">Shown as <b>{{ trip.where }}</b> &mdash; the bookings&rsquo; countries with any you type here.</div>{% endif %}</div>
         <div class="tv-wide"><label for="no">Notes</label><textarea id="no" name="notes" class="form-control" rows="4">{{ trip.notes }}</textarea></div>
-        <div class="tv-wide tv-sub small">Leave the dates empty and they follow the bookings.</div>
+        {% if not trip.by_bookings %}<div class="tv-wide tv-sub small">For planning before anything is booked. Once the trip has bookings with dates, its dates come from them.</div>{% endif %}
         <div class="tv-wide"><button type="submit" class="btn action-primary">Save trip</button>
         {% if is_owner %}<button type="submit" form="del-trip" class="btn action-secondary action-danger">Delete trip</button>{% endif %}</div>
     </div>

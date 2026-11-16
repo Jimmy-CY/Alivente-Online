@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}Boarding passes - Travel{% endblock %}
+{% comment %} TRAVEL - TR-4, 15 Nov 2026. Boarding passes on the computer (Demetri: "I want to be able to view boarding passes on the desktop app as well"): the same passes as the phone, the next one needed first and marked. {% endcomment %}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">BOARDING PASSES</h4>
+<div class="page-action-buttons">
+    <a href="{% if every %}{% url 'travel:passes' %}{% else %}?show=all{% endif %}" class="btn action-secondary">{% if every %}Only the ones to come{% else %}Earlier passes{% endif %}</a>
+    <a href="{% url 'travel:trips' %}" class="btn action-back" aria-label="Back to Travel"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+<div class="tv-wrap">
+{% if cards %}
+<div class="tv-passgrid" data-passes>
+{% for p in cards %}
+  <article class="tv-wpass{% if p.is_next %} is-next{% endif %}" data-pass{% if p.is_next %} data-next{% endif %} aria-label="Boarding pass {{ forloop.counter }} of {{ cards|length }}">
+    {% if p.is_next %}<div class="tv-wpass-flag">Next</div>{% endif %}
+    <div class="tv-wpass-top">
+      <div class="tv-row"><b>{{ p.booking.provider|default:p.booking.title }}</b><span class="small">{{ p.booking.start_date|date:"D j M Y" }}</span></div>
+      <div class="tv-row" style="align-items: flex-end"><div><div class="small">From</div><div class="tv-wpass-code">{{ p.frm|default:"–" }}</div></div><i class="fas fa-plane" aria-hidden="true" style="margin-bottom: 10px"></i><div style="text-align: right"><div class="small">To</div><div class="tv-wpass-code">{{ p.to|default:"–" }}</div></div></div>
+      <div class="tv-wpass-grid"><div><small>FLIGHT</small><b>{{ p.flight }}</b></div><div><small>LEAVES</small><b>{{ p.booking.start_time|time:"H:i"|default:"–" }}</b></div><div><small>SEAT</small><b>{{ p.seat_shown|default:"–" }}</b></div><div><small>REF</small><b>{{ p.info.pnr|default:p.booking.reference|default:"–" }}</b></div></div>
+    </div>
+    <div class="tv-wpass-foot">
+      <div class="tv-row" style="width: 100%"><div><div class="tv-sub small">Passenger</div><b>{{ p.name|default:"–" }}</b></div><a href="{% url 'travel:booking' p.booking.pk %}" class="small">The booking</a></div>
+      {% if p.svg %}<div class="tv-passcode" data-barcode="{{ p.format }}" style="max-width: 240px; margin: 6px auto 0">{{ p.svg|safe }}</div>{% else %}<p class="tv-sub small" style="margin: 0">This barcode cannot be drawn here &mdash; open the airline&rsquo;s PDF on the booking.</p>{% endif %}
+      {% if p.wallet_link %}<a href="{{ p.wallet_link }}" target="_blank" rel="noopener" class="small">Add to Google Wallet</a>{% endif %}
+    </div>
+  </article>
+{% endfor %}
+</div>
+<p class="tv-sub small" style="margin-top: 12px">The barcodes are drawn from the airline&rsquo;s own code and scan from a screen. On the phone, Travel &rarr; Passes shows them one a screen and keeps them for when there is no signal.</p>
+{% else %}
+<section class="form-card" data-no-passes><p style="margin: 0">No boarding passes yet. Forward the airline&rsquo;s boarding-pass email to <b>trips@alivente.online</b> and it shows here and on the phone.</p></section>
+{% endif %}
+</div>
+{% render_help_modal "travel" %}
+{% endblock %}

@@ -8,9 +8,11 @@
 <h4 class="page-subtitle-h4">TRAVEL</h4>
 
 <div class="page-action-buttons">
-    <a href="#new-trip" class="btn action-primary" data-new-trip><i class="fas fa-plus"></i> New trip</a>
+    <a href="?show={{ show }}&amp;new=1#new-trip" class="btn action-primary" data-new-trip><i class="fas fa-plus"></i> New trip</a>
     <a href="{% url 'travel:check' %}" class="btn action-secondary" data-to-check><i class="fas fa-inbox"></i> To check{% if checks %} <span class="tv-count">{{ checks }}</span>{% endif %}</a>
     <a href="{% url 'travel:forwarding' %}" class="btn action-secondary"><i class="fas fa-envelope"></i> Forwarding</a>
+    <a href="{% url 'travel:passes' %}" class="btn action-secondary" data-passes-button><i class="fas fa-qrcode"></i> Boarding passes</a>
+    <a href="?show={{ show }}&amp;phone=1" class="btn action-secondary" data-phone-button><i class="fas fa-mobile-alt"></i> Phone app</a>
     <a href="{% url 'personal_page' %}" class="btn action-back" aria-label="Back to Personal">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
@@ -20,6 +22,28 @@
 {% include 'travel/_requests.html' %}
 <p class="text-muted small">Your trips, and the ones shared with you. Everyone on a shared trip sees everything in it, costs included. Forward booking emails to <b>{{ address }}</b> and they wait for you under <a href="{% url 'travel:check' %}">To check</a>.</p>
 
+{% comment %} TR-4 (Demetri, 15 Nov): used once per person, so it sits behind the Phone app button, not on the page all the time. {% endcomment %}
+{% if phone_qr %}
+<section class="form-card tv-phone" data-phone-app style="margin: 4px 0 18px">
+    <div class="tv-passcode" style="margin: 0">{{ phone_qr|safe }}</div>
+    <div><h3 class="form-section-title" style="margin: 0 0 4px">Travel on your phone</h3><p class="small" style="margin: 0">Point your phone&rsquo;s camera here, or open <b>alivente.online/travel/m/</b>, then <em>Add to Home screen</em>. Today, your boarding passes (even with no signal) and To check &mdash; and on Android, <em>Share &rarr; Travel</em> sends a ticket or an email straight in.</p><div class="small" style="margin-top: 8px"><a href="?show={{ show }}">Close</a></div></div>
+</section>
+{% endif %}
+{% comment %} TR-4 (Demetri, 15 Nov): the New trip form shows only when + New trip is pressed - or when there is no trip yet. {% endcomment %}
+{% if new_open %}
+<section class="form-card" id="new-trip" style="margin: 4px 0 18px; max-width: 820px">
+    <h3 class="form-section-title">New trip</h3>
+    <form method="post" action="{% url 'travel:trip_new' %}" class="tv-form-grid">
+        {% csrf_token %}
+        <div class="tv-wide"><label for="tn">Name</label><input id="tn" name="name" class="form-control" maxlength="120" required placeholder="e.g. Lisbon &amp; Porto"></div>
+        <div><label for="ts">From</label><input id="ts" type="date" name="start_date" class="form-control"></div>
+        <div><label for="te">To</label><input id="te" type="date" name="end_date" class="form-control"></div>
+        <div class="tv-wide"><label for="tc">Countries</label><input id="tc" name="countries" class="form-control" maxlength="200" placeholder="e.g. Portugal, Spain"></div>
+        <div class="tv-wide tv-sub small">The dates are for planning: once the trip has bookings, its dates come from them.</div>
+        <div class="tv-wide"><button type="submit" class="btn action-primary"><i class="fas fa-plus"></i> Create trip</button> <a href="?show={{ show }}" class="btn action-secondary">Cancel</a></div>
+    </form>
+</section>
+{% endif %}
 {% if count %}
 <nav class="tv-chips" aria-label="Show">
     <a class="tv-chip{% if show == 'upcoming' %} is-on{% endif %}" href="?show=upcoming">Upcoming</a>
@@ -34,7 +58,7 @@
 {% for t in trips %}
     <a class="tv-card form-card" href="{% url 'travel:trip' t.pk %}" data-trip>
         <div class="tv-row"><p class="tv-name">{{ t.name }}</p>{% if t.shared_with.all or not t.mine %}<span class="tv-tag tv-shared"><i class="fas fa-share-alt" aria-hidden="true"></i> Shared</span>{% endif %}</div>
-        <div class="tv-sub">{% if t.start %}{{ t.start|date:"j M" }}{% if t.end and t.end != t.start %} – {{ t.end|date:"j M Y" }}{% else %} {{ t.start|date:"Y" }}{% endif %}{% else %}No dates yet{% endif %}{% if t.countries %} · {{ t.countries }}{% endif %}</div>
+        <div class="tv-sub">{% if t.start %}{{ t.start|date:"j M" }}{% if t.end and t.end != t.start %} – {{ t.end|date:"j M Y" }}{% else %} {{ t.start|date:"Y" }}{% endif %}{% else %}No dates yet{% endif %}{% if t.where %} · {{ t.where }}{% endif %}</div>
         <div class="tv-row small"><span>{{ t.n }} booking{{ t.n|pluralize }}</span><span class="tv-people">{% for p in t.people %}<span class="tv-av" title="{{ p.get_full_name|default:p.username }}">{{ p.first_name|default:p.username|slice:":1"|upper }}{{ p.last_name|slice:":1"|upper }}</span>{% endfor %}</span></div>
         {% if t.money.any %}
         <div class="tv-bar" aria-hidden="true"><span style="width: {{ t.money.pct }}%"></span></div>
@@ -42,28 +66,13 @@
         {% endif %}
     </a>
 {% empty %}
-    <p class="text-muted">{% if count %}No trips here.{% else %}No trips yet. Start one below.{% endif %}</p>
+    <p class="text-muted">{% if count %}No trips here.{% else %}No trips yet. Start one above, or forward a booking email.{% endif %}</p>
 {% endfor %}
 </div>
 
-{% if phone_qr %}
-<section class="form-card tv-phone" data-phone-app style="margin-top: 22px">
-    <div class="tv-passcode" style="margin: 0">{{ phone_qr|safe }}</div>
-    <div><h3 class="form-section-title" style="margin: 0 0 4px">Travel on your phone</h3><p class="small" style="margin: 0">Point your phone&rsquo;s camera here, or open <b>alivente.online/travel/m/</b>, then <em>Add to Home screen</em>. Today, your boarding passes (even with no signal) and To check &mdash; and on Android, <em>Share &rarr; Travel</em> sends a ticket or an email straight in.</p></div>
-</section>
-{% endif %}
 
-<section class="form-card" id="new-trip" style="margin-top: 22px; max-width: 820px">
-    <h3 class="form-section-title">New trip</h3>
-    <form method="post" action="{% url 'travel:trip_new' %}" class="tv-form-grid">
-        {% csrf_token %}
-        <div class="tv-wide"><label for="tn">Name</label><input id="tn" name="name" class="form-control" maxlength="120" required placeholder="e.g. Lisbon &amp; Porto"></div>
-        <div><label for="ts">From</label><input id="ts" type="date" name="start_date" class="form-control"></div>
-        <div><label for="te">To</label><input id="te" type="date" name="end_date" class="form-control"></div>
-        <div class="tv-wide"><label for="tc">Countries</label><input id="tc" name="countries" class="form-control" maxlength="200" placeholder="e.g. Portugal, Spain"></div>
-        <div class="tv-wide"><button type="submit" class="btn action-primary"><i class="fas fa-plus"></i> Create trip</button></div>
-    </form>
-</section>
+
+
 </div>
 {% render_help_modal "travel" %}
 {% endblock %}

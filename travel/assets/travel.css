@@ -70,6 +70,12 @@ a.tv-card:active { border-color: var(--tv-teal); }
 .tv-dots span { width: 8px; height: 8px; border-radius: 50%; background: #B9C6CA; }
 .tv-dots span.on { background: var(--tv-teal); }
 .tv-in-app .tv-out { display: none; }
+/* TR-4 - Passes held upright when the phone is turned and the screen
+   rotated anyway: the page is turned back by the same angle. */
+html.tv-turn-90 body.tv-holding .tv-app, html.tv-turn-270 body.tv-holding .tv-app { position: fixed; top: 50%; left: 50%; width: 100vh; height: 100vw; max-width: none; overflow: auto; transform-origin: center center; }
+html.tv-turn-90 body.tv-holding .tv-app { transform: translate(-50%, -50%) rotate(-90deg); }
+html.tv-turn-270 body.tv-holding .tv-app { transform: translate(-50%, -50%) rotate(90deg); }
+html.tv-turn-90 body.tv-holding .tv-nav, html.tv-turn-270 body.tv-holding .tv-nav { position: sticky; }
 @media (prefers-color-scheme: dark) {
   body, .tv-app { background: #11191C; color: #E6ECEE; }
   .tv-card, .tv-tabs, .tv-nav, .tv-select, .tv-input, .tv-chip { background: #1A2428; border-color: #2B383D; color: #E6ECEE; }

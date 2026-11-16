@@ -101,10 +101,30 @@ def eur(v):
 
 
 def span(trip, bookings):
-    """The trip's dates: as set, else from its bookings."""
-    days = [d for b in bookings for d in (b.start_date, b.end_date) if d]
-    start = trip.start_date or (min(days) if days else None)
-    end = trip.end_date or (max(days) if days else None)
+    """The trip's dates. TR-4 (Demetri, 15 Nov: "Should the Trip Name and
+    the From and To Dates be based on uploaded reservations?"): once it has
+    bookings with dates, THEY are the trip - first start to last end,
+    cancelled ones left out. The dates typed on the trip count only while
+    it has none, for planning before anything is booked.
+
+    Also sets trip.where: its countries - the bookings' and the typed ones -
+    and trip.by_bookings, for the form to say so."""
+    live = [b for b in bookings if getattr(b, 'status', 'ok') != 'cancelled']
+    days = [d for b in live for d in (b.start_date, b.end_date) if d]
+    trip.by_bookings = bool(days)
+    if days:
+        start, end = min(days), max(days)
+    else:
+        start, end = trip.start_date, trip.end_date or trip.start_date
+    seen = []
+    for c in [getattr(b, 'country', '') for b in sorted(
+            live, key=lambda b: b.start_date or dt.date.max)] + \
+            trip.country_list:
+        c = (c or '').strip()
+        if c and c.lower() not in [x.lower() for x in seen]:
+            seen.append(c)
+    trip.where = ', '.join(seen)
+    trip.where_list = seen
     return start, end
 
 
@@ -165,6 +185,33 @@ def shape(b):
     return b
 
 
+def included(bs):
+    """TR-4 (Demetri, 15 Nov): a return flight's price is on its first
+    flight; the others under the same reference say "Included in CY 310"
+    instead of nothing. Sets b.included on each booking (or None)."""
+    from .inbox import norm_ref
+    payer = {}
+    for b in sorted(bs, key=lambda b: (b.start_date or dt.date.max,
+                                       b.start_time or dt.time(0))):
+        r = norm_ref(b.reference)
+        if r and b.amount is not None and r not in payer:
+            payer[r] = b
+    for b in bs:
+        o = payer.get(norm_ref(b.reference)) if b.amount is None else None
+        b.included = o if o is not None and o.pk != b.pk else None
+    return bs
+
+
+def days_of(start, end):
+    out = []
+    if start:
+        d, end = start, min(end or start, start + dt.timedelta(days=60))
+        while d <= end:
+            out.append(d)
+            d += dt.timedelta(days=1)
+    return out
+
+
 def phone_qr(request):
     from .barcodes import svg
     return svg(request.build_absolute_uri('/travel/m/'), 'qr',
@@ -205,7 +252,7 @@ def trips(request):
         t.mine = t.owner_id == request.user.id
         if start:
             years.add(start.year)
-        countries.update(t.country_list)
+        countries.update(t.where_list)
         t.past = bool(end and end < today)
         rows.append(t)
     if show == 'upcoming':
@@ -215,7 +262,7 @@ def trips(request):
     elif show.isdigit():
         sel = [t for t in rows if t.start and t.start.year == int(show)]
     elif show.startswith('c:'):
-        sel = [t for t in rows if show[2:] in t.country_list]
+        sel = [t for t in rows if show[2:] in t.where_list]
     else:
         show, sel = 'all', rows
     far = dt.date(9999, 1, 1)
@@ -225,8 +272,11 @@ def trips(request):
         'countries': sorted(countries), 'count': len(rows),
         'checks': inbox.open_count(request.user),
         'address': inbox.inbox_address(),
+        'new_open': request.GET.get('new') == '1' or not rows,
         # TR-3 - point the phone's camera at this to open the phone app.
-        'phone_qr': phone_qr(request),
+        # TR-4 - only when the Phone app button is pressed.
+        'phone_qr': phone_qr(request) if request.GET.get('phone') == '1'
+        else '',
         'requests': requests_for(request.user)})
 
 
@@ -248,12 +298,15 @@ def trip_new(request):
 @travel_view
 def trip(request, trip_id):
     t = _trip(request, trip_id)
-    tab = 'costs' if request.resolver_match.url_name == 'trip_costs' \
-        else 'bookings'
+    tab = {'trip_costs': 'costs', 'trip_itinerary': 'itinerary',
+           'trip_wishlist': 'wish'}.get(request.resolver_match.url_name,
+                                        'bookings')
     bs = list(t.bookings.prefetch_related('travellers'))
     fx.convert_pending(bs)
-    bs = [shape(b) for b in bs]
+    bs = included([shape(b) for b in bs])
     start, end = span(t, bs)
+    pl = list(t.places.all())
+    from .phone import itinerary
     days = OrderedDict()
     undated = []
     for b in bs:
@@ -280,7 +333,13 @@ def trip(request, trip_id):
         'money': totals(bs), 'coming': coming_up(bs, dt.date.today()),
         'people': [t.owner] + list(t.shared_with.all()),
         'is_owner': t.owner_id == request.user.id,
-        'requests': requests_for(request.user, t)})
+        'requests': requests_for(request.user, t),
+        # TR-4 - the itinerary (every day, bookings and places) and the
+        # wish list (places with no day yet).
+        'itinerary': itinerary(t, bs, pl) if tab == 'itinerary' else [],
+        'wish': [p for p in pl if not p.day],
+        'planned': len([p for p in pl if p.day]),
+        'trip_days': days_of(start, end)})
 
 
 @travel_view
@@ -298,6 +357,7 @@ def trip_edit(request, trip_id):
             messages.success(request, 'Trip saved.')
             return redirect('travel:trip', trip_id=t.pk)
         messages.error(request, 'Give the trip a name.')
+    t.start, t.end = span(t, list(t.bookings.all()))
     return render(request, 'travel/trip_form.html', {
         'trip': t, 'is_owner': t.owner_id == request.user.id})
 
@@ -399,7 +459,7 @@ def diff(before, b):
 FIELDS_TEXT = (('title', 160), ('provider', 120), ('reference', 60),
                ('segment', 40), ('from_place', 120), ('to_place', 120),
                ('address', 255), ('phone', 40), ('link', 500),
-               ('traveller_names', 255))
+               ('traveller_names', 255), ('city', 80), ('country', 60))
 
 
 def save_booking(request, b):
@@ -516,6 +576,11 @@ def booking(request, booking_id):
     nights = (b.end_date - b.start_date).days \
         if b.kind == 'stay' and b.start_date and b.end_date else None
     from .phone import pass_card
+    if b.amount is None:
+        others = [x for x in b.trip.bookings.all() if x.pk != b.pk]
+        included(others + [b])
+    else:
+        b.included = None
     return render(request, 'travel/booking.html', {
         'b': b, 'trip': b.trip, 'files': list(b.files.all()),
         'passes': [pass_card(p) for p in b.passes.all()],

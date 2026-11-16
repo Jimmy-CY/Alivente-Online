@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import phone, views, views_inbox
+from . import phone, report, views, views_inbox, views_places
 
 app_name = 'travel'
 
@@ -9,6 +9,35 @@ urlpatterns = [
     path('new/', views.trip_new, name='trip_new'),
     path('<int:trip_id>/', views.trip, name='trip'),
     path('<int:trip_id>/costs/', views.trip, name='trip_costs'),
+    # TR-4, 15 Nov 2026 - stage 4: the itinerary, the wish list, places.
+    path('<int:trip_id>/itinerary/', views.trip, name='trip_itinerary'),
+    path('passes/', phone.passes, name='passes'),
+    path('<int:trip_id>/pdf/', report.trip_pdf, name='trip_pdf'),
+    path('m/trip/<int:trip_id>/pdf/', report.trip_pdf, name='m_trip_pdf'),
+    path('<int:trip_id>/wish-list/', views.trip, name='trip_wishlist'),
+    path('<int:trip_id>/place/new/', views_places.place_new,
+         name='place_new'),
+    path('place/<int:place_id>/', views_places.place, name='place'),
+    path('place/<int:place_id>/move/', views_places.place_move,
+         name='place_move'),
+    path('place/<int:place_id>/done/', views_places.place_done,
+         name='place_done'),
+    path('place/<int:place_id>/again/', views_places.place_again,
+         name='place_again'),
+    path('place/<int:place_id>/delete/', views_places.place_delete,
+         name='place_delete'),
+    path('m/trip/<int:trip_id>/place/new/', views_places.place_new,
+         name='m_place_new'),
+    path('m/place/<int:place_id>/', views_places.place, name='m_place'),
+    # The phone posts under m/: its 30-day session covers only /travel/m/.
+    path('m/place/<int:place_id>/move/', views_places.place_move,
+         name='m_place_move'),
+    path('m/place/<int:place_id>/done/', views_places.place_done,
+         name='m_place_done'),
+    path('m/place/<int:place_id>/again/', views_places.place_again,
+         name='m_place_again'),
+    path('m/place/<int:place_id>/delete/', views_places.place_delete,
+         name='m_place_delete'),
     path('<int:trip_id>/edit/', views.trip_edit, name='trip_edit'),
     path('<int:trip_id>/delete/', views.trip_delete, name='trip_delete'),
     path('<int:trip_id>/share/', views.trip_share, name='trip_share'),

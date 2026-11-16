@@ -30,6 +30,7 @@
     {% if b.details %}<dt>Details</dt><dd style="white-space: pre-line; font-weight: 400">{{ b.details }}</dd>{% endif %}
   </dl>
 </section>
+{% if b.included and b.amount is None %}<section class="tv-card" data-included><p class="tv-muted" style="margin: 0">Included in the price of <a href="{% url 'travel:m_booking' b.included.pk %}">{{ b.included.segment|default:b.included.title }}</a>.</p></section>{% endif %}
 {% if b.amount is not None %}
 <section class="tv-card" data-cost>
   <div class="tv-row"><span class="tv-muted">Cost</span><b>{{ b.eur_label|default:"rate pending" }}</b></div>

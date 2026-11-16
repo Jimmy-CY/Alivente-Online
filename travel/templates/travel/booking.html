@@ -8,6 +8,8 @@
 
 <div class="page-action-buttons">
     <a href="{% url 'travel:booking_edit' b.pk %}" class="btn action-primary"><i class="fas fa-pen"></i> Edit</a>
+    {% comment %} TR-4 (Demetri, 15 Nov): delete without going into Edit first. {% endcomment %}
+    <button type="submit" form="del-booking-view" class="btn action-secondary action-danger" data-delete-booking><i class="fas fa-trash-alt"></i> Delete</button>
     <a href="{% url 'travel:trip' trip.pk %}" class="btn action-back" aria-label="Back to the trip">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
@@ -49,6 +51,7 @@
         <div class="tv-row"><span class="tv-sub">Paid</span><b class="tv-paid">{{ paid_label|default:"€0" }}</b></div>
         {% if b.paid != 'paid' %}<div class="tv-row"><span class="tv-sub">Still to pay</span><b class="tv-due">{{ due_label|default:"–" }}</b></div>{% endif %}
         {% if b.pay_by and b.paid != 'paid' %}<div class="tv-sub small">Pay by {{ b.pay_by|date:"D j M Y" }}</div>{% endif %}
+        {% elif b.included %}<p class="tv-sub" style="margin: 0" data-included>Included in the price of <a href="{% url 'travel:booking' b.included.pk %}">{{ b.included.segment|default:b.included.title }}</a> &mdash; one booking, one price.</p>
         {% else %}<p class="tv-sub" style="margin: 0">No cost entered.</p>{% endif %}
     </section>
     {% if passes %}
@@ -83,4 +86,5 @@
     <p class="tv-sub small">Added by {{ b.added_by.get_full_name|default:b.added_by.username|default:"someone" }}{% if b.source == 'email' %} from an email{% endif %} &middot; {{ b.created_at|date:"j M Y" }}</p>
 </aside>
 </div>
+<form id="del-booking-view" method="post" action="{% url 'travel:booking_delete' b.pk %}" onsubmit="return confirm('Delete {{ b.title|escapejs }} and its documents? This cannot be undone.');">{% csrf_token %}</form>
 {% endblock %}

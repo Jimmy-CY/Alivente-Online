@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}{% if p %}{{ p.name }}{% else %}Add a place{% endif %} - Travel{% endblock %}
+{% comment %} TRAVEL - TR-4, 15 Nov 2026. Add a place (a name, a link, or what Google Maps shared) - Claude looks it up - or change one. {% endcomment %}
+{% block content %}
+{% include 'travel/_style.html' %}
+{% if p and p.lookup == 'waiting' %}<meta http-equiv="refresh" content="5">{% endif %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">{% if p %}{{ p.name|upper }}{% else %}ADD A PLACE &middot; {{ trip.name|upper }}{% endif %}</h4>
+<div class="page-action-buttons">
+    {% if p %}<a href="{{ p.map_url }}" target="_blank" rel="noopener" class="btn action-secondary"><i class="fas fa-map"></i> Map</a>{% if p.website %}<a href="{{ p.website }}" target="_blank" rel="noopener" class="btn action-secondary"><i class="fas fa-globe"></i> Website</a>{% endif %}{% endif %}
+    <a href="{% if p and not p.day %}{% url 'travel:trip_wishlist' trip.pk %}{% else %}{% url 'travel:trip_itinerary' trip.pk %}{% endif %}" class="btn action-back" aria-label="Back to the trip"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+<div class="tv-wrap" style="max-width: 820px; display: flex; flex-direction: column; gap: 14px">
+{% if not p %}
+<form method="post" class="form-card" data-place-new>
+    {% csrf_token %}
+    <div class="tv-form-grid">
+        <div class="tv-wide"><label for="pq">Type a name, or paste a Google Maps or website link</label><input id="pq" name="q" class="form-control" maxlength="500" required value="{{ q }}" placeholder="e.g. Gulbenkian museum" autofocus></div>
+        <div><label for="pd">Where should it go?</label><select id="pd" name="day" class="form-control"><option value="">The wish list</option>{% for d in days %}<option value="{{ d|date:'Y-m-d' }}"{% if d|date:'Y-m-d' == day_pick %} selected{% endif %}>{{ d|date:"D j M" }}</option>{% endfor %}</select></div>
+        <div><label for="pt">Time (optional)</label><input id="pt" type="time" name="time" class="form-control"></div>
+        <div class="tv-wide"><label for="pn">Note</label><input id="pn" name="notes" class="form-control" maxlength="500" placeholder="e.g. book the 10:30 tour"></div>
+        <div class="tv-wide"><input type="hidden" name="lookup" value="0"><div class="form-check"><input class="form-check-input" type="checkbox" id="pl" name="lookup" value="1" checked><label class="form-check-label" for="pl">Look it up &mdash; address, opening hours, price and website, from the web</label></div></div>
+        <div class="tv-wide"><button type="submit" class="btn action-primary"><i class="fas fa-plus"></i> Add to {{ trip.name }}</button></div>
+    </div>
+</form>
+{% else %}
+{% if p.lookup == 'waiting' %}<div class="alert alert-info" role="status" data-looking><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Looking it up on the web&hellip; this page refreshes by itself.</div>{% endif %}
+{% if p.lookup == 'failed' %}<div class="alert alert-warning" role="status" data-lookup-failed>{{ p.lookup_note|default:"It could not be looked up." }} <form method="post" action="{% url 'travel:place_again' p.pk %}" style="display: inline">{% csrf_token %}<button type="submit" class="btn btn-link btn-sm p-0">Try again</button></form></div>{% endif %}
+{% if p.about %}<section class="form-card"><p style="margin: 0">{{ p.about }}</p></section>{% endif %}
+<form method="post" class="form-card" data-place-edit>
+    {% csrf_token %}
+    <div class="tv-form-grid">
+        <div class="tv-wide"><label for="en">Name</label><input id="en" name="name" class="form-control" maxlength="160" required value="{{ p.name }}"></div>
+        <div><label for="ek">Kind</label><select id="ek" name="kind" class="form-control">{% for k, l in kinds %}<option value="{{ k }}"{% if p.kind == k %} selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+        <div><label for="ed">Day</label><select id="ed" name="day" class="form-control"><option value="">The wish list</option>{% for d in days %}<option value="{{ d|date:'Y-m-d' }}"{% if p.day == d %} selected{% endif %}>{{ d|date:"D j M" }}</option>{% endfor %}</select></div>
+        <div><label for="et">Time</label><input id="et" type="time" name="time" class="form-control" value="{{ p.time|time:'H:i' }}"></div>
+        <div class="tv-wide"><label for="ea">Address</label><input id="ea" name="address" class="form-control" maxlength="255" value="{{ p.address }}"></div>
+        <div><label for="eh">Opening hours</label><input id="eh" name="hours" class="form-control" maxlength="255" value="{{ p.hours }}"></div>
+        <div><label for="ep">Price</label><input id="ep" name="price" class="form-control" maxlength="120" value="{{ p.price }}"></div>
+        <div class="tv-wide"><label for="ew">Website</label><input id="ew" type="url" name="website" class="form-control" maxlength="500" value="{{ p.website }}"></div>
+        <div class="tv-wide"><label for="eo">Notes</label><textarea id="eo" name="notes" class="form-control" rows="3">{{ p.notes }}</textarea></div>
+        <div class="tv-wide tv-sub small">{% if p.lookup == 'found' %}Filled in from the web &mdash; check the hours before you go. {% endif %}Added by {{ p.added_by.get_full_name|default:p.added_by.username|default:"someone" }}.</div>
+        <div class="tv-wide"><button type="submit" class="btn action-primary">Save</button>
+        <button type="submit" form="pdel" class="btn action-secondary action-danger">Remove</button></div>
+    </div>
+</form>
+<form id="pdel" method="post" action="{% url 'travel:place_delete' p.pk %}" onsubmit="return confirm('Remove {{ p.name|escapejs }} from the trip?');">{% csrf_token %}</form>
+{% endif %}
+</div>
+{% render_help_modal "travel" %}
+{% endblock %}

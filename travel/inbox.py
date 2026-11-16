@@ -412,7 +412,9 @@ def route(e, item, files):
 # ----------------------------------------------------------------- apply
 FIELDS = ['kind', 'title', 'provider', 'reference', 'segment', 'start_date',
           'start_time', 'end_date', 'end_time', 'from_place', 'to_place',
-          'address', 'phone', 'link', 'details', 'pay_by', 'cancel_until']
+          'address', 'phone', 'link', 'details', 'pay_by', 'cancel_until',
+          # TR-4 - where it is: the trip's countries come from these.
+          'city', 'country']
 
 
 def _val(f, v):

@@ -46,6 +46,22 @@
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'visible') { upright(); }
     });
+    // Where the phone will not hold the screen upright (a browser tab, an
+    // iPhone), turn the passes back the other way, so the pass stays
+    // where it was in the hand however the phone is turned.
+    function counter() {
+      var a = (screen.orientation && typeof screen.orientation.angle === 'number')
+        ? screen.orientation.angle : (window.orientation || 0);
+      a = ((a % 360) + 360) % 360;
+      html.classList.toggle('tv-turn-90', a === 90);
+      html.classList.toggle('tv-turn-270', a === 270);
+    }
+    counter();
+    if (screen.orientation && screen.orientation.addEventListener) {
+      screen.orientation.addEventListener('change', counter);
+    }
+    window.addEventListener('orientationchange', counter);
+    window.addEventListener('resize', counter);
     window.addEventListener('pagehide', function () {
       try { if (screen.orientation && screen.orientation.unlock) { screen.orientation.unlock(); } } catch (e) {}
     });
@@ -58,6 +74,28 @@
       dots.forEach(function (d, n) { d.classList.toggle('on', n === i); });
     }, {passive: true});
   }
+  // TR-4 - a trip's PDF to the phone's share sheet; opened where the phone
+  // cannot share files.
+  document.querySelectorAll('[data-share-pdf]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var url = b.getAttribute('data-share-pdf');
+      var label = b.textContent;
+      b.disabled = true;
+      b.textContent = 'Making the PDF…';
+      fetch(url, {credentials: 'same-origin'}).then(function (r) {
+        if (!r.ok) { throw new Error('pdf'); }
+        return r.blob();
+      }).then(function (blob) {
+        var file = new File([blob], b.getAttribute('data-share-name'), {type: 'application/pdf'});
+        if (navigator.canShare && navigator.share && navigator.canShare({files: [file]})) {
+          return navigator.share({files: [file], title: b.getAttribute('data-share-title')});
+        }
+        window.location.href = url;
+      }).catch(function (e) {
+        if (!e || e.name !== 'AbortError') { window.location.href = url; }
+      }).then(function () { b.disabled = false; b.textContent = label; });
+    });
+  });
   // Confirm before a destructive button.
   document.querySelectorAll('[data-confirm]').forEach(function (b) {
     b.addEventListener('click', function (e) {
