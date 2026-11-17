@@ -139,9 +139,11 @@ ok('<strong>Suggest things to do.</strong>' in hp and
    '<b>Suggest things to do</b>' in read(J(TT, 'm', 'help.html')),
    'HELP: on the computer and the phone')
 ph = read(J(TA, 'phone.py'))
-ok("SW_VERSION = 'tv12-1'" in ph and '?v=tv12-1' in read(
+# TR-15 (17 Nov) moved it on: tv12-1 or later, worker and page agreeing.
+_v = re.search(r"SW_VERSION = 'tv(\d+)-(\d+)'", ph)
+ok(_v and int(_v.group(1)) >= 12 and '?v=tv%s-%s' % _v.groups() in read(
     J(TT, 'm', 'base.html')),
-   'the phone fetches the new style (tv12-1)')
+   'the phone fetches the new style (tv12-1 or later)')
 
 # ==========================================================================
 head('2. THE RULES (travel/ideas.py)')

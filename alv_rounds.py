@@ -1646,6 +1646,8 @@ ROUNDS = [
     '.bak_travel13',
     # TR-14, 17 Nov 2026 - Release 95: Show me more keeps the ticks.
     '.bak_travel14',
+    # TR-15, 17 Nov 2026 - Release 96: the phone's version moves with its style.
+    '.bak_travel15',
 ]
 
 

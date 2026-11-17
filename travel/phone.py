@@ -53,7 +53,13 @@ ASSET_TYPES = {
 # Bump this AND the ?v= in travel/m/base.html together whenever the style
 # or script changes: an installed app keeps the old files until it moves.
 # test_travel_three.py checks the two agree.
-SW_VERSION = 'tv12-1'
+# TR-15, 17 Nov 2026 (R95 changed travel.css but not this, and the phone
+# app kept its old copy - the calendar came out unstyled): the version
+# moves whenever travel.css or travel.js does. SW_ASSETS is the fingerprint
+# of the two it was moved for; test_travel_fifteen.py fails the gate when
+# they change and it does not.
+SW_VERSION = 'tv15-1'
+SW_ASSETS = 'aace7b3e2c05'
 
 
 def page(request, template, ctx):
