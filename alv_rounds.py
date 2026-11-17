@@ -1635,6 +1635,9 @@ ROUNDS = [
     '.bak_travel9',
     # TR-10, 16 Nov 2026 - Release 90: drag a day into order, phone too.
     '.bak_travel10',
+    # GS-4, 16 Nov 2026 - Release 91: test_gate_walk measures its speed
+    # ratio twice before it stops a push.
+    '.bak_gateretry',
 ]
 
 

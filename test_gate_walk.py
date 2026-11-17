@@ -351,6 +351,27 @@ head('4. AND IT IS A DIFFERENT SIZE OF QUESTION')
 # WAS a number that differed between two machines.
 print('       old spelling: %6.2fs for %d names' % (t_old, len(SAMPLE)))
 print('       new spelling: %6.2fs' % (t_new,))
+# GS-4, 16 Nov 2026 - MEASURED TWICE BEFORE IT FAILS. On 16 Nov this
+# check stopped Demetri's R90 gate at 19 of 530: 7.78s against 33.95s,
+# a ratio of 4.4 on a laptop that was busy, and the same suite PASSED
+# when the gate ran it alone a minute later. Nothing in the tree had
+# changed - the picture moved, not the code (the F2a-1 pixel lesson).
+# So a ratio short of ten is measured once more, both spellings again,
+# and the claim fails only if the second measurement agrees with the
+# first. A real loss of the cache is still caught: it would be slow
+# both times.
+if BEFORE is not None and not t_new * 10 < t_old:
+    print('       the ratio was %.1f - measuring once more before '
+          'deciding' % (t_old / max(t_new, 1e-9),))
+    t0 = time.time()
+    [BEFORE._toolchain(ROOT, nm, p) for nm, p in SAMPLE]
+    t_old2 = time.time() - t0
+    t0 = time.time()
+    [CG._toolchain(ROOT, nm, p) for nm, p in SAMPLE]
+    t_new2 = time.time() - t0
+    print('       again: old %6.2fs, new %6.2fs' % (t_old2, t_new2))
+    if t_new2 * 10 < t_old2:
+        t_old, t_new = t_old2, t_new2
 ok(t_new * 10 < t_old,
    'the new spelling is more than ten times cheaper - and the ratio '
    'is the claim, not the seconds, because the seconds are a fact '
