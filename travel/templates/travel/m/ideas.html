@@ -1,0 +1,12 @@
+{% extends 'travel/m/base.html' %}
+{% comment %} TR-12, 17 Nov 2026 - the suggestions on the phone: read, tick, Add. {% endcomment %}
+{% block title %}Suggestions - Travel{% endblock %}
+{% block top %}<div style="min-width: 0"><a class="tv-back" href="{{ back }}"><span aria-hidden="true">‹</span> {{ trip.name }}</a><h1>Suggestions</h1></div>{% endblock %}
+{% block content %}
+<div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px">{% include 'travel/_ideas_top.html' %}<a href="{{ setup_url }}" class="tv-muted tv-small" data-idea-change>Change what you like</a></div>
+<form method="post" action="{{ add_url }}" data-idea-list>{% csrf_token %}<input type="hidden" name="city_f" value="{{ city }}"><input type="hidden" name="hidden_f" value="{% if show_hidden %}1{% endif %}">
+  {% include 'travel/_ideas_list.html' %}
+  <div class="tv-pl-bottom" style="flex-direction: column; gap: 4px"><span class="tv-muted tv-small" style="text-align: center">Each one you add is looked up for its address and opening hours.</span><button type="submit" class="tv-btn" data-idea-add>Add to Things to do</button></div>
+</form>
+{% include 'travel/_ideas_js.html' %}
+{% endblock %}

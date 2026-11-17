@@ -23,9 +23,11 @@
 {% else %}<section class="tv-card"><p class="tv-muted" style="margin: 0">The itinerary needs the trip&rsquo;s dates &mdash; they come from its bookings.</p></section>{% endif %}
 {% elif sub == 'wish' %}
 {% comment %} TR-4 - Things to do: places with no day yet. TR-11 - Plan my days, to spread them over the trip. {% endcomment %}
-<div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px">{% include 'travel/_plan_banner.html' with phone=True %}
+<div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px">{% include 'travel/_ideas_added.html' with phone=True %}{% include 'travel/_plan_banner.html' with phone=True %}
 {% if wish and trip_days and not plan_open and not plan_new %}<section class="tv-pl-cta" data-plan-cta><div><b>{{ wish|length }} thing{{ wish|length|pluralize }} to do ha{{ wish|length|pluralize:"s,ve" }} no day yet</b><br><span style="opacity: .92; font-size: 13px">Let Alivente spread {{ wish|length|pluralize:"it,them" }} over your trip &ndash; by opening hours, busy times and what is near what.</span></div><a class="go" href="{% url 'travel:m_plan_setup' trip.pk %}">Plan my days</a></section>{% endif %}</div>
 <a href="{% url 'travel:m_place_new' trip.pk %}" class="tv-btn wide" data-add-place>+ Things to do</a>
+{% comment %} TR-12, 17 Nov 2026 - Suggest things to do, under + Things to do. {% endcomment %}
+<a href="{% url 'travel:m_ideas' trip.pk %}" class="tv-btn sec wide tv-id-sugg" style="margin: 8px 0 10px; border-width: 2px" data-idea-suggest><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg> {% if ideas_open %}Finding ideas&hellip;{% elif ideas_left %}Your suggestions &middot; {{ ideas_left }} left to look at{% else %}Suggest things to do{% endif %}</a>
 {% for p in wish %}
 <section class="tv-card" data-wish-item>
   {% include 'travel/m/_row.html' with b=p %}

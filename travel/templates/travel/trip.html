@@ -104,10 +104,11 @@
     {% endif %}
 {% elif tab == 'wish' %}
     {% comment %} TR-4 - places with no day yet. TR-11 - and Plan my days, to spread them over the trip. {% endcomment %}
-    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px">{% include 'travel/_plan_banner.html' %}
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px">{% include 'travel/_ideas_added.html' %}{% include 'travel/_plan_banner.html' %}
     {% if wish and trip_days and not plan_open and not plan_new %}<section class="tv-pl-cta" data-plan-cta><div><b>{{ wish|length }} thing{{ wish|length|pluralize }} to do ha{{ wish|length|pluralize:"s,ve" }} no day yet</b><br><span style="opacity: .92; font-size: .9rem">Let Alivente spread {{ wish|length|pluralize:"it,them" }} over your trip &ndash; by opening hours, busy times and what is near what.</span></div><a class="go" href="{% url 'travel:plan_setup' trip.pk %}" style="max-width: 260px">Plan my days</a></section>{% endif %}</div>
     <section class="form-card" data-wishlist>
-        <div class="tv-row"><h3 class="form-section-title" style="margin: 0">Things to do</h3><a href="{% url 'travel:place_new' trip.pk %}" class="btn action-primary btn-sm"><i class="fas fa-plus"></i> Things to do</a></div>
+        {% comment %} TR-12, 17 Nov 2026 - Suggest things to do, beside + Things to do (Demetri: "Can we add another button to Things to Do"). {% endcomment %}
+        <div class="tv-row"><h3 class="form-section-title" style="margin: 0">Things to do</h3><span style="display: flex; gap: 8px; flex-wrap: wrap"><a href="{% url 'travel:ideas' trip.pk %}" class="btn action-secondary btn-sm tv-id-sugg" data-idea-suggest><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg> {% if ideas_open %}Finding ideas&hellip;{% elif ideas_left %}Your suggestions &middot; {{ ideas_left }} left to look at{% else %}Suggest things to do{% endif %}</a><a href="{% url 'travel:place_new' trip.pk %}" class="btn action-primary btn-sm"><i class="fas fa-plus"></i> Things to do</a></span></div>
         {% for p in wish %}
         <div data-wish-item>
             {% include 'travel/_place_row.html' %}

@@ -1,7 +1,7 @@
 from django.urls import path
 
-from . import (compare, phone, report, views, views_inbox, views_places,
-               views_plan)
+from . import (compare, phone, report, views, views_ideas, views_inbox,
+               views_places, views_plan)
 
 app_name = 'travel'
 
@@ -55,6 +55,21 @@ urlpatterns = [
          name='m_plan_undo'),
     path('m/trip/<int:trip_id>/plan/<int:plan_id>/discard/',
          views_plan.discard, name='m_plan_discard'),
+    # TR-12, 17 Nov 2026 - Suggest things to do.
+    path('<int:trip_id>/ideas/new/', views_ideas.setup, name='ideas_setup'),
+    path('<int:trip_id>/ideas/', views_ideas.ideas, name='ideas'),
+    path('<int:trip_id>/ideas/add/', views_ideas.add, name='ideas_add'),
+    path('<int:trip_id>/ideas/hide/', views_ideas.hide, name='ideas_hide'),
+    path('<int:trip_id>/ideas/more/', views_ideas.more, name='ideas_more'),
+    path('m/trip/<int:trip_id>/ideas/new/', views_ideas.setup,
+         name='m_ideas_setup'),
+    path('m/trip/<int:trip_id>/ideas/', views_ideas.ideas, name='m_ideas'),
+    path('m/trip/<int:trip_id>/ideas/add/', views_ideas.add,
+         name='m_ideas_add'),
+    path('m/trip/<int:trip_id>/ideas/hide/', views_ideas.hide,
+         name='m_ideas_hide'),
+    path('m/trip/<int:trip_id>/ideas/more/', views_ideas.more,
+         name='m_ideas_more'),
     path('place/<int:place_id>/done/', views_places.place_done,
          name='place_done'),
     path('place/<int:place_id>/again/', views_places.place_again,

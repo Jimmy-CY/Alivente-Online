@@ -1,0 +1,19 @@
+{% comment %} TR-12, 17 Nov 2026 - Suggest things to do: the two questions, shared by the computer's one page and the phone's two steps (Demetri approved the canvas "Alivente Travel - Suggest things to do", 17 Nov). {% endcomment %}
+<fieldset class="tv-pl-part tv-id-part" data-idea-step="1" style="border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px">
+  <legend style="font-size: 1.05rem; font-weight: 700; margin-bottom: 4px">{% if desk %}<span class="tv-pl-num">1</span> {% endif %}Which cities</legend>
+  <span style="font-size: .88rem; color: #4A5A61">{% if cities %}From your hotel bookings. Untick any you don&rsquo;t want ideas for.{% else %}No hotel on the trip yet &ndash; type the city below.{% endif %}</span>
+  {% for c in cities %}<label class="tv-id-city" data-idea-city><input type="checkbox" name="city" value="{{ c.name }}"{% if c.on %} checked{% endif %}><span style="display: flex; flex-direction: column"><b>{{ c.name }}</b><span style="font-size: .84rem; color: #5B6B72">{% if c.start %}{{ c.start|date:"D j M" }}{% if c.end and c.end != c.start %} &ndash; {{ c.end|date:"D j M" }}{% endif %}{% endif %}{% if c.nights %} &middot; {{ c.nights }} night{{ c.nights|pluralize }}{% endif %}{% if c.hotel %} &middot; {{ c.hotel }}{% endif %}</span></span></label>{% endfor %}
+  {% for c in extra_cities %}<label class="tv-id-city"><input type="checkbox" name="city" value="{{ c }}" checked><span style="display: flex; flex-direction: column"><b>{{ c }}</b><span style="font-size: .84rem; color: #5B6B72">You added it</span></span></label>{% endfor %}
+  <label for="id-other" style="font-weight: 700; font-size: .92rem; margin: 8px 0 0">+ Another city <span style="font-weight: 400; color: #5B6B72">for a day trip &ndash; optional</span></label>
+  <input id="id-other" name="other" class="tv-id-input" placeholder="e.g. Sintra" maxlength="120" autocomplete="off" data-idea-other>
+  <span style="font-size: .8rem; color: #5B6B72">More than one? Separate them with commas.</span>
+</fieldset>
+<fieldset class="tv-pl-part tv-id-part" data-idea-step="2" style="border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px">
+  <legend style="font-size: 1.05rem; font-weight: 700; margin-bottom: 4px">{% if desk %}<span class="tv-pl-num">2</span> {% endif %}What you like</legend>
+  <div class="tv-id-chips" role="group" aria-label="What interests you">{% for i in interests %}<label class="tv-id-chip" data-idea-interest><input type="checkbox" name="interest" value="{{ i.key }}"{% if i.on %} checked{% endif %}><svg class="tick" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>{{ i.name }}</label>{% endfor %}</div>
+  <span style="font-size: .8rem; color: #5B6B72">Restaurants are left out &ndash; book those as usual. Food markets and famous caf&eacute;s come under Markets &amp; shopping.</span>
+  <b style="font-size: .95rem; margin-top: 4px">Famous or off the beaten track?</b>
+  <div class="tv-pl-seg" role="radiogroup" aria-label="Famous or off the beaten track">{% for k, n, s in styles %}<label class="tv-pl-opt"><input type="radio" name="style" value="{{ k }}"{% if k == style %} checked{% endif %}><b>{{ n }}</b><span>{{ s }}</span></label>{% endfor %}</div>
+  <label for="id-extra" style="font-weight: 700; font-size: .95rem; margin: 4px 0 0">Anything else? <span style="font-weight: 400; color: #5B6B72">optional</span></label>
+  <input id="id-extra" name="extra" class="tv-id-input" value="{{ extra }}" maxlength="200" placeholder="e.g. we like live music, not long queues">
+</fieldset>

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}Suggestions - {{ trip.name }} - Travel{% endblock %}
+{% comment %} TRAVEL - TR-12, 17 Nov 2026. The suggestions as cards: read, tick, Add (Demetri: "The user must then read up on these (short blurb) and then tick which ones they want to add to their Things to Do"). {% endcomment %}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">{{ trip.name|upper }} &middot; SUGGESTIONS</h4>
+<div class="page-action-buttons">
+    <a href="{{ setup_url }}" class="btn action-secondary" data-idea-change><i class="fas fa-sliders-h"></i> Change what you like</a>
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
+    <a href="{{ back }}" class="btn action-back" aria-label="Back to the trip"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+<div class="tv-wrap">
+<div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px">{% include 'travel/_ideas_top.html' %}</div>
+<form method="post" action="{{ add_url }}" data-idea-list>{% csrf_token %}<input type="hidden" name="city_f" value="{{ city }}"><input type="hidden" name="hidden_f" value="{% if show_hidden %}1{% endif %}">
+  {% include 'travel/_ideas_list.html' with desk=True %}
+  <div class="tv-id-bar" style="position: sticky; bottom: 0; z-index: 5"><span><b data-idea-count></b> <span style="color: #5B6B72">Each one you add is looked up for its address and opening hours.</span></span><button type="submit" class="btn action-primary" data-idea-add>Add to Things to do</button></div>
+</form>
+</div>
+{% include 'travel/_ideas_js.html' %}
+{% render_help_modal "travel" %}
+{% endblock %}

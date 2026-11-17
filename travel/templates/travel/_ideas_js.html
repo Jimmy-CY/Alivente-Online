@@ -1,0 +1,44 @@
+{% comment %} TR-12 - Suggest things to do: on the phone, the two steps one at a time (without the script both show, with one button); the Add button counts what is ticked. {% endcomment %}
+<script>
+(function () {
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('input[name=idea]'));
+  var adds = document.querySelectorAll('[data-idea-add]');
+  function count() {
+    var n = boxes.filter(function (b) { return b.checked; }).length;
+    adds.forEach(function (a) {
+      a.disabled = n === 0;
+      a.textContent = n ? 'Add ' + n + ' to Things to do' : 'Tick the ones you want';
+    });
+    document.querySelectorAll('[data-idea-count]').forEach(function (c) { c.textContent = n ? n + ' ticked' : ''; });
+  }
+  boxes.forEach(function (b) { b.addEventListener('change', count); });
+  if (boxes.length) { count(); }
+  var form = document.querySelector('[data-idea-steps]');
+  if (!form) { return; }
+  var parts = Array.prototype.slice.call(form.querySelectorAll('[data-idea-step]'));
+  var bars = form.querySelectorAll('[data-idea-bar] span');
+  var label = form.querySelector('[data-idea-steplabel]');
+  var next = form.querySelector('[data-idea-next]');
+  var back = form.querySelector('[data-idea-back]');
+  var go = form.querySelector('[data-idea-go]');
+  var names = ['Which cities', 'What you like'];
+  var at = 0;
+  function show() {
+    parts.forEach(function (p, i) { p.hidden = i !== at; });
+    bars.forEach(function (b, i) { b.classList.toggle('on', i <= at); });
+    if (label) { label.textContent = 'Step ' + (at + 1) + ' of ' + parts.length + ' · ' + names[at]; }
+    next.hidden = at === parts.length - 1;
+    go.hidden = at !== parts.length - 1;
+    back.hidden = at === 0;
+    window.scrollTo(0, 0);
+  }
+  next.addEventListener('click', function () {
+    var any = form.querySelector('input[name=city]:checked') || (form.querySelector('[data-idea-other]').value || '').trim();
+    if (!any) { form.querySelector('[data-idea-other]').focus(); return; }
+    at = 1; show();
+  });
+  back.addEventListener('click', function () { at = 0; show(); });
+  form.classList.add('tv-pl-js');
+  show();
+})();
+</script>

@@ -1,0 +1,8 @@
+{% comment %} TR-12 - one suggestion: tick it to add it; its blurb, how long, what it costs, book ahead, a note for the dates; Google Maps; Not interested (or Bring it back). {% endcomment %}
+<div class="tv-id-card{% if i.state == 'hidden' %} is-hidden{% endif %}" data-idea="{{ i.pk }}">
+  {% if i.state == 'hidden' %}<div class="tv-id-pick"><span><b>{{ i.name }}</b>{% if i.area %}<small>{{ i.area }}</small>{% endif %}</span></div>
+  {% else %}<label class="tv-id-pick"><input type="checkbox" name="idea" value="{{ i.pk }}"{% if i.ticked %} checked{% endif %} aria-label="Add {{ i.name }}"><span><b>{{ i.name }}</b>{% if i.area %}<small>{{ i.area }}</small>{% endif %}</span></label>{% endif %}
+  {% if i.blurb %}<p class="tv-id-blurb">{{ i.blurb }}</p>{% endif %}
+  {% if i.visit or i.price or i.book or i.note %}<div class="tv-id-tags">{% if i.visit %}<span class="tv-id-tag">{{ i.visit }}</span>{% endif %}{% if i.price %}<span class="tv-id-tag">{{ i.price }}</span>{% endif %}{% if i.book %}<span class="tv-id-tag book">Book ahead</span>{% endif %}{% if i.note %}<span class="tv-id-tag note">{{ i.note }}</span>{% endif %}</div>{% endif %}
+  <div class="tv-id-acts"><a href="https://www.google.com/maps/search/?api=1&amp;query={{ i.name|urlencode }}%2C%20{{ i.city|urlencode }}" target="_blank" rel="noopener">View on Google Maps</a>{% if i.state == 'hidden' %}<button type="submit" formaction="{{ hide_url }}" formnovalidate name="unhide" value="{{ i.pk }}" data-idea-unhide>Bring it back</button>{% else %}<button type="submit" formaction="{{ hide_url }}" formnovalidate name="hide" value="{{ i.pk }}" data-idea-hide>Not interested</button>{% endif %}</div>
+</div>

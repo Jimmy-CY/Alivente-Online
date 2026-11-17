@@ -1,0 +1,8 @@
+{% extends 'travel/m/base.html' %}
+{% comment %} TR-12, 17 Nov 2026 - Suggest things to do while it works; the page refreshes itself every 3 seconds. {% endcomment %}
+{% block title %}Finding ideas - Travel{% endblock %}
+{% block top %}<div style="min-width: 0"><a class="tv-back" href="{{ back }}"><span aria-hidden="true">‹</span> {{ trip.name }}</a><h1>Suggest things to do</h1></div>{% endblock %}
+{% block content %}
+<section class="tv-card" style="display: flex; flex-direction: column; gap: 14px">{% include 'travel/_ideas_working_body.html' %}</section>
+<script>setTimeout(function () { window.location.reload(); }, 3000);</script>
+{% endblock %}

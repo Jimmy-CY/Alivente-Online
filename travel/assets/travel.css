@@ -183,3 +183,41 @@ html.tv-turn-90 body.tv-holding .tv-nav, html.tv-turn-270 body.tv-holding .tv-na
 .tv-pl-stephead span { flex: 1; height: 4px; border-radius: 4px; background: #D5DDE0; }
 .tv-pl-stephead span.on { background: #0F7480; }
 [data-plan-step][hidden], [data-plan-next][hidden], [data-plan-back][hidden], [data-plan-go][hidden] { display: none !important; }
+/* TR-12, 17 Nov 2026 - Suggest things to do: the cities, the interests, the cards to tick. */
+.tv-id-city { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid #E1E6E8; min-height: 44px; margin: 0; cursor: pointer; font-weight: 400; }
+.tv-id-city input { width: 22px; height: 22px; accent-color: #0F7480; flex: none; margin: 0; }
+.tv-id-input { box-sizing: border-box; width: 100%; min-height: 44px; border-radius: 10px; border: 1px solid #C9D3D6; padding: 0 12px; font: inherit; background: #FFFFFF; color: #1D2B31; }
+.tv-id-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tv-id-chip { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 999px; border: 1px solid #C9D3D6; background: #FFFFFF; color: #1D2B31; font-weight: 600; font-size: .9rem; cursor: pointer; margin: 0; text-decoration: none; }
+.tv-id-chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.tv-id-chip .tick { display: none; }
+.tv-id-chip:has(input:checked), .tv-id-chip.on { border: 2px solid #0F7480; background: #E3F1F3; color: #0B5A63; }
+.tv-id-chip:has(input:checked) .tick { display: inline; }
+.tv-id-chip:focus-within { outline: 2px solid #0F7480; outline-offset: 2px; }
+.tv-id-chip .n { font-weight: 400; color: #4A5A61; }
+.tv-id-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; align-items: start; }
+.tv-id-list { display: flex; flex-direction: column; gap: 10px; }
+.tv-id-cityhead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; grid-column: 1 / -1; margin-top: 8px; }
+.tv-id-cityhead b { font-size: 1.3rem; }
+.tv-id-group { grid-column: 1 / -1; font-size: .76rem; font-weight: 700; letter-spacing: .05em; color: #5B6B72; text-transform: uppercase; padding-top: 4px; }
+.tv-id-card { background: #FFFFFF; border: 1px solid #E1E6E8; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.tv-id-card:has(input[name=idea]:checked) { border: 2px solid #0F7480; padding: 11px; }
+.tv-id-card.is-hidden { opacity: .75; background: #F3F5F6; }
+.tv-id-pick { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; margin: 0; font-weight: 400; }
+.tv-id-pick input { width: 24px; height: 24px; accent-color: #0F7480; flex: none; margin: 0; }
+.tv-id-pick b { font-size: 1rem; display: block; }
+.tv-id-pick small { font-size: .8rem; color: #5B6B72; }
+.tv-id-blurb { font-size: .92rem; line-height: 1.4; color: #33444B; margin: 0; }
+.tv-id-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tv-id-tag { font-size: .75rem; color: #4A5A61; border: 1px solid #D5DDE0; border-radius: 999px; padding: 2px 8px; }
+.tv-id-tag.book { color: #0B5A63; border-color: #9CC9CF; }
+.tv-id-tag.note { color: #8A4500; border-color: #E8C29C; }
+.tv-id-acts { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.tv-id-acts a { font-size: .85rem; font-weight: 600; text-decoration: none; color: #0F7480; min-height: 36px; display: inline-flex; align-items: center; }
+.tv-id-acts button { background: none; border: 0; color: #4A5A61; font: inherit; font-size: .85rem; min-height: 36px; padding: 0 2px; cursor: pointer; }
+.tv-id-more { display: flex; flex-direction: column; align-items: center; gap: 4px; grid-column: 1 / -1; padding: 4px 0 8px; }
+.tv-id-more button { min-height: 46px; padding: 0 20px; border: 1px solid #0F7480; color: #0F7480; background: #FFFFFF; border-radius: 10px; font: inherit; font-weight: 700; cursor: pointer; }
+.tv-id-bar { background: #FFFFFF; border: 1px solid #E1E6E8; border-radius: 14px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; margin-top: 12px; box-shadow: 0 1px 3px rgba(16,34,40,.06); }
+.tv-id-bar button[disabled] { opacity: .5; cursor: default; }
+.tv-id-sugg { display: flex; align-items: center; justify-content: center; gap: 8px; }
+[data-idea-step][hidden], [data-idea-next][hidden], [data-idea-back][hidden], [data-idea-go][hidden] { display: none !important; }

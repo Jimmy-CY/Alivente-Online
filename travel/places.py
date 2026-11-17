@@ -710,3 +710,117 @@ def call_reasons(summary, client=None):
         if isinstance(d, dict) and d.get('day') and d.get('why'):
             out[str(d['day'])[:10]] = str(d['why']).strip()[:200]
     return out
+
+
+# ==========================================================================
+# TR-12, 17 Nov 2026 - SUGGEST THINGS TO DO.
+#
+# Demetri: "based on the city where you are going to be ... the system must
+# do a search and identify the top Things to Do for that destination", with
+# what you like asked first, then "a short blurb" for each to tick. Agreed:
+# from the AI's own knowledge, no web search (quick, and the web look-up
+# still checks every one that is added); no restaurants; about 10 - 12 a
+# city with Show me more; and never one already in Things to do (Demetri:
+# "It must also not repeat suggestions, if these are already in the Things
+# to Do"). travel/ideas.py keeps them and filters again by name.
+# ==========================================================================
+SUGGEST_MODEL = os.environ.get('TRAVEL_SUGGEST_MODEL', MODEL)
+SUGGEST_SYSTEM = """You suggest things to do in one city for a family \
+trip, as a well-travelled local friend would. Call record_ideas once.
+
+- Suggest only what fits the interests given; spread the ideas across \
+them. Each idea's interest is one of the keys given.
+- Real, well-established places, streets, areas or day trips you are sure \
+still exist and are open to visitors. Never invent one.
+- No restaurants, bars or places to eat a meal. Food markets and famous \
+cafes are allowed only under the markets interest.
+- Never suggest anything in the list of what to leave out, nor the same \
+place under another name or language.
+- blurb: two or three plain sentences - what it is and why it is worth \
+going. No exclamation marks, no emoji.
+- area: its neighbourhood, or how far it is from the centre.
+- visit: a typical visit ("1 - 2 h", "half a day"). price: "free", \
+"about EUR 15", or "" if you do not know.
+- book: true only if tickets usually need booking ahead.
+- note: at most one short line, only when useful for the trip's dates - \
+an event on during the stay, a closing day ("Closed Mon"), or the best \
+time to go. Otherwise "".
+- famous: the classics; mix: some of each; local: fewer of the obvious \
+sights, more that locals love."""
+SUGGEST_TOOL = {
+    'name': 'record_ideas',
+    'description': 'Record the things to do suggested for the city.',
+    'input_schema': {
+        'type': 'object',
+        'properties': {'ideas': {'type': 'array', 'items': {
+            'type': 'object', 'properties': {
+                'name': {'type': 'string', 'description':
+                         'Its proper name, as on a map.'},
+                'interest': {'type': 'string'},
+                'kind': {'type': 'string', 'enum': KINDS},
+                'area': {'type': 'string'},
+                'blurb': {'type': 'string'},
+                'visit': {'type': 'string'},
+                'price': {'type': 'string'},
+                'book': {'type': 'boolean'},
+                'note': {'type': 'string'}},
+            'required': ['name', 'interest', 'blurb']}}},
+        'required': ['ideas'],
+    },
+}
+
+
+def call_ideas(city, country, dates, interests, style, extra, leave_out,
+               count=12, client=None):
+    """record_ideas for one city: a list of dicts (see SUGGEST_TOOL).
+    interests: [(key, label)]; leave_out: names not to suggest."""
+    client = _client(client)
+    ask = ['City: %s%s' % (city, ', %s' % country if country else ''),
+           'Dates: %s' % dates if dates else 'Dates: not known',
+           'Interests (key: what): %s' % '; '.join(
+               '%s: %s' % kv for kv in interests),
+           'Famous or local: %s' % style,
+           'How many: about %d' % count]
+    if extra:
+        ask.append('They also said: %s' % extra[:200])
+    if leave_out:
+        ask.append('Leave out (already on their list or already shown): '
+                   '%s' % '; '.join(leave_out[:120]))
+    try:
+        msg = client.messages.create(
+            model=SUGGEST_MODEL, max_tokens=4000, system=SUGGEST_SYSTEM,
+            tools=[SUGGEST_TOOL],
+            tool_choice={'type': 'tool', 'name': 'record_ideas'},
+            messages=[{'role': 'user', 'content': '\n'.join(ask)}])
+    except Exception as e:                              # noqa: BLE001
+        logger.warning('travel ideas: %s', e)
+        raise LookupError_('Claude could not be reached (%s).'
+                           % type(e).__name__)
+    got = _tool_input(msg, 'record_ideas')
+    return [i for i in got.get('ideas') or [] if isinstance(i, dict)]
+
+
+def start_many(ids):
+    """Look up several places one after another - in the background,
+    unless SYNC (adding suggestions: one look-up at a time, not ten at
+    once)."""
+    from .models import Place
+
+    def run():
+        for pk in ids:
+            try:
+                p = Place.objects.filter(pk=pk).first()
+                if p is not None:
+                    look_up(p)
+            except Exception:                           # noqa: BLE001
+                logger.exception('travel place lookup %s', pk)
+    if SYNC:
+        return run()
+
+    def go():
+        try:
+            run()
+        finally:
+            close_old_connections()
+    threading.Thread(target=go, daemon=True).start()
+    return None

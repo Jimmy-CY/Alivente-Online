@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}Finding ideas - Travel{% endblock %}
+{% comment %} TRAVEL - TR-12, 17 Nov 2026. Suggest things to do while it works; the page refreshes itself every 3 seconds. {% endcomment %}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">{{ trip.name|upper }} &middot; SUGGEST THINGS TO DO</h4>
+<div class="page-action-buttons">
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
+    <a href="{{ back }}" class="btn action-back" aria-label="Back to the trip"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+<div class="tv-wrap"><section class="form-card" style="display: flex; flex-direction: column; gap: 14px; max-width: 640px">{% include 'travel/_ideas_working_body.html' %}</section></div>
+<script>setTimeout(function () { window.location.reload(); }, 3000);</script>
+{% render_help_modal "travel" %}
+{% endblock %}

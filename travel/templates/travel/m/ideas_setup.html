@@ -1,0 +1,17 @@
+{% extends 'travel/m/base.html' %}
+{% comment %} TR-12, 17 Nov 2026 - Suggest things to do on the phone: two steps, one at a time (Demetri approved the canvas, 17 Nov). Rules in travel/ideas.py. {% endcomment %}
+{% block title %}Suggest things to do - Travel{% endblock %}
+{% block top %}<div style="min-width: 0"><a class="tv-back" href="{{ back }}"><span aria-hidden="true">‹</span> {{ trip.name }}</a><h1>Suggest things to do</h1></div>{% endblock %}
+{% block content %}
+<form method="post" action="{% url 'travel:m_ideas_setup' trip.pk %}" data-idea-form data-idea-steps style="display: flex; flex-direction: column; gap: 12px">{% csrf_token %}
+  <div class="tv-pl-stephead" data-idea-bar aria-hidden="true"><span class="on"></span><span></span></div>
+  <div class="tv-muted tv-small" data-idea-steplabel>About {{ per_city }} ideas a city &middot; nothing already on your list</div>
+  <section class="tv-card" style="display: flex; flex-direction: column; gap: 14px">{% include 'travel/_ideas_choices.html' %}</section>
+  <div class="tv-pl-bottom">
+    <button type="button" class="tv-btn sec" data-idea-back hidden>Back</button>
+    <button type="button" class="tv-btn" data-idea-next hidden>Next</button>
+    <button type="submit" class="tv-btn" data-idea-go>Suggest things to do</button>
+  </div>
+</form>
+{% include 'travel/_ideas_js.html' %}
+{% endblock %}

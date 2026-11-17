@@ -3338,7 +3338,10 @@ $suites = @(
     'test_gate_retry.py',
     # TR-11, 17 Nov 2026 - Release 92: Plan my days - spread Things to do
     # over the trip; Undo plan; Fit them in.
-    'test_travel_eleven.py'
+    'test_travel_eleven.py',
+    # TR-12, 17 Nov 2026 - Release 93: Suggest things to do - ideas for
+    # each city, ticked into Things to do.
+    'test_travel_twelve.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

@@ -1640,6 +1640,8 @@ ROUNDS = [
     '.bak_gateretry',
     # TR-11, 17 Nov 2026 - Release 92: Plan my days.
     '.bak_travel11',
+    # TR-12, 17 Nov 2026 - Release 93: Suggest things to do.
+    '.bak_travel12',
 ]
 
 

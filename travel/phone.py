@@ -35,7 +35,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from . import barcodes, boarding, dayorder, fx, inbox, planner
+from . import barcodes, boarding, dayorder, fx, ideas, inbox, planner
 from .models import (BoardingPass, Booking, CheckItem, InboundEmail,
                      trips_for)
 from .views import (coming_up, eur, included, requests_for, shape, span,
@@ -53,7 +53,7 @@ ASSET_TYPES = {
 # Bump this AND the ?v= in travel/m/base.html together whenever the style
 # or script changes: an installed app keeps the old files until it moves.
 # test_travel_three.py checks the two agree.
-SW_VERSION = 'tv11-1'
+SW_VERSION = 'tv12-1'
 
 
 def page(request, template, ctx):
@@ -277,7 +277,9 @@ def trip(request, trip_id):
         'coming': coming_up(bs, _today()),
         # TR-11 - Plan my days: Undo plan, Fit them in, a plan to review.
         **(planner.page_state(t, request)
-           if sub in ('itinerary', 'wish') else {})})
+           if sub in ('itinerary', 'wish') else {}),
+        # TR-12 - Suggest things to do.
+        **(ideas.page_state(t, request) if sub == 'wish' else {})})
 
 
 def _days_of(t):

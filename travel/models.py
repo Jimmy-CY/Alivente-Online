@@ -559,3 +559,71 @@ class TripPlan(models.Model):
     def __str__(self):
         return 'Plan %s for trip %s (%s)' % (self.pk, self.trip_id,
                                              self.status)
+
+
+class IdeaRun(models.Model):
+    """TR-12, 17 Nov 2026 - Suggest things to do (Demetri: "based on the
+    city where you are going to be ... the system must do a search and
+    identify the top Things to Do for that destination").
+
+    answers   cities [names], interests [keys], style (known / mix /
+              local), extra (a line of their own).
+    progress  {city: 'waiting' | 'working' | 'done' | 'failed'}.
+    One run asks for every city chosen; Show me more is a run for one."""
+    STATUS = [('working', 'Finding ideas'), ('ready', 'Ready'),
+              ('failed', 'Could not suggest')]
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE,
+                             related_name='idea_runs')
+    status = models.CharField(max_length=10, choices=STATUS,
+                              default='working')
+    answers = models.JSONField(default=dict, blank=True)
+    progress = models.JSONField(default=dict, blank=True)
+    more = models.BooleanField(default=False)
+    error = models.CharField(max_length=255, blank=True, default='')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL,
+                                   null=True, blank=True, related_name='+')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return 'Ideas %s for trip %s (%s)' % (self.pk, self.trip_id,
+                                              self.status)
+
+
+class Idea(models.Model):
+    """TR-12 - one suggestion, kept on the trip (Demetri: "Let's save
+    suggestions"). Never one already in Things to do, and Show me more
+    never repeats one shown, hidden or added. Hidden (Not interested)
+    stays hidden; added becomes a place, looked up on the web as any
+    other."""
+    STATE = [('', 'Suggested'), ('hidden', 'Not interested'),
+             ('added', 'Added to Things to do')]
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE,
+                             related_name='ideas')
+    run = models.ForeignKey(IdeaRun, on_delete=models.SET_NULL, null=True,
+                            blank=True, related_name='ideas')
+    city = models.CharField(max_length=80)
+    interest = models.CharField(max_length=20, blank=True, default='')
+    name = models.CharField(max_length=160)
+    area = models.CharField(max_length=120, blank=True, default='')
+    blurb = models.CharField(max_length=400, blank=True, default='')
+    kind = models.CharField(max_length=10, default='sight')
+    visit = models.CharField(max_length=40, blank=True, default='')
+    price = models.CharField(max_length=60, blank=True, default='')
+    book = models.BooleanField(default=False)
+    note = models.CharField(max_length=160, blank=True, default='')
+    state = models.CharField(max_length=8, choices=STATE, blank=True,
+                             default='')
+    place = models.ForeignKey(Place, on_delete=models.SET_NULL, null=True,
+                              blank=True, related_name='+')
+    position = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['position', 'id']
+
+    def __str__(self):
+        return '%s (%s)' % (self.name, self.city)

@@ -1,0 +1,8 @@
+{% comment %} TR-12 - the suggestions, by city and then by what you like, inside the Add form; desk=True lays them out as a grid. {% endcomment %}
+{% for g in groups %}<div class="{% if desk %}tv-id-grid{% else %}tv-id-list{% endif %}" data-idea-cityblock>
+  <div class="tv-id-cityhead"><b>{{ g.city }}</b><span style="font-size: .85rem; color: #5B6B72">{{ g.n }} idea{{ g.n|pluralize }}{% if g.added %} &middot; {{ g.added }} added{% endif %}</span></div>
+  {% for b in g.by %}<div class="tv-id-group">{{ b.name }}</div>
+  {% for i in b.ideas %}{% include 'travel/_ideas_card.html' %}{% endfor %}{% endfor %}
+  {% if not g.n %}<p class="tv-id-group" style="text-transform: none; letter-spacing: 0; font-weight: 400; font-size: .9rem">Nothing left to look at for {{ g.city }}.</p>{% endif %}
+  <div class="tv-id-more"><button type="submit" formaction="{{ more_url }}" formnovalidate name="more" value="{{ g.city }}" data-idea-more>Show me more for {{ g.city }}</button><span style="font-size: .8rem; color: #5B6B72; text-align: center">About {{ per_city }} more &ndash; never one already shown, hidden or on your list</span></div>
+</div>{% endfor %}

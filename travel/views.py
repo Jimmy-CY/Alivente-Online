@@ -394,13 +394,24 @@ def trip(request, trip_id):
         # TR-7 - after the trip: still To pay? (asked, never done alone)
         'settle': settle_rows(t, bs),
         # TR-11 - Plan my days: Undo plan, Fit them in, a plan to review.
-        **plan_state(t, request, tab)})
+        **plan_state(t, request, tab),
+        # TR-12 - Suggest things to do.
+        **idea_state(t, request, tab)})
 
 
 def plan_state(t, request, tab):
     if tab not in ('itinerary', 'wish'):
         return {}
     from .planner import page_state
+    return page_state(t, request)
+
+
+def idea_state(t, request, tab):
+    """TR-12 - Suggest things to do: suggestions left, one being found,
+    the line after adding."""
+    if tab != 'wish':
+        return {}
+    from .ideas import page_state
     return page_state(t, request)
 
 
