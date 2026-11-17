@@ -84,9 +84,12 @@ def facts(user, day):
             'workouts_this_week': workouts}
 
 
-def prompt(f):
-    lines = ['%d. "%s" - %s' % (i, q['text'], q['author'])
-             for i, q in enumerate(Q.QUOTES)]
+def prompt(f, ids=None):
+    """WL-25 - the quotes are numbered by their fixed ids, and only the
+    ones this person may see today are listed."""
+    pool = set(ids or Q.IDS)
+    lines = ['%d. "%s" - %s' % (q['id'], q['text'], q['author'])
+             for q in Q.QUOTES if q['id'] in pool]
     about = [
         'First name: %s' % f['name'],
         'Today is %s.' % f['weekday'],
@@ -101,9 +104,10 @@ def prompt(f):
             % ('\n'.join(lines), '\n'.join(about)))
 
 
-def parse(text):
+def parse(text, ids=None):
     """{"quote", "line"} from Claude's reply, or None if it is not a fair
-    answer: a quote outside the library, a long or empty line, a link."""
+    answer: a quote outside the library (WL-25: or outside the ones offered
+    today), a long or empty line, a link. "quote" is the quote's id."""
     m = re.search(r'\{.*\}', text or '', re.S)
     if not m:
         return None
@@ -113,18 +117,18 @@ def parse(text):
         line = ' '.join(str(d.get('line') or '').split())
     except (ValueError, TypeError, AttributeError):
         return None
-    if not 0 <= q < len(Q.QUOTES):
+    if q not in (set(ids) if ids else Q.BY_ID):
         return None
     if not line or len(line.split()) > MAX_WORDS + 4 or len(line) > 240:
         return None
     if re.search(r'https?://|www\.|[<>]', line):
         return None
-    if Q.QUOTES[q]['text'].lower()[:40] in line.lower():
+    if Q.BY_ID[q]['text'].lower()[:40] in line.lower():
         return None
     return {'quote': q, 'line': line}
 
 
-def ask(f, client=None):
+def ask(f, client=None, ids=None):
     """One call to Claude. Returns the parsed answer or None."""
     if client is None:
         from django.conf import settings
@@ -135,22 +139,92 @@ def ask(f, client=None):
         client = anthropic.Anthropic(api_key=key, timeout=30.0)
     msg = client.messages.create(
         model=MODEL, max_tokens=200, system=SYSTEM,
-        messages=[{'role': 'user', 'content': prompt(f)}])
+        messages=[{'role': 'user', 'content': prompt(f, ids)}])
     text = ''.join(getattr(b, 'text', '') for b in msg.content)
-    return parse(text)
+    return parse(text, ids)
+
+
+# ------------------------------------------------------------------ WL-25
+# Demetri, 17 Nov 2026: "make sure on a user's record we keep a record of
+# the quotes that they have seen. Once they have cycled through all 240
+# quotes, we clear the counter and start again." On the profile's prefs:
+#   quotes_seen  the ids seen this round, in the order they came
+#   quote_day    {"date", "id"} - today's quote, fixed the first time it is
+#                shown or chosen, so it holds all day on every device
+# A day's quote is only ever one not yet seen this round; when every one
+# has been, the round starts again from none.
+OFFER = 30
+
+
+def today_id(prefs, day):
+    """Today's quote id if it is already fixed, else None."""
+    d = (prefs or {}).get('quote_day') or {}
+    if d.get('date') == day.isoformat() and d.get('id') in Q.BY_ID:
+        return d['id']
+    line = (prefs or {}).get('daily_line') or {}
+    if line.get('date') == day.isoformat():
+        if line.get('qid') in Q.BY_ID:
+            return line['qid']
+        # Made before WL-25: "quote" was the place in the list, and the
+        # first 28 kept their places as ids 1 - 28.
+        if isinstance(line.get('quote'), int) and \
+                0 <= line['quote'] < 28:
+            return line['quote'] + 1
+    return None
+
+
+def record(prefs, day, qid):
+    """Fix today's quote and count it as seen - starting a new round when
+    every quote has been seen."""
+    seen = [i for i in (prefs.get('quotes_seen') or []) if i in Q.BY_ID]
+    if not [i for i in Q.IDS if i not in seen]:
+        seen = []
+    if qid not in seen:
+        seen.append(qid)
+    if not [i for i in Q.IDS if i not in seen]:
+        # Every one seen: the next round starts - with today's counted,
+        # so tomorrow cannot be the same quote again.
+        seen = [qid]
+    prefs['quotes_seen'] = seen
+    prefs['quote_day'] = {'date': day.isoformat(), 'id': qid}
+    return prefs
+
+
+def choose(prefs, user_id, day):
+    """Today's id from the ones not yet seen this round."""
+    return Q.pick(user_id, day, Q.unseen(prefs.get('quotes_seen')))
+
+
+def offer(prefs, user_id, day):
+    """What Claude may choose from today: the one already shown, or up
+    to OFFER not yet seen this round."""
+    fixed = today_id(prefs, day)
+    if fixed:
+        return [fixed]
+    import random
+    pool = sorted(Q.unseen(prefs.get('quotes_seen')))
+    rnd = random.Random('%s:%s' % (user_id, day.isoformat()))
+    return sorted(rnd.sample(pool, min(OFFER, len(pool))))
 
 
 def for_today(user, day, profile=None):
-    """(quote dict, line or None) for Today. Never calls Claude."""
+    """(quote dict, line or None) for Today. Never calls Claude. WL-25:
+    the first time today, the quote is chosen from the ones not yet seen
+    and noted as seen."""
     from .models import WellnessProfile
     p = profile or WellnessProfile.objects.filter(user=user).first()
     prefs = (p.prefs if p else None) or {}
-    d = prefs.get('daily_line') or {}
-    if not prefs.get('line_off') and d.get('date') == day.isoformat() and \
-            isinstance(d.get('quote'), int) and \
-            0 <= d['quote'] < len(Q.QUOTES):
-        return Q.QUOTES[d['quote']], d.get('line') or None
-    return Q.for_day(user.pk, day), None
+    qid = today_id(prefs, day)
+    if qid:
+        d = prefs.get('daily_line') or {}
+        line = d.get('line') if d.get('date') == day.isoformat() and \
+            not prefs.get('line_off') else None
+        return Q.BY_ID[qid], line or None
+    qid = choose(prefs, user.pk, day)
+    if p is not None:
+        p.prefs = record(dict(prefs), day, qid)
+        p.save(update_fields=['prefs', 'updated_at'])
+    return Q.BY_ID[qid], None
 
 
 def make(profile, day, client=None):
@@ -167,14 +241,16 @@ def make(profile, day, client=None):
         return False
     prefs['daily_line_try'] = {'date': day.isoformat(), 'n': n + 1}
     answer = None
+    ids = offer(prefs, profile.user_id, day)
     try:
-        answer = ask(facts(profile.user, day), client=client)
+        answer = ask(facts(profile.user, day), client=client, ids=ids)
     except Exception as exc:                              # noqa: BLE001
         logger.warning('Wellness daily line failed: %s', exc)
     if answer:
         prefs['daily_line'] = {'date': day.isoformat(),
-                               'quote': answer['quote'],
+                               'qid': answer['quote'],
                                'line': answer['line']}
+        record(prefs, day, answer['quote'])
     profile.prefs = prefs
     profile.save(update_fields=['prefs', 'updated_at'])
     return bool(answer)

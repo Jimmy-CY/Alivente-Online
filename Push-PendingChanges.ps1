@@ -3348,7 +3348,11 @@ $suites = @(
     # marks the new ones.
     'test_travel_fourteen.py',
     # TR-15, 17 Nov 2026 - Release 96: the phone app fetches the new look.
-    'test_travel_fifteen.py'
+    'test_travel_fifteen.py',
+    # QL-1, 17 Nov 2026 - Release 97: 240 quotes, none twice in a round.
+    'test_quotes.py',
+    # CY-5, 17 Nov 2026 - Release 98: the Cycle Tracker redesign.
+    'test_cycle_look.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

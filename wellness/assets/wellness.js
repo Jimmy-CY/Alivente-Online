@@ -484,6 +484,22 @@
   document.addEventListener('click', function (e) {
     if (e.target.closest && e.target.closest('[data-print]')) window.print();
   });
+  // CY-5, 17 Nov 2026 - an icon tile that is one of a kind (mood, sleep,
+  // energy, discharge) clears when tapped again, so a wrong tap can be
+  // undone. Without script the tiles still work as plain choices.
+  var tiles = document.querySelector('[data-cy-tiles]');
+  if (tiles) {
+    var was = null;
+    tiles.addEventListener('pointerdown', function (e) {
+      var l = e.target.closest && e.target.closest('label.cy-tile');
+      var r = l && l.querySelector('input[type=radio][data-untick]');
+      was = r && r.checked ? r : null;
+    });
+    tiles.addEventListener('click', function (e) {
+      var r = e.target.closest && e.target.closest('input[type=radio][data-untick]');
+      if (r && r === was) { r.checked = false; was = null; }
+    });
+  }
 
   // ---- WL-4b, 30 Oct 2026 - turn on reminders on this phone. The phone
   // asks the person first; nothing is sent until they say yes.

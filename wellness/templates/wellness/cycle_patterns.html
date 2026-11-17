@@ -3,29 +3,30 @@
 {% block title %}Your patterns · Cycle · Wellness{% endblock %}
 {% block top_left %}<a class="w-home" href="{% url 'wellness:cycle' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Cycle</a>{% endblock %}
 {% block content %}
+<span class="cy-page" hidden></span>
 <h1 class="w-title">Your patterns</h1>
 
-<section class="w-card" aria-labelledby="bars-h">
-  <div style="display:flex;justify-content:space-between;align-items:baseline">
-    <h2 class="w-h2" id="bars-h">Last {{ bars|length|default:6 }} cycle{{ bars|length|pluralize }}</h2>
-    <span class="w-small w-quiet">days</span>
+{% comment %} CY-5, 17 Nov 2026 - Cycle history (the approved redesign, row 4): three tiles, then every cycle as a bar of its days. {% endcomment %}
+{% if stats %}
+<div class="cy-stats">
+  <div><span>Cycle length</span><b>{{ stats.cycle }} days</b><span>usual: {{ stats.cycle_usual }}</span></div>
+  <div><span>Period</span><b>{{ stats.period }} days</b><span>usual: {{ stats.period_usual }}</span></div>
+  <div><span>Variation</span><b>± {{ stats.vary }} day{{ stats.vary|pluralize }}</b><span>{{ stats.vary_word }}</span></div>
+</div>
+{% endif %}
+{% if history %}
+<section class="w-card" aria-labelledby="hist-h" data-cycle-history>
+  <h2 class="w-h2" id="hist-h">Cycle history</h2>
+  {% for h in history %}
+  <div class="cy-hist">
+    <div class="cy-hist-top"><span>{{ h.label }}</span><b>{{ h.side }}</b></div>
+    <div class="cy-hist-bar" style="width:{{ h.w }}%" role="img" aria-label="{{ h.label }}, {{ h.side }}">{% for c in h.cells %}<i class="{{ c }}"></i>{% endfor %}</div>
   </div>
-  {% if bars %}
-  <div class="w-bars" role="img" aria-label="{{ bar_words }}">
-    {% for b in bars %}
-    <div>
-      <span style="font-size:13px;font-weight:600">{{ b.len }}</span>
-      <span class="bar" style="height:{{ b.h }}px"><i style="height:{{ b.p }}px"></i></span>
-      <span class="w-small w-quiet" style="font-size:11px">{{ b.m }}</span>
-    </div>
-    {% endfor %}
-  </div>
-  <div class="w-legend"><span><i class="period"></i>Period days</span><span><i style="background:var(--w-sage-track)"></i>Rest of the cycle</span></div>
-  <p class="w-small" style="margin:0">{{ bar_words }}</p>
-  {% else %}
-  <p class="w-quiet" style="margin:0">Your first full cycle appears here once your next period starts.</p>
-  {% endif %}
+  {% endfor %}
+  {% if bar_words %}<p class="w-small" style="margin:0">{{ bar_words }}</p>{% else %}<p class="w-small w-quiet" style="margin:0">Your first full cycle appears here once your next period starts.</p>{% endif %}
+  <div class="cy-flowkey cy-small"><span><i class="f-medium"></i>Period, in its shades</span>{% if s.fertile %}<span><i class="fert"></i>Fertile estimate</span><span><i class="ov"></i>Likely ovulation</span>{% endif %}</div>
 </section>
+{% endif %}
 
 <section class="w-card" aria-labelledby="around-h">
   <h2 class="w-h2" id="around-h">Around your period</h2>

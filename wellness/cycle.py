@@ -31,11 +31,15 @@ FLOWS = [
     ('light', 'Light'),
     ('medium', 'Medium'),
     ('heavy', 'Heavy'),
+    # CY-5, 17 Nov 2026 - a fifth, darkest shade (the approved redesign).
+    ('very_heavy', 'Very heavy'),
 ]
 FLOW_NAMES = dict(FLOWS)
 # Spotting alone does not start a period.
-BLEED = ('light', 'medium', 'heavy')
-FLOW_RANK = {'spotting': 0, 'light': 1, 'medium': 2, 'heavy': 3}
+BLEED = ('light', 'medium', 'heavy', 'very_heavy')
+FLOW_RANK = {'spotting': 0, 'light': 1, 'medium': 2, 'heavy': 3,
+             'very_heavy': 4}
+HEAVY = ('heavy', 'very_heavy')
 
 SYMPTOMS = [
     ('cramps', 'Cramps'),
@@ -73,6 +77,10 @@ TRACK = [
     ('energy', 'Energy'),
     ('sleep', 'Sleep'),
     ('discharge', 'Discharge'),
+    # CY-5, 17 Nov 2026 - Demetri: "including sex tracking (as
+    # suggested)". Off until switched on; never in the day's summary
+    # line, the doctor report or anything sent.
+    ('sex', 'Sex'),
     ('tags', 'My own tags'),
 ]
 TRACK_KEYS = [k for k, _n in TRACK]
@@ -82,6 +90,11 @@ ENERGY = [('low', 'Low'), ('steady', 'Steady'), ('high', 'High')]
 SLEEP = [('poor', 'Poor'), ('okay', 'Okay'), ('good', 'Good')]
 DISCHARGE = [('dry', 'Dry'), ('sticky', 'Sticky'), ('creamy', 'Creamy'),
              ('watery', 'Watery'), ('clear', 'Clear and stretchy')]
+# CY-5 - more than one can be true of a day, so these are ticks.
+SEX = [('protected', 'Protected'), ('unprotected', 'Unprotected'),
+       ('none', 'No sex'), ('high_drive', 'High drive'),
+       ('low_drive', 'Low drive')]
+SEX_NAMES = dict(SEX)
 CHOICES = {'mood': dict(MOODS), 'energy': dict(ENERGY),
            'sleep': dict(SLEEP), 'discharge': dict(DISCHARGE)}
 MAX_TAGS, TAG_LEN = 12, 24
@@ -128,7 +141,10 @@ DEFAULT_SETTINGS = {'on': False, 'fertile': False, 'mode': 'normal',
                     # CY-3 - more to log, your own tags, the pill
                     # reminder time and the logging nudge.
                     'track': (), 'tags': (), 'pill_at': '',
-                    'nudge': False}
+                    'nudge': False,
+                    # CY-5 - the likely ovulation day, shown only with
+                    # the fertile estimate. Off by default.
+                    'ovulation': False}
 
 # A gap of one dry day inside a period does not end it.
 JOIN_GAP = 2
@@ -243,6 +259,11 @@ def clean_day(post_like, tags=()):
     mine = [t for t in got if t in set(tags or ())]
     if mine:
         out['tags'] = mine
+    sx = post_like.getlist('sex') if hasattr(post_like, 'getlist') \
+        else post_like.get('sex', [])
+    sx = [k for k, _n in SEX if k in set(sx or ())]
+    if sx:
+        out['sex'] = sx
     return out
 
 
@@ -360,7 +381,8 @@ def summary(days, today, settings):
     out = {'state': 'empty', 'cycles': cs, 'cycle_day': None, 'soft': False,
            'window': None, 'fertile': None, 'avg_cycle': None,
            'avg_period': None, 'range': None, 'in_period': False,
-           'period_day': None, 'flags': flags(cs, today, mode)}
+           'period_day': None, 'ovulation': None,
+           'flags': flags(cs, today, mode)}
     if not ps:
         if mode not in PREDICTING:
             out['state'] = mode
@@ -408,6 +430,9 @@ def summary(days, today, settings):
         ov = mid - dt.timedelta(days=14)
         out['fertile'] = (ov - dt.timedelta(days=5),
                           ov + dt.timedelta(days=1))
+        # CY-5 - the likely day itself, only if asked for as well.
+        if settings.get('ovulation'):
+            out['ovulation'] = ov
     return out
 
 
@@ -522,6 +547,7 @@ def month_grid(year, month, days, s, today, windows=None, pms_days=None):
         for _ in range(7):
             e = days.get(d.isoformat(), {})
             kind = ''
+            ov = s.get('ovulation')
             if e.get('flow') in BLEED:
                 kind = 'period'
             elif e.get('flow') == 'spotting':
@@ -534,12 +560,207 @@ def month_grid(year, month, days, s, today, windows=None, pms_days=None):
                 kind = 'fertile'
             week.append({'n': d.day, 'date': d, 'in': d.month == month,
                          'kind': kind, 'today': d == today,
-                         'logged': bool(e), 'future': d > today})
+                         'logged': bool(e), 'future': d > today,
+                         # CY-5 - the flow's own shade, the ovulation
+                         # day, and a dot for each kind of thing logged.
+                         'flow': e.get('flow', ''),
+                         'ov': bool(ov and d == ov and not e.get('flow')),
+                         'dots': dots(e)})
             d += dt.timedelta(days=1)
         weeks.append(week)
         if d.month != month and d > first:
             break
     return weeks
+
+
+DOTS = (('body', ('sym', 'pain', 'relief')),
+        ('feel', ('mood', 'energy')),
+        ('sleep', ('sleep',)),
+        ('more', ('note', 'discharge', 'tags', 'sex')))
+
+
+def dots(e):
+    """CY-5 - which small dots a calendar day shows: body (symptoms or
+    pain), feelings, sleep, and one for anything else."""
+    return [k for k, keys in DOTS if any(e.get(x) for x in keys)]
+
+
+def day_words(e):
+    """CY-5 - one line for a day: 'Medium flow · Cramps · Tired · Slept
+    poorly'. Never mentions sex - it stays inside Log a day."""
+    out = []
+    if e.get('flow'):
+        out.append('%s flow' % FLOW_NAMES[e['flow']] if e['flow'] !=
+                   'spotting' else 'Spotting')
+    out += [SYMPTOM_NAMES[k] for k in e.get('sym', []) if k in
+            SYMPTOM_NAMES]
+    if e.get('pain'):
+        out.append('Pain %d of 10' % e['pain'])
+    if e.get('mood'):
+        out.append('Mood: %s' % CHOICES['mood'][e['mood']].lower())
+    if e.get('energy'):
+        out.append('Energy: %s' % CHOICES['energy'][e['energy']].lower())
+    if e.get('sleep'):
+        out.append('Slept %s' % {'poor': 'poorly', 'okay': 'okay',
+                                 'good': 'well'}[e['sleep']])
+    if e.get('discharge'):
+        out.append('Discharge: %s'
+                   % CHOICES['discharge'][e['discharge']].lower())
+    out += e.get('tags', [])
+    if e.get('note'):
+        out.append('A note')
+    return ' · '.join(out)
+
+
+def _when(d):
+    """'Tue 17 Nov' without %-d."""
+    return '%s %d %s' % (d.strftime('%a'), d.day, d.strftime('%b'))
+
+
+def _arc(c, r, a0, a1):
+    import math
+    x0, y0 = c + r * math.sin(a0), c - r * math.cos(a0)
+    x1, y1 = c + r * math.sin(a1), c - r * math.cos(a1)
+    large = 1 if a1 - a0 > math.pi else 0
+    return 'M%.1f %.1f A%.1f %.1f 0 %d 1 %.1f %.1f' % (x0, y0, r, r, large,
+                                                       x1, y1)
+
+
+def wheel(s, days, today, pms_days=None, size=280):
+    """CY-5 - the big ring of the approved redesign (17 Nov): one bead
+    per day of the cycle - the period in its logged shades, the fertile
+    estimate, the likely ovulation day, the PMS days, the expected next
+    period - with today marked and a dot outside each logged day. None
+    without a cycle day."""
+    import math
+    n_today = s.get('cycle_day')
+    if not n_today or not s['cycles']:
+        return None
+    start = s['cycles'][-1]['start']
+    usual = s.get('avg_cycle') or 28
+    L = max(usual, n_today if n_today <= PREDICT_MAX else usual)
+    c = size / 2.0
+    sw = 20
+    r = c - sw / 2.0 - 12
+    gap = min(0.035, math.pi / L / 4)
+    fer, ov, win = s.get('fertile'), s.get('ovulation'), s.get('window')
+    pms_from = L - pms_days + 1 if pms_days else None
+    beads, marks = [], []
+    for n in range(1, L + 1):
+        d = start + dt.timedelta(days=n - 1)
+        e = days.get(d.isoformat(), {})
+        f = e.get('flow')
+        if f:
+            cls = 'f-' + f
+        elif ov and d == ov:
+            cls = 'ov'
+        elif fer and fer[0] <= d <= fer[1]:
+            cls = 'fert'
+        elif win and d > today and win[0] <= d <= win[1]:
+            cls = 'pred'
+        elif pms_from and n >= pms_from and d > today:
+            cls = 'pms'
+        else:
+            cls = 'rest'
+        a0 = 2 * math.pi * (n - 1) / L + gap
+        a1 = 2 * math.pi * n / L - gap
+        beads.append({'d': _arc(c, r, a0, a1), 'cls': cls})
+        if e:
+            am = 2 * math.pi * (n - 0.5) / L
+            ro = r + sw / 2.0 + 7
+            marks.append({'x': '%.1f' % (c + ro * math.sin(am)),
+                          'y': '%.1f' % (c - ro * math.cos(am))})
+    out = {'size': size, 'c': '%.1f' % c, 'r': '%.1f' % r, 'sw': sw,
+           'beads': beads, 'marks': marks, 'of': L, 'day': n_today,
+           'when': 'Today, ' + _when(today)}
+    if n_today <= L:
+        at = 2 * math.pi * (n_today - 0.5) / L
+        out['tx'] = '%.1f' % (c + r * math.sin(at))
+        out['ty'] = '%.1f' % (c - r * math.cos(at))
+    if ov and start <= ov < start + dt.timedelta(days=L):
+        ao = 2 * math.pi * ((ov - start).days + 0.5) / L
+        out['ox'] = '%.1f' % (c + r * math.sin(ao))
+        out['oy'] = '%.1f' % (c - r * math.cos(ao))
+    # The words in the middle.
+    big, small, line = 'Day %d' % n_today, 'of your cycle', ''
+    if s.get('in_period'):
+        big, small = 'Day %d' % s['period_day'], 'of your period'
+    elif win and s['state'] in ('predicted', 'first_guess'):
+        to = (win[0] - today).days
+        if to > 1:
+            big, small = '%d days' % to, 'until your next period'
+        elif to == 1:
+            big, small = '1 day', 'until your next period'
+        elif win[0] <= today <= win[1]:
+            big, small = 'Any day now', 'your period is due'
+    if ov and s['state'] in ('predicted', 'first_guess'):
+        k = (ov - today).days
+        if k > 1:
+            line = 'Ovulation likely in %d days' % k
+        elif k == 1:
+            line = 'Ovulation likely tomorrow'
+        elif k == 0:
+            line = 'Ovulation likely today'
+    out.update({'big': big, 'small': small, 'line': line})
+    return out
+
+
+def history(days, cs, s, n=RECENT, fertile=False):
+    """CY-5 - Cycle history: the current cycle and the last n before
+    it, newest first, each a row of day cells in the period's shades
+    (and, with the estimate on, the fertile days and the likely
+    ovulation day, counted back 14 days from the next start)."""
+    rows = []
+    top = max([c['length'] or 0 for c in cs[-n - 1:]] +
+              [s.get('cycle_day') or 0, 28])
+    top = min(top, PREDICT_MAX)
+    for c in cs[-n - 1:][::-1]:
+        length = c['length'] or (s.get('cycle_day') or 1)
+        if length > PREDICT_MAX:
+            continue
+        ov_n = length - 14 if fertile and c['length'] else None
+        cells = []
+        for i in range(length):
+            d = c['start'] + dt.timedelta(days=i)
+            f = days.get(d.isoformat(), {}).get('flow')
+            if f:
+                cls = 'f-' + f
+            elif ov_n and i + 1 == ov_n:
+                cls = 'ov'
+            elif ov_n and ov_n - 5 <= i + 1 <= ov_n + 1:
+                cls = 'fert'
+            else:
+                cls = 'rest'
+            cells.append(cls)
+        if c['length']:
+            last = c['start'] + dt.timedelta(days=c['length'] - 1)
+            label = '%d %s – %d %s' % (c['start'].day,
+                                       c['start'].strftime('%b'),
+                                       last.day, last.strftime('%b'))
+            side = '%d days' % c['length']
+        else:
+            label = 'Now · from %d %s' % (c['start'].day,
+                                          c['start'].strftime('%b'))
+            side = 'day %d' % length
+        rows.append({'label': label, 'side': side, 'cells': cells,
+                     'w': '%.2f' % (100.0 * length / top)})
+    return rows
+
+
+def stats(cs):
+    """CY-5 - the three tiles over Cycle history: cycle length, period
+    length and how much the cycles vary. None until one cycle is done."""
+    lengths = recent_lengths(cs)
+    if not lengths:
+        return None
+    pers = [c['period'] for c in cs[-RECENT:]]
+    spread = max(lengths) - min(lengths)
+    return {'cycle': int(round(median(lengths))),
+            'cycle_usual': span_words(min(lengths), max(lengths), ' – '),
+            'period': int(round(median(pers))),
+            'period_usual': span_words(min(pers), max(pers), ' – '),
+            'vary': (spread + 1) // 2,
+            'vary_word': 'regular' if spread <= 7 else 'varies more'}
 
 
 def ring(s, r=46):
@@ -645,7 +866,7 @@ def report(days, cs, n, notes=False):
         span = [c['start'] + dt.timedelta(days=i)
                 for i in range(c['period'])]
         flows = [days.get(d.isoformat(), {}).get('flow') for d in span]
-        heavy = sum(1 for f in flows if f == 'heavy')
+        heavy = sum(1 for f in flows if f in HEAVY)
         top = max((FLOW_RANK.get(f, -1) for f in flows), default=-1)
         sym = {}
         pains = []
@@ -664,6 +885,10 @@ def report(days, cs, n, notes=False):
                      'period': c['period'], 'heavy': heavy,
                      'heaviest': [k for k, v in FLOW_RANK.items()
                                   if v == top][0] if top >= 0 else '',
+                     'heaviest_name': FLOW_NAMES[[k for k, v in
+                                                  FLOW_RANK.items()
+                                                  if v == top][0]]
+                     if top >= 0 else '',
                      'pain': max(pains) if pains else None,
                      'common': common})
     lengths = [r['length'] for r in rows if r['length']]

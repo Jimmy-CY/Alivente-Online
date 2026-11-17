@@ -64,7 +64,24 @@ def home(request):
     prev_m = (first - dt.timedelta(days=1)).replace(day=1)
     next_m = (first + dt.timedelta(days=32)).replace(day=1)
     big, small = C.headline(s)
+    # CY-5, 17 Nov 2026 - the big ring, and a tapped day's summary.
+    picked = None
+    raw = request.GET.get('d', '')
+    try:
+        pd = dt.date.fromisoformat(raw) if raw else None
+    except ValueError:
+        pd = None
+    if pd and pd <= today and pd.isoformat() in days:
+        ps = [p[0] for p in C.periods(days) if p[0] <= pd]
+        picked = {'date': pd, 'when': C._when(pd),
+                  'day': (pd - ps[-1]).days + 1 if ps else None,
+                  'words': C.day_words(days[pd.isoformat()]) or
+                  'Something private logged'}
+    ring_pms = C.pms(days, s['cycles']) if s.get('window') else None
     return render(request, 'wellness/cycle.html', {
+        'wheel': C.wheel(s, days, today, ring_pms),
+        'ring_pms': ring_pms,
+        'picked': picked,
         'tab': 'cycle',
         's': s,
         'big': big,
@@ -182,7 +199,66 @@ def log_day(request):
         'track': list(prefs.get('track') or ()),
         'moods': C.MOODS, 'energy': C.ENERGY, 'sleep': C.SLEEP,
         'discharge': C.DISCHARGE, 'my_tags': list(prefs.get('tags') or ()),
+        # CY-5 - the icon tiles and the week strip.
+        'T': _groups(e, prefs),
+        'week': _week(day, today, days),
     })
+
+
+# CY-5, 17 Nov 2026 - Log a day as icon tiles, grouped (the approved
+# redesign, row 3). The same fields and names as before - only the look
+# changes - so nothing already logged moves.
+FEEL_SYM = ('mood_swings', 'irritable', 'anxious', 'tearful', 'focus')
+SLEEP_SYM = ('poor_sleep',)
+
+
+def _tile(value, label, picked, family=''):
+    from . import cycle_icons as IC
+    return {'value': value, 'label': label, 'on': picked,
+            'svg': IC.icon(value, family)}
+
+
+def _groups(e, prefs):
+    """The tiles for each field, by the name the form posts. Every
+    symptom is always offered (so nothing logged before is dropped on
+    save), the perimenopause ones in that mode or once logged."""
+    sym = set(e.get('sym') or ())
+    names = dict(C.SYMPTOMS + C.PERI_SYMPTOMS)
+    body = [k for k, _n in C.SYMPTOMS if k not in FEEL_SYM + SLEEP_SYM +
+            ('low_mood',)]
+    body += [k for k, _n in C.PERI_SYMPTOMS
+             if prefs.get('mode') == 'perimenopause' or k in sym]
+    one = lambda field, opts, fam='': [            # noqa: E731
+        _tile(k, n, e.get(field) == k, fam) for k, n in opts]
+    return {
+        'flow': one('flow', C.FLOWS, 'flow'),
+        'mood': one('mood', C.MOODS),
+        'feel_sym': [_tile(k, names[k], k in sym)
+                     for k in ('low_mood',) + FEEL_SYM],
+        'energy': one('energy', C.ENERGY, 'energy'),
+        'sleep': one('sleep', C.SLEEP, 'sleep'),
+        'sleep_sym': [_tile(k, names[k], k in sym) for k in SLEEP_SYM],
+        'sex': [_tile(k, n, k in (e.get('sex') or ())) for k, n in C.SEX],
+        'body_sym': [_tile(k, names[k], k in sym) for k in body],
+        'discharge': one('discharge', C.DISCHARGE),
+        'tags': [_tile(t, t, t in (e.get('tags') or ()), 'tag')
+                 for t in (prefs.get('tags') or ())],
+    }
+
+
+def _week(day, today, days):
+    """Seven days around the one being logged, none after today."""
+    last = min(today, day + dt.timedelta(days=3))
+    first = last - dt.timedelta(days=6)
+    out = []
+    d = first
+    while d <= last:
+        out.append({'date': d.isoformat(), 'dow': d.strftime('%a')[0],
+                    'n': d.day, 'on': d == day,
+                    'logged': d.isoformat() in days,
+                    'flow': (days.get(d.isoformat()) or {}).get('flow', '')})
+        d += dt.timedelta(days=1)
+    return out
 
 
 def _hm_ok(v):
@@ -206,6 +282,9 @@ def settings_page(request):
             C.save(request.user, prefs, days)
             return redirect('wellness:cycle')
         prefs['fertile'] = bool(request.POST.get('fertile'))
+        # CY-5 - the likely ovulation day goes with the fertile estimate.
+        prefs['ovulation'] = prefs['fertile'] and \
+            bool(request.POST.get('ovulation'))
         # CY-3 - more to log, your own tags, the pill time, the nudge.
         prefs['track'] = [k for k in request.POST.getlist('track')
                           if k in C.TRACK_KEYS]
@@ -244,6 +323,11 @@ def patterns(request):
     return render(request, 'wellness/cycle_patterns.html', {
         'tab': 'cycle',
         's': s,
+        # CY-5, 17 Nov 2026 - Cycle history: three tiles, every cycle a bar.
+        'stats': C.stats(s['cycles']),
+        'history': C.history(days, s['cycles'], s,
+                             fertile=bool(prefs.get('fertile')) and
+                             prefs['mode'] == 'normal'),
         'bars': bars,
         'bar_words': ('Your cycles run %s days and your periods %s.'
                       % (C.span_words(min(lens), max(lens)),

@@ -16,7 +16,7 @@
     <thead><tr><th scope="col">Started</th><th scope="col">Cycle</th><th scope="col">Period</th><th scope="col">Heaviest</th><th scope="col">Heavy days</th><th scope="col">Worst pain</th><th scope="col">Common symptoms</th></tr></thead>
     <tbody>
     {% for row in r.rows %}
-    <tr><td>{{ row.start|date:"j M Y" }}</td><td>{% if row.length %}{{ row.length }} d{% else %}current{% endif %}</td><td>{{ row.period }} d</td><td>{% if row.heaviest %}{{ row.heaviest|capfirst }}{% else %}-{% endif %}</td><td>{{ row.heavy }}</td><td>{% if row.pain %}{{ row.pain }}/10{% else %}-{% endif %}</td><td>{{ row.common|join:", "|default:"-" }}</td></tr>
+    <tr><td>{{ row.start|date:"j M Y" }}</td><td>{% if row.length %}{{ row.length }} d{% else %}current{% endif %}</td><td>{{ row.period }} d</td><td>{% if row.heaviest %}{{ row.heaviest_name }}{% else %}-{% endif %}</td><td>{{ row.heavy }}</td><td>{% if row.pain %}{{ row.pain }}/10{% else %}-{% endif %}</td><td>{{ row.common|join:", "|default:"-" }}</td></tr>
     {% endfor %}
     </tbody>
   </table></div>

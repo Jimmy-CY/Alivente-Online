@@ -1,0 +1,1454 @@
+# -*- coding: utf-8 -*-
+"""apply_quotes_one.py - round QL-1, 17 Nov 2026.
+
+RELEASE 97 - WELLNESS: 240 QUOTES, NEVER THE SAME ONE TWICE IN A ROUND.
+
+    Demetri, 17 Nov: "We need to grow our quote library to 240 real
+    quotes. Then we need to give each quote a fixed ID. and make sure on a
+    user's record we keep a record of the quotes that they have seen.
+    Once they have cycled through all 240 quotes, we clear the counter and
+    start again."
+
+    - wellness/quotes.py: 212 more real quotes, each with a source a
+      reader could check (240 in all); every quote a fixed id - the first
+      28 keep their places as 1 to 28. unseen() and pick().
+    - wellness/daily_line.py: the person's record - quotes_seen (this
+      round) and quote_day (today's, fixed the first time it shows, on
+      every device). Today's quote comes only from the unseen; Claude is
+      offered only the unseen (or the one already showing) and anything
+      else it names is refused. All 240 seen: the round starts again.
+    - Help (guide and help) says so; test_wellness_six.py speaks ids.
+
+The suite ships beside this patcher. Stands on TR-15
+(apply_travel_fifteen.py). Idempotent. Edits backed up to .bak_quotes1.
+No migration - the record lives in the profile's prefs.
+"""
+import os
+import sys
+
+SUFFIX = '.bak_quotes1'
+MARK = 'QL-1, 17 Nov 2026'
+CHECK = False
+PS1 = 'Push-PendingChanges.ps1'
+CREATES = (
+    'test_quotes.py',
+)
+
+SWAPS = [
+    (os.path.join('Push-PendingChanges.ps1'), [
+        (r'''    'test_travel_fourteen.py',
+    # TR-15, 17 Nov 2026 - Release 96: the phone app fetches the new look.
+    'test_travel_fifteen.py'
+)
+# NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
+''',
+         r'''    'test_travel_fourteen.py',
+    # TR-15, 17 Nov 2026 - Release 96: the phone app fetches the new look.
+    'test_travel_fifteen.py',
+    # QL-1, 17 Nov 2026 - Release 97: 240 quotes, none twice in a round.
+    'test_quotes.py'
+)
+# NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
+'''),
+    ]),
+    (os.path.join('alv_rounds.py'), [
+        (r'''    # TR-15, 17 Nov 2026 - Release 96: the phone's version moves with its style.
+    '.bak_travel15',
+]
+
+''',
+         r'''    # TR-15, 17 Nov 2026 - Release 96: the phone's version moves with its style.
+    '.bak_travel15',
+    # QL-1, 17 Nov 2026 - Release 97: 240 quotes, none twice in a round.
+    '.bak_quotes1',
+]
+
+'''),
+    ]),
+    (os.path.join('test_wellness_six.py'), [
+        (r'''            'helps') == {'quote': 3, 'line': 'Steady does it.'},
+   '  found inside chatter, spaces tidied')
+ok(DL.parse('{"quote": %d, "line": "x"}' % len(Q.QUOTES)) is None and
+   DL.parse('{"quote": -1, "line": "x"}') is None,
+   'NEVER A QUOTE OUTSIDE THE LIBRARY')
+ok(DL.parse('{"quote": 1, "line": "%s"}' % ('word ' * 40).strip()) is None,
+   '  never a long speech')
+ok(DL.parse('{"quote": 1, "line": "read www.example.com"}') is None and
+   DL.parse('{"quote": 1, "line": "<b>hi</b>"}') is None,
+   '  never a link or markup')
+ok(DL.parse('{"quote": 1, "line": "%s"}' % Q.QUOTES[1]['text']) is None,
+   '  and never the quote passed off as the line')
+ok(DL.parse('no json here') is None and DL.parse('') is None,
+''',
+         r'''            'helps') == {'quote': 3, 'line': 'Steady does it.'},
+   '  found inside chatter, spaces tidied')
+# QL-1, 17 Nov 2026 - "quote" is the quote's fixed id (1 - 240) now.
+ok(DL.parse('{"quote": %d, "line": "x"}' % (len(Q.QUOTES) + 1)) is None and
+   DL.parse('{"quote": -1, "line": "x"}') is None and
+   DL.parse('{"quote": 0, "line": "x"}') is None,
+   'NEVER A QUOTE OUTSIDE THE LIBRARY')
+ok(DL.parse('{"quote": 1, "line": "%s"}' % ('word ' * 40).strip()) is None,
+   '  never a long speech')
+ok(DL.parse('{"quote": 1, "line": "read www.example.com"}') is None and
+   DL.parse('{"quote": 1, "line": "<b>hi</b>"}') is None,
+   '  never a link or markup')
+ok(DL.parse('{"quote": 1, "line": "%s"}' % Q.BY_ID[1]['text']) is None,
+   '  and never the quote passed off as the line')
+ok(DL.parse('no json here') is None and DL.parse('') is None,
+'''),
+        (r'''     'workouts_this_week': 1}
+pr = DL.prompt(f)
+ok('%d. "%s"' % (0, Q.QUOTES[0]['text']) in pr and
+   "Today's habits: Walk, Read" in pr and '3 of 4' in pr,
+   'the prompt: the numbered library and the few plain facts')
+''',
+         r'''     'workouts_this_week': 1}
+pr = DL.prompt(f)
+ok('%d. "%s"' % (1, Q.BY_ID[1]['text']) in pr and
+   "Today's habits: Walk, Read" in pr and '3 of 4' in pr,
+   'the prompt: the numbered library and the few plain facts')
+'''),
+        (r'''            ok(pa.prefs.get('seen') == today.isoformat(),
+               '  and Today noted it was opened today')
+            fake = FakeClaude('{"quote": 7, "line": "A short walk counts, '
+                              'Alex."}')
+            now = timezone.localtime()
+            ok(DL.run(now, client=fake) == 1 and len(fake.calls) == 1,
+''',
+         r'''            ok(pa.prefs.get('seen') == today.isoformat(),
+               '  and Today noted it was opened today')
+            # QL-1 - Today already showed a quote, so Claude is offered
+            # that one alone and writes its line for it.
+            pa.refresh_from_db()
+            fid = DL.today_id(pa.prefs, today)
+            fake = FakeClaude('{"quote": %d, "line": "A short walk counts, '
+                              'Alex."}' % fid)
+            now = timezone.localtime()
+            ok(DL.run(now, client=fake) == 1 and len(fake.calls) == 1,
+'''),
+        (r'''               'nothing private')
+            t = ca.get('/wellness/').content.decode()
+            ok(Q.QUOTES[7]['text'] in t and 'A short walk counts, Alex.'
+               in t and 'A line from Claude' in t,
+               "Today: Claude's pick from the library, and its line, "
+''',
+         r'''               'nothing private')
+            t = ca.get('/wellness/').content.decode()
+            ok(Q.BY_ID[fid]['text'] in t and 'A short walk counts, Alex.'
+               in t and 'A line from Claude' in t,
+               "Today: Claude's pick from the library, and its line, "
+'''),
+    ]),
+    (os.path.join('wellness', 'daily_line.py'), [
+        (r'''
+
+def prompt(f):
+    lines = ['%d. "%s" - %s' % (i, q['text'], q['author'])
+             for i, q in enumerate(Q.QUOTES)]
+    about = [
+        'First name: %s' % f['name'],
+''',
+         r'''
+
+def prompt(f, ids=None):
+    """WL-25 - the quotes are numbered by their fixed ids, and only the
+    ones this person may see today are listed."""
+    pool = set(ids or Q.IDS)
+    lines = ['%d. "%s" - %s' % (q['id'], q['text'], q['author'])
+             for q in Q.QUOTES if q['id'] in pool]
+    about = [
+        'First name: %s' % f['name'],
+'''),
+        (r'''
+
+def parse(text):
+    """{"quote", "line"} from Claude's reply, or None if it is not a fair
+    answer: a quote outside the library, a long or empty line, a link."""
+    m = re.search(r'\{.*\}', text or '', re.S)
+    if not m:
+''',
+         r'''
+
+def parse(text, ids=None):
+    """{"quote", "line"} from Claude's reply, or None if it is not a fair
+    answer: a quote outside the library (WL-25: or outside the ones offered
+    today), a long or empty line, a link. "quote" is the quote's id."""
+    m = re.search(r'\{.*\}', text or '', re.S)
+    if not m:
+'''),
+        (r'''    except (ValueError, TypeError, AttributeError):
+        return None
+    if not 0 <= q < len(Q.QUOTES):
+        return None
+    if not line or len(line.split()) > MAX_WORDS + 4 or len(line) > 240:
+        return None
+    if re.search(r'https?://|www\.|[<>]', line):
+        return None
+    if Q.QUOTES[q]['text'].lower()[:40] in line.lower():
+        return None
+    return {'quote': q, 'line': line}
+
+
+def ask(f, client=None):
+    """One call to Claude. Returns the parsed answer or None."""
+    if client is None:
+''',
+         r'''    except (ValueError, TypeError, AttributeError):
+        return None
+    if q not in (set(ids) if ids else Q.BY_ID):
+        return None
+    if not line or len(line.split()) > MAX_WORDS + 4 or len(line) > 240:
+        return None
+    if re.search(r'https?://|www\.|[<>]', line):
+        return None
+    if Q.BY_ID[q]['text'].lower()[:40] in line.lower():
+        return None
+    return {'quote': q, 'line': line}
+
+
+def ask(f, client=None, ids=None):
+    """One call to Claude. Returns the parsed answer or None."""
+    if client is None:
+'''),
+        (r'''    msg = client.messages.create(
+        model=MODEL, max_tokens=200, system=SYSTEM,
+        messages=[{'role': 'user', 'content': prompt(f)}])
+    text = ''.join(getattr(b, 'text', '') for b in msg.content)
+    return parse(text)
+
+
+def for_today(user, day, profile=None):
+    """(quote dict, line or None) for Today. Never calls Claude."""
+    from .models import WellnessProfile
+    p = profile or WellnessProfile.objects.filter(user=user).first()
+    prefs = (p.prefs if p else None) or {}
+    d = prefs.get('daily_line') or {}
+    if not prefs.get('line_off') and d.get('date') == day.isoformat() and \
+            isinstance(d.get('quote'), int) and \
+            0 <= d['quote'] < len(Q.QUOTES):
+        return Q.QUOTES[d['quote']], d.get('line') or None
+    return Q.for_day(user.pk, day), None
+
+
+''',
+         r'''    msg = client.messages.create(
+        model=MODEL, max_tokens=200, system=SYSTEM,
+        messages=[{'role': 'user', 'content': prompt(f, ids)}])
+    text = ''.join(getattr(b, 'text', '') for b in msg.content)
+    return parse(text, ids)
+
+
+# ------------------------------------------------------------------ WL-25
+# Demetri, 17 Nov 2026: "make sure on a user's record we keep a record of
+# the quotes that they have seen. Once they have cycled through all 240
+# quotes, we clear the counter and start again." On the profile's prefs:
+#   quotes_seen  the ids seen this round, in the order they came
+#   quote_day    {"date", "id"} - today's quote, fixed the first time it is
+#                shown or chosen, so it holds all day on every device
+# A day's quote is only ever one not yet seen this round; when every one
+# has been, the round starts again from none.
+OFFER = 30
+
+
+def today_id(prefs, day):
+    """Today's quote id if it is already fixed, else None."""
+    d = (prefs or {}).get('quote_day') or {}
+    if d.get('date') == day.isoformat() and d.get('id') in Q.BY_ID:
+        return d['id']
+    line = (prefs or {}).get('daily_line') or {}
+    if line.get('date') == day.isoformat():
+        if line.get('qid') in Q.BY_ID:
+            return line['qid']
+        # Made before WL-25: "quote" was the place in the list, and the
+        # first 28 kept their places as ids 1 - 28.
+        if isinstance(line.get('quote'), int) and \
+                0 <= line['quote'] < 28:
+            return line['quote'] + 1
+    return None
+
+
+def record(prefs, day, qid):
+    """Fix today's quote and count it as seen - starting a new round when
+    every quote has been seen."""
+    seen = [i for i in (prefs.get('quotes_seen') or []) if i in Q.BY_ID]
+    if not [i for i in Q.IDS if i not in seen]:
+        seen = []
+    if qid not in seen:
+        seen.append(qid)
+    if not [i for i in Q.IDS if i not in seen]:
+        # Every one seen: the next round starts - with today's counted,
+        # so tomorrow cannot be the same quote again.
+        seen = [qid]
+    prefs['quotes_seen'] = seen
+    prefs['quote_day'] = {'date': day.isoformat(), 'id': qid}
+    return prefs
+
+
+def choose(prefs, user_id, day):
+    """Today's id from the ones not yet seen this round."""
+    return Q.pick(user_id, day, Q.unseen(prefs.get('quotes_seen')))
+
+
+def offer(prefs, user_id, day):
+    """What Claude may choose from today: the one already shown, or up
+    to OFFER not yet seen this round."""
+    fixed = today_id(prefs, day)
+    if fixed:
+        return [fixed]
+    import random
+    pool = sorted(Q.unseen(prefs.get('quotes_seen')))
+    rnd = random.Random('%s:%s' % (user_id, day.isoformat()))
+    return sorted(rnd.sample(pool, min(OFFER, len(pool))))
+
+
+def for_today(user, day, profile=None):
+    """(quote dict, line or None) for Today. Never calls Claude. WL-25:
+    the first time today, the quote is chosen from the ones not yet seen
+    and noted as seen."""
+    from .models import WellnessProfile
+    p = profile or WellnessProfile.objects.filter(user=user).first()
+    prefs = (p.prefs if p else None) or {}
+    qid = today_id(prefs, day)
+    if qid:
+        d = prefs.get('daily_line') or {}
+        line = d.get('line') if d.get('date') == day.isoformat() and \
+            not prefs.get('line_off') else None
+        return Q.BY_ID[qid], line or None
+    qid = choose(prefs, user.pk, day)
+    if p is not None:
+        p.prefs = record(dict(prefs), day, qid)
+        p.save(update_fields=['prefs', 'updated_at'])
+    return Q.BY_ID[qid], None
+
+
+'''),
+        (r'''    prefs['daily_line_try'] = {'date': day.isoformat(), 'n': n + 1}
+    answer = None
+    try:
+        answer = ask(facts(profile.user, day), client=client)
+    except Exception as exc:                              # noqa: BLE001
+        logger.warning('Wellness daily line failed: %s', exc)
+    if answer:
+        prefs['daily_line'] = {'date': day.isoformat(),
+                               'quote': answer['quote'],
+                               'line': answer['line']}
+    profile.prefs = prefs
+    profile.save(update_fields=['prefs', 'updated_at'])
+''',
+         r'''    prefs['daily_line_try'] = {'date': day.isoformat(), 'n': n + 1}
+    answer = None
+    ids = offer(prefs, profile.user_id, day)
+    try:
+        answer = ask(facts(profile.user, day), client=client, ids=ids)
+    except Exception as exc:                              # noqa: BLE001
+        logger.warning('Wellness daily line failed: %s', exc)
+    if answer:
+        prefs['daily_line'] = {'date': day.isoformat(),
+                               'qid': answer['quote'],
+                               'line': answer['line']}
+        record(prefs, day, answer['quote'])
+    profile.prefs = prefs
+    profile.save(update_fields=['prefs', 'updated_at'])
+'''),
+    ]),
+    (os.path.join('wellness', 'guide.py'), [
+        (r'''          'once a day at most. On iPhone, use the Wellness app on your '
+          'home screen.'},
+    {'q': 'Where does the line under the quote come from?',
+     'a': 'Claude picks one quote from the same library of real quotes and '
+          'writes one short line under it, labelled "A line from Claude". '
+          'It sees only your first name, today\'s habit names and how the '
+''',
+         r'''          'once a day at most. On iPhone, use the Wellness app on your '
+          'home screen.'},
+    # WL-25 / QL-1, 17 Nov 2026 - no quote twice until all have been seen.
+    {'q': 'Will I see the same quote again?',
+     'a': 'Not until you have seen them all. The library holds 240 real '
+          'quotes, each with its source, and Wellness keeps a note of the '
+          'ones you have been shown. Each day\'s quote comes from the ones '
+          'you have not seen yet; once you have seen all 240, it starts '
+          'again from the beginning. The quote stays the same all day, '
+          'on every device.'},
+    {'q': 'Where does the line under the quote come from?',
+     'a': 'Claude picks one quote from the same library of real quotes '
+          '(only from the ones you have not seen yet) and '
+          'writes one short line under it, labelled "A line from Claude". '
+          'It sees only your first name, today\'s habit names and how the '
+'''),
+    ]),
+    (os.path.join('wellness', 'help.py'), [
+        (r'''        'signs': [
+            ('--w-sage-deep', 'A filled ring and a tick: done today.'),
+            ('--w-sand', 'The quote of the day - and under it, if you '
+                         'allow it, a line from Claude.'),
+        ],
+    },
+''',
+         r'''        'signs': [
+            ('--w-sage-deep', 'A filled ring and a tick: done today.'),
+            ('--w-sand', 'The quote of the day - one you have not seen '
+                         'before; no repeats until you have seen all 240 - '
+                         'and under it, if you allow it, a line from '
+                         'Claude.'),
+        ],
+    },
+'''),
+    ]),
+    (os.path.join('wellness', 'quotes.py'), [
+        (r'''
+themes: start, steady, comeback, rest, gratitude, strength, mind.
+"""
+import hashlib
+
+QUOTES = [
+    {'text': 'Fall seven times, stand up eight.',
+     'author': 'Japanese proverb', 'source': '', 'themes': ['comeback']},
+    {'text': 'The journey of a thousand miles begins with a single step.',
+     'author': 'Lao Tzu', 'source': 'Tao Te Ching, 64',
+     'themes': ['start']},
+    {'text': 'We suffer more often in imagination than in reality.',
+     'author': 'Seneca', 'source': 'Letters to Lucilius, 13',
+     'themes': ['mind']},
+    {'text': 'It is not that we have a short time to live, but that we '
+             'waste a lot of it.',
+     'author': 'Seneca', 'source': 'On the Shortness of Life',
+     'themes': ['start']},
+    {'text': 'Begin at once to live, and count each separate day as a '
+             'separate life.',
+     'author': 'Seneca', 'source': 'Letters to Lucilius, 101',
+     'themes': ['start', 'mind']},
+    {'text': 'Waste no more time arguing about what a good man should be. '
+             'Be one.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 10.16',
+     'themes': ['strength']},
+    {'text': 'Very little is needed to make a happy life.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 7.67',
+     'themes': ['gratitude', 'mind']},
+    {'text': 'The impediment to action advances action. What stands in '
+             'the way becomes the way.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 5.20',
+     'themes': ['comeback', 'strength']},
+    {'text': 'First say to yourself what you would be; and then do what '
+             'you have to do.',
+     'author': 'Epictetus', 'source': 'Discourses, 3.23',
+     'themes': ['start', 'steady']},
+    {'text': 'He who has a why to live can bear almost any how.',
+     'author': 'Friedrich Nietzsche', 'source': 'Twilight of the Idols',
+     'themes': ['strength']},
+    {'text': 'We are what we repeatedly do. Excellence, then, is not an '
+             'act, but a habit.',
+     'author': 'Will Durant', 'source': 'The Story of Philosophy',
+     'themes': ['steady']},
+    {'text': 'Habit is a second nature.',
+     'author': 'Cicero', 'source': 'De Finibus, 5.74',
+     'themes': ['steady']},
+    {'text': 'Gratitude is not only the greatest of virtues, but the '
+             'parent of all the others.',
+     'author': 'Cicero', 'source': 'Pro Plancio',
+     'themes': ['gratitude']},
+    {'text': 'A healthy mind in a healthy body.',
+     'author': 'Juvenal', 'source': 'Satires, X',
+     'themes': ['strength', 'mind']},
+    {'text': 'Make haste slowly.',
+     'author': 'Augustus', 'source': 'Suetonius, Life of Augustus',
+     'themes': ['steady', 'rest']},
+    {'text': 'Slow and steady wins the race.',
+     'author': 'Aesop', 'source': 'The Tortoise and the Hare',
+     'themes': ['steady']},
+    {'text': 'Drop by drop is the water pot filled.',
+     'author': 'The Dhammapada', 'source': 'verse 122',
+     'themes': ['steady']},
+    {'text': 'Little by little, one travels far.',
+     'author': 'Spanish proverb', 'source': '', 'themes': ['steady']},
+    {'text': 'Rome was not built in a day.',
+     'author': 'Proverb', 'source': '', 'themes': ['steady', 'comeback']},
+    {'text': 'Well begun is half done.',
+     'author': 'Greek proverb', 'source': 'quoted by Aristotle, Politics',
+     'themes': ['start']},
+    {'text': 'Know thyself.',
+     'author': 'Delphic maxim', 'source': '', 'themes': ['mind']},
+    {'text': 'Nothing in excess.',
+     'author': 'Delphic maxim', 'source': '', 'themes': ['rest']},
+    {'text': 'Do what you can, with what you have, where you are.',
+     'author': 'Theodore Roosevelt', 'source': 'An Autobiography (1913)',
+     'themes': ['start', 'comeback']},
+    {'text': 'Well done is better than well said.',
+     'author': 'Benjamin Franklin', 'source': "Poor Richard's Almanack",
+     'themes': ['steady']},
+    {'text': 'Lost time is never found again.',
+     'author': 'Benjamin Franklin', 'source': "Poor Richard's Almanack",
+     'themes': ['start']},
+    {'text': 'One today is worth two tomorrows.',
+     'author': 'Benjamin Franklin', 'source': 'The Way to Wealth',
+     'themes': ['start']},
+    {'text': 'Every day, in every way, I am getting better and better.',
+     'author': 'Émile Coué', 'source': '', 'themes': ['mind', 'steady']},
+    {'text': 'Rest is not idleness.',
+     'author': 'John Lubbock', 'source': 'The Use of Life',
+     'themes': ['rest']},
+]
+
+
+''',
+         r'''
+themes: start, steady, comeback, rest, gratitude, strength, mind.
+
+WL-25, 17 Nov 2026 - NO REPEATS UNTIL THE WHOLE LIBRARY HAS BEEN SEEN.
+Demetri: "We need to grow our quote library to 240 real quotes. Then we
+need to give each quote a fixed ID. and make sure on a user's record we
+keep a record of the quotes that they have seen. Once they have cycled
+through all 240 quotes, we clear the counter and start again." Every quote
+has an `id` that never changes; a person's seen ids are kept on their
+profile (daily_line.py); a day's quote comes only from those not yet seen.
+"""
+import hashlib
+
+QUOTES = [
+    {'id': 1, 'text': 'Fall seven times, stand up eight.',
+     'author': 'Japanese proverb', 'source': '', 'themes': ['comeback']},
+    {'id': 2, 'text': 'The journey of a thousand miles begins with a single step.',
+     'author': 'Lao Tzu', 'source': 'Tao Te Ching, 64',
+     'themes': ['start']},
+    {'id': 3, 'text': 'We suffer more often in imagination than in reality.',
+     'author': 'Seneca', 'source': 'Letters to Lucilius, 13',
+     'themes': ['mind']},
+    {'id': 4, 'text': 'It is not that we have a short time to live, but that we '
+             'waste a lot of it.',
+     'author': 'Seneca', 'source': 'On the Shortness of Life',
+     'themes': ['start']},
+    {'id': 5, 'text': 'Begin at once to live, and count each separate day as a '
+             'separate life.',
+     'author': 'Seneca', 'source': 'Letters to Lucilius, 101',
+     'themes': ['start', 'mind']},
+    {'id': 6, 'text': 'Waste no more time arguing about what a good man should be. '
+             'Be one.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 10.16',
+     'themes': ['strength']},
+    {'id': 7, 'text': 'Very little is needed to make a happy life.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 7.67',
+     'themes': ['gratitude', 'mind']},
+    {'id': 8, 'text': 'The impediment to action advances action. What stands in '
+             'the way becomes the way.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 5.20',
+     'themes': ['comeback', 'strength']},
+    {'id': 9, 'text': 'First say to yourself what you would be; and then do what '
+             'you have to do.',
+     'author': 'Epictetus', 'source': 'Discourses, 3.23',
+     'themes': ['start', 'steady']},
+    {'id': 10, 'text': 'He who has a why to live can bear almost any how.',
+     'author': 'Friedrich Nietzsche', 'source': 'Twilight of the Idols',
+     'themes': ['strength']},
+    {'id': 11, 'text': 'We are what we repeatedly do. Excellence, then, is not an '
+             'act, but a habit.',
+     'author': 'Will Durant', 'source': 'The Story of Philosophy',
+     'themes': ['steady']},
+    {'id': 12, 'text': 'Habit is a second nature.',
+     'author': 'Cicero', 'source': 'De Finibus, 5.74',
+     'themes': ['steady']},
+    {'id': 13, 'text': 'Gratitude is not only the greatest of virtues, but the '
+             'parent of all the others.',
+     'author': 'Cicero', 'source': 'Pro Plancio',
+     'themes': ['gratitude']},
+    {'id': 14, 'text': 'A healthy mind in a healthy body.',
+     'author': 'Juvenal', 'source': 'Satires, X',
+     'themes': ['strength', 'mind']},
+    {'id': 15, 'text': 'Make haste slowly.',
+     'author': 'Augustus', 'source': 'Suetonius, Life of Augustus',
+     'themes': ['steady', 'rest']},
+    {'id': 16, 'text': 'Slow and steady wins the race.',
+     'author': 'Aesop', 'source': 'The Tortoise and the Hare',
+     'themes': ['steady']},
+    {'id': 17, 'text': 'Drop by drop is the water pot filled.',
+     'author': 'The Dhammapada', 'source': 'verse 122',
+     'themes': ['steady']},
+    {'id': 18, 'text': 'Little by little, one travels far.',
+     'author': 'Spanish proverb', 'source': '', 'themes': ['steady']},
+    {'id': 19, 'text': 'Rome was not built in a day.',
+     'author': 'Proverb', 'source': '', 'themes': ['steady', 'comeback']},
+    {'id': 20, 'text': 'Well begun is half done.',
+     'author': 'Greek proverb', 'source': 'quoted by Aristotle, Politics',
+     'themes': ['start']},
+    {'id': 21, 'text': 'Know thyself.',
+     'author': 'Delphic maxim', 'source': '', 'themes': ['mind']},
+    {'id': 22, 'text': 'Nothing in excess.',
+     'author': 'Delphic maxim', 'source': '', 'themes': ['rest']},
+    {'id': 23, 'text': 'Do what you can, with what you have, where you are.',
+     'author': 'Theodore Roosevelt', 'source': 'An Autobiography (1913)',
+     'themes': ['start', 'comeback']},
+    {'id': 24, 'text': 'Well done is better than well said.',
+     'author': 'Benjamin Franklin', 'source': "Poor Richard's Almanack",
+     'themes': ['steady']},
+    {'id': 25, 'text': 'Lost time is never found again.',
+     'author': 'Benjamin Franklin', 'source': "Poor Richard's Almanack",
+     'themes': ['start']},
+    {'id': 26, 'text': 'One today is worth two tomorrows.',
+     'author': 'Benjamin Franklin', 'source': 'The Way to Wealth',
+     'themes': ['start']},
+    {'id': 27, 'text': 'Every day, in every way, I am getting better and better.',
+     'author': 'Émile Coué', 'source': '', 'themes': ['mind', 'steady']},
+    {'id': 28, 'text': 'Rest is not idleness.',
+     'author': 'John Lubbock', 'source': 'The Use of Life',
+     'themes': ['rest']},
+    # WL-25, 17 Nov 2026 - Demetri: "We need to grow our quote library to
+    # 240 real quotes. Then we need to give each quote a fixed ID". The
+    # same rule as the first 28: a real quote with a source a reader could
+    # check; the famous misattributions left out. Ids never change and
+    # are never reused - a quote that goes stays retired.
+    {'id': 29, 'text': 'While we are postponing, life speeds by.',
+     'author': 'Seneca', 'source': 'Letters to Lucilius, 1',
+     'themes': ['start']},
+    {'id': 30, 'text': 'It is not the man who has too little, but the man who '
+             'craves more, that is poor.',
+     'author': 'Seneca', 'source': 'Letters to Lucilius, 2',
+     'themes': ['gratitude']},
+    {'id': 31, 'text': 'Associate with those who will make a better man of you.',
+     'author': 'Seneca', 'source': 'Letters to Lucilius, 7',
+     'themes': ['steady']},
+    {'id': 32, 'text': 'No man was ever wise by chance.',
+     'author': 'Seneca', 'source': 'Letters to Lucilius, 76',
+     'themes': ['steady']},
+    {'id': 33, 'text': 'As is a tale, so is life: not how long it is, but how good '
+             'it is, is what matters.',
+     'author': 'Seneca', 'source': 'Letters to Lucilius, 77',
+     'themes': ['mind']},
+    {'id': 34, 'text': 'If a man does not know to what port he is steering, no '
+             'wind is favourable to him.',
+     'author': 'Seneca', 'source': 'Letters to Lucilius, 71',
+     'themes': ['start']},
+    {'id': 35, 'text': 'It is quality, rather than quantity, that matters.',
+     'author': 'Seneca', 'source': 'Letters to Lucilius, 45',
+     'themes': ['steady']},
+    {'id': 36, 'text': 'Until we have begun to go without them, we fail to realise '
+             'how unnecessary many things are.',
+     'author': 'Seneca', 'source': 'Letters to Lucilius, 123',
+     'themes': ['gratitude']},
+    {'id': 37, 'text': 'The mind should be allowed some relaxation, that it may '
+             'return to its work all the better for the rest.',
+     'author': 'Seneca', 'source': 'On Tranquillity of Mind, 17',
+     'themes': ['rest']},
+    {'id': 38, 'text': 'Life is long if you know how to use it.',
+     'author': 'Seneca', 'source': 'On the Shortness of Life, 2',
+     'themes': ['start']},
+    {'id': 39, 'text': 'Wherever there is a human being, there is an opportunity '
+             'for a kindness.',
+     'author': 'Seneca', 'source': 'On the Happy Life, 24',
+     'themes': ['gratitude']},
+    {'id': 40, 'text': 'Every day, therefore, should be regulated as if it closed '
+             'the series.',
+     'author': 'Seneca', 'source': 'Letters to Lucilius, 12',
+     'themes': ['start']},
+    {'id': 41, 'text': 'Fire tests gold, suffering tests brave men.',
+     'author': 'Seneca', 'source': 'On Providence, 5',
+     'themes': ['strength']},
+    {'id': 42, 'text': 'Nothing is so wretched or foolish as to anticipate '
+             'misfortunes.',
+     'author': 'Seneca', 'source': 'Letters to Lucilius, 98',
+     'themes': ['mind']},
+    {'id': 43, 'text': 'Everywhere means nowhere.',
+     'author': 'Seneca', 'source': 'Letters to Lucilius, 2',
+     'themes': ['steady']},
+    {'id': 44, 'text': 'Such as are your habitual thoughts, such also will be the '
+             'character of your mind.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 5.16',
+     'themes': ['mind']},
+    {'id': 45, 'text': 'Loss is nothing else than change.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 9.35',
+     'themes': ['comeback']},
+    {'id': 46, 'text': 'Confine yourself to the present.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 7.29',
+     'themes': ['mind']},
+    {'id': 47, 'text': 'The best way of avenging yourself is not to become like '
+             'the wrongdoer.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 6.6',
+     'themes': ['strength']},
+    {'id': 48, 'text': 'Look within. Within is the fountain of good, and it will '
+             'ever bubble up, if you will ever dig.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 7.59',
+     'themes': ['mind']},
+    {'id': 49, 'text': 'Do every act of your life as though it were the very last '
+             'act of your life.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 2.5',
+     'themes': ['start']},
+    {'id': 50, 'text': 'If it is not right, do not do it; if it is not true, do '
+             'not say it.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 12.17',
+     'themes': ['strength']},
+    {'id': 51, 'text': 'Nowhere can a man find a quieter or more untroubled '
+             'retreat than in his own soul.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 4.3',
+     'themes': ['rest']},
+    {'id': 52, 'text': 'How much more grievous are the consequences of anger than '
+             'the causes of it.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 11.18',
+     'themes': ['mind']},
+    {'id': 53, 'text': 'Time is a sort of river of passing events, and strong is '
+             'its current.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 4.43',
+     'themes': ['mind']},
+    {'id': 54, 'text': 'The art of living is more like wrestling than dancing.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 7.61',
+     'themes': ['strength']},
+    {'id': 55, 'text': 'Be like the promontory against which the waves continually '
+             'break; it stands firm and tames the fury of the water '
+             'around it.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 4.49',
+     'themes': ['strength']},
+    {'id': 56, 'text': "Not 'this is a misfortune', but 'to bear this worthily is "
+             "good fortune'.",
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 4.49',
+     'themes': ['comeback']},
+    {'id': 57, 'text': 'Adapt yourself to the things among which your lot has been '
+             'cast.',
+     'author': 'Marcus Aurelius', 'source': 'Meditations, 6.39',
+     'themes': ['mind']},
+    {'id': 58, 'text': 'Men are disturbed not by things, but by the opinions about '
+             'things.',
+     'author': 'Epictetus', 'source': 'Enchiridion, 5',
+     'themes': ['mind']},
+    {'id': 59, 'text': 'No great thing is created suddenly.',
+     'author': 'Epictetus', 'source': 'Discourses, 1.15',
+     'themes': ['steady']},
+    {'id': 60, 'text': 'If you want to improve, be content to be thought foolish '
+             'and stupid.',
+     'author': 'Epictetus', 'source': 'Enchiridion, 13',
+     'themes': ['start']},
+    {'id': 61, 'text': 'Some things are within our power, while others are not.',
+     'author': 'Epictetus', 'source': 'Enchiridion, 1',
+     'themes': ['mind']},
+    {'id': 62, 'text': 'He is a wise man who does not grieve for the things which '
+             'he has not, but rejoices for those which he has.',
+     'author': 'Epictetus', 'source': 'Fragments',
+     'themes': ['gratitude']},
+    {'id': 63, 'text': 'Every habit and faculty is maintained and increased by the '
+             'corresponding actions.',
+     'author': 'Epictetus', 'source': 'Discourses, 2.18',
+     'themes': ['steady']},
+    {'id': 64, 'text': 'Difficulties are things that show a person what they are.',
+     'author': 'Epictetus', 'source': 'Discourses, 1.24',
+     'themes': ['strength']},
+    {'id': 65, 'text': 'Only the educated are free.',
+     'author': 'Epictetus', 'source': 'Discourses, 2.1',
+     'themes': ['mind']},
+    {'id': 66, 'text': 'We have two ears and one mouth, so that we may listen more '
+             'and talk less.',
+     'author': 'Zeno of Citium', 'source': 'Diogenes Laertius, Lives, 7.23',
+     'themes': ['mind']},
+    {'id': 67, 'text': 'When you know a thing, to hold that you know it; and when '
+             'you do not know a thing, to allow that you do not know it '
+             '- this is knowledge.',
+     'author': 'Confucius', 'source': 'Analects, 2.17',
+     'themes': ['mind']},
+    {'id': 68, 'text': 'Is it not pleasant to learn with a constant perseverance '
+             'and application?',
+     'author': 'Confucius', 'source': 'Analects, 1.1',
+     'themes': ['steady']},
+    {'id': 69, 'text': 'Learning without thought is labour lost; thought without '
+             'learning is perilous.',
+     'author': 'Confucius', 'source': 'Analects, 2.15',
+     'themes': ['mind']},
+    {'id': 70, 'text': 'When we see men of worth, we should think of equalling '
+             'them.',
+     'author': 'Confucius', 'source': 'Analects, 4.17',
+     'themes': ['start']},
+    {'id': 71, 'text': 'What you do not want done to yourself, do not do to '
+             'others.',
+     'author': 'Confucius', 'source': 'Analects, 15.24',
+     'themes': ['gratitude']},
+    {'id': 72, 'text': 'To see what is right and not to do it is want of courage.',
+     'author': 'Confucius', 'source': 'Analects, 2.24',
+     'themes': ['strength']},
+    {'id': 73, 'text': 'The cautious seldom err.',
+     'author': 'Confucius', 'source': 'Analects, 4.23',
+     'themes': ['steady']},
+    {'id': 74, 'text': 'The superior man is modest in his speech, but exceeds in '
+             'his actions.',
+     'author': 'Confucius', 'source': 'Analects, 14.29',
+     'themes': ['steady']},
+    {'id': 75, 'text': 'Knowing others is intelligence; knowing yourself is true '
+             'wisdom.',
+     'author': 'Lao Tzu', 'source': 'Tao Te Ching, 33',
+     'themes': ['mind']},
+    {'id': 76, 'text': 'Mastering others is strength; mastering yourself is true '
+             'power.',
+     'author': 'Lao Tzu', 'source': 'Tao Te Ching, 33',
+     'themes': ['strength']},
+    {'id': 77, 'text': 'He who knows that enough is enough will always have '
+             'enough.',
+     'author': 'Lao Tzu', 'source': 'Tao Te Ching, 46',
+     'themes': ['gratitude']},
+    {'id': 78, 'text': "A tree as great as a man's embrace springs from a small "
+             'shoot.',
+     'author': 'Lao Tzu', 'source': 'Tao Te Ching, 64',
+     'themes': ['steady']},
+    {'id': 79, 'text': 'The softest things in the world overcome the hardest.',
+     'author': 'Lao Tzu', 'source': 'Tao Te Ching, 43',
+     'themes': ['strength']},
+    {'id': 80, 'text': 'Do the difficult things while they are easy, and do the '
+             'great things while they are small.',
+     'author': 'Lao Tzu', 'source': 'Tao Te Ching, 63',
+     'themes': ['start']},
+    {'id': 81, 'text': 'Those who know do not speak; those who speak do not know.',
+     'author': 'Lao Tzu', 'source': 'Tao Te Ching, 56',
+     'themes': ['mind']},
+    {'id': 82, 'text': 'Better than a thousand hollow words is one word that '
+             'brings peace.',
+     'author': 'The Dhammapada', 'source': 'verse 100',
+     'themes': ['mind']},
+    {'id': 83, 'text': 'Health is the greatest gift, contentment the greatest '
+             'wealth.',
+     'author': 'The Dhammapada', 'source': 'verse 204',
+     'themes': ['gratitude']},
+    {'id': 84, 'text': 'All that we are is the result of what we have thought.',
+     'author': 'The Dhammapada', 'source': 'verse 1',
+     'themes': ['mind']},
+    {'id': 85, 'text': 'Hatred does not cease by hatred, but only by love.',
+     'author': 'The Dhammapada', 'source': 'verse 5',
+     'themes': ['mind']},
+    {'id': 86, 'text': 'One swallow does not make a summer, nor does one day.',
+     'author': 'Aristotle', 'source': 'Nicomachean Ethics, 1.7',
+     'themes': ['steady']},
+    {'id': 87, 'text': 'We become just by doing just acts, temperate by doing '
+             'temperate acts, brave by doing brave acts.',
+     'author': 'Aristotle', 'source': 'Nicomachean Ethics, 2.1',
+     'themes': ['steady']},
+    {'id': 88, 'text': 'The roots of education are bitter, but the fruit is sweet.',
+     'author': 'Aristotle', 'source': 'Diogenes Laertius, Lives, 5.18',
+     'themes': ['steady']},
+    {'id': 89, 'text': 'You cannot step twice into the same river.',
+     'author': 'Heraclitus', 'source': 'quoted by Plato, Cratylus 402a',
+     'themes': ['mind']},
+    {'id': 90, 'text': 'Character is destiny.',
+     'author': 'Heraclitus', 'source': 'Fragment 119',
+     'themes': ['strength']},
+    {'id': 91, 'text': 'The sun is new each day.',
+     'author': 'Heraclitus', 'source': 'Fragment 6',
+     'themes': ['start']},
+    {'id': 92, 'text': 'The unexamined life is not worth living.',
+     'author': 'Socrates', 'source': 'Plato, Apology 38a',
+     'themes': ['mind']},
+    {'id': 93, 'text': 'The beginning is the most important part of the work.',
+     'author': 'Plato', 'source': 'Republic, 377a',
+     'themes': ['start']},
+    {'id': 94, 'text': 'Life is short, the art long.',
+     'author': 'Hippocrates', 'source': 'Aphorisms, 1.1',
+     'themes': ['steady']},
+    {'id': 95, 'text': 'Do not spoil what you have by desiring what you have not.',
+     'author': 'Epicurus', 'source': 'Vatican Sayings, 35',
+     'themes': ['gratitude']},
+    {'id': 96, 'text': 'Of all the things which wisdom provides to make us '
+             'entirely happy, much the greatest is the possession of '
+             'friendship.',
+     'author': 'Epicurus', 'source': 'Principal Doctrines, 27',
+     'themes': ['gratitude']},
+    {'id': 97, 'text': 'The mind does not require filling like a bottle, but '
+             'rather, like wood, it only requires kindling.',
+     'author': 'Plutarch', 'source': 'On Listening to Lectures',
+     'themes': ['mind']},
+    {'id': 98, 'text': 'Rest; a field that has rested gives a beautiful crop.',
+     'author': 'Ovid', 'source': 'Ars Amatoria, 2.351',
+     'themes': ['rest']},
+    {'id': 99, 'text': 'Dripping water hollows out a stone.',
+     'author': 'Ovid', 'source': 'Epistulae ex Ponto, 4.10',
+     'themes': ['steady']},
+    {'id': 100, 'text': 'Be patient and tough; some day this pain will be useful to '
+             'you.',
+     'author': 'Ovid', 'source': 'Amores, 3.11',
+     'themes': ['comeback']},
+    {'id': 101, 'text': 'Seize the day, trusting as little as possible in tomorrow.',
+     'author': 'Horace', 'source': 'Odes, 1.11',
+     'themes': ['start']},
+    {'id': 102, 'text': 'He who has begun has half done. Dare to be wise; begin!',
+     'author': 'Horace', 'source': 'Epistles, 1.2',
+     'themes': ['start']},
+    {'id': 103, 'text': 'Adversity reveals genius, prosperity conceals it.',
+     'author': 'Horace', 'source': 'Satires, 2.8',
+     'themes': ['comeback']},
+    {'id': 104, 'text': 'They can because they think they can.',
+     'author': 'Virgil', 'source': 'Aeneid, 5.231',
+     'themes': ['strength']},
+    {'id': 105, 'text': 'Perhaps one day it will be pleasing to remember even these '
+             'things.',
+     'author': 'Virgil', 'source': 'Aeneid, 1.203',
+     'themes': ['comeback']},
+    {'id': 106, 'text': 'Practice is the best of all instructors.',
+     'author': 'Publilius Syrus', 'source': 'Sentences',
+     'themes': ['steady']},
+    {'id': 107, 'text': 'Anyone can hold the helm when the sea is calm.',
+     'author': 'Publilius Syrus', 'source': 'Sentences',
+     'themes': ['strength']},
+    {'id': 108, 'text': 'It is a bad plan that admits of no modification.',
+     'author': 'Publilius Syrus', 'source': 'Sentences',
+     'themes': ['comeback']},
+    {'id': 109, 'text': 'While there is life, there is hope.',
+     'author': 'Cicero', 'source': 'Letters to Atticus, 9.10',
+     'themes': ['comeback']},
+    {'id': 110, 'text': 'If you have a garden and a library, you have everything '
+             'you need.',
+     'author': 'Cicero', 'source': 'Letters to Friends, 9.4',
+     'themes': ['rest']},
+    {'id': 111, 'text': 'Fortune favours the brave.',
+     'author': 'Terence', 'source': 'Phormio, 203',
+     'themes': ['strength']},
+    {'id': 112, 'text': 'Through hardships to the stars.',
+     'author': 'Latin motto', 'source': '',
+     'themes': ['strength']},
+    {'id': 113, 'text': 'Little by little does the trick.',
+     'author': 'Aesop', 'source': 'The Crow and the Pitcher',
+     'themes': ['steady']},
+    {'id': 114, 'text': 'No act of kindness, no matter how small, is ever wasted.',
+     'author': 'Aesop', 'source': 'The Lion and the Mouse',
+     'themes': ['gratitude']},
+    {'id': 115, 'text': 'United we stand, divided we fall.',
+     'author': 'Aesop', 'source': 'The Four Oxen and the Lion',
+     'themes': ['strength']},
+    {'id': 116, 'text': 'Gratitude is the sign of noble souls.',
+     'author': 'Aesop', 'source': 'Androcles',
+     'themes': ['gratitude']},
+    {'id': 117, 'text': 'Our doubts are traitors, and make us lose the good we oft '
+             'might win, by fearing to attempt.',
+     'author': 'William Shakespeare', 'source': 'Measure for Measure, 1.4',
+     'themes': ['start']},
+    {'id': 118, 'text': 'There is nothing either good or bad, but thinking makes it '
+             'so.',
+     'author': 'William Shakespeare', 'source': 'Hamlet, 2.2',
+     'themes': ['mind']},
+    {'id': 119, 'text': "What's past is prologue.",
+     'author': 'William Shakespeare', 'source': 'The Tempest, 2.1',
+     'themes': ['comeback']},
+    {'id': 120, 'text': 'Sweet are the uses of adversity.',
+     'author': 'William Shakespeare', 'source': 'As You Like It, 2.1',
+     'themes': ['comeback']},
+    {'id': 121, 'text': 'This above all: to thine own self be true.',
+     'author': 'William Shakespeare', 'source': 'Hamlet, 1.3',
+     'themes': ['mind']},
+    {'id': 122, 'text': 'How poor are they that have not patience! What wound did '
+             'ever heal but by degrees?',
+     'author': 'William Shakespeare', 'source': 'Othello, 2.3',
+     'themes': ['comeback']},
+    {'id': 123, 'text': "Things won are done; joy's soul lies in the doing.",
+     'author': 'William Shakespeare', 'source': 'Troilus and Cressida, 1.2',
+     'themes': ['steady']},
+    {'id': 124, 'text': "Sleep that knits up the ravell'd sleave of care.",
+     'author': 'William Shakespeare', 'source': 'Macbeth, 2.2',
+     'themes': ['rest']},
+    {'id': 125, 'text': 'Our bodies are our gardens, to the which our wills are '
+             'gardeners.',
+     'author': 'William Shakespeare', 'source': 'Othello, 1.3',
+     'themes': ['strength']},
+    {'id': 126, 'text': 'Love all, trust a few, do wrong to none.',
+     'author': 'William Shakespeare', 'source': "All's Well That Ends Well, 1.1",
+     'themes': ['mind']},
+    {'id': 127, 'text': 'Wisely and slow; they stumble that run fast.',
+     'author': 'William Shakespeare', 'source': 'Romeo and Juliet, 2.3',
+     'themes': ['steady']},
+    {'id': 128, 'text': 'Men at some time are masters of their fates.',
+     'author': 'William Shakespeare', 'source': 'Julius Caesar, 1.2',
+     'themes': ['strength']},
+    {'id': 129, 'text': 'Come forth into the light of things, let Nature be your '
+             'teacher.',
+     'author': 'William Wordsworth', 'source': 'The Tables Turned',
+     'themes': ['rest']},
+    {'id': 130, 'text': 'A thing of beauty is a joy for ever.',
+     'author': 'John Keats', 'source': 'Endymion',
+     'themes': ['gratitude']},
+    {'id': 131, 'text': 'To strive, to seek, to find, and not to yield.',
+     'author': 'Alfred, Lord Tennyson', 'source': 'Ulysses',
+     'themes': ['strength']},
+    {'id': 132, 'text': 'Into each life some rain must fall.',
+     'author': 'Henry Wadsworth Longfellow', 'source': 'The Rainy Day',
+     'themes': ['comeback']},
+    {'id': 133, 'text': 'Let us, then, be up and doing.',
+     'author': 'Henry Wadsworth Longfellow', 'source': 'A Psalm of Life',
+     'themes': ['start']},
+    {'id': 134, 'text': 'Hope is the thing with feathers that perches in the soul.',
+     'author': 'Emily Dickinson', 'source': 'poem 254',
+     'themes': ['comeback']},
+    {'id': 135, 'text': 'Forever is composed of nows.',
+     'author': 'Emily Dickinson', 'source': 'poem 690',
+     'themes': ['mind']},
+    {'id': 136, 'text': 'I am the master of my fate, I am the captain of my soul.',
+     'author': 'William Ernest Henley', 'source': 'Invictus',
+     'themes': ['strength']},
+    {'id': 137, 'text': 'If you can keep your head when all about you are losing '
+             'theirs...',
+     'author': 'Rudyard Kipling', 'source': 'If-',
+     'themes': ['strength']},
+    {'id': 138, 'text': 'No man is an island.',
+     'author': 'John Donne', 'source': 'Devotions upon Emergent Occasions, Meditation 17',
+     'themes': ['gratitude']},
+    {'id': 139, 'text': 'To err is human, to forgive divine.',
+     'author': 'Alexander Pope', 'source': 'An Essay on Criticism',
+     'themes': ['comeback']},
+    {'id': 140, 'text': 'Hope springs eternal in the human breast.',
+     'author': 'Alexander Pope', 'source': 'An Essay on Man',
+     'themes': ['comeback']},
+    {'id': 141, 'text': 'The mind is its own place, and in itself can make a heaven '
+             'of hell, a hell of heaven.',
+     'author': 'John Milton', 'source': 'Paradise Lost, 1',
+     'themes': ['mind']},
+    {'id': 142, 'text': 'The best way out is always through.',
+     'author': 'Robert Frost', 'source': 'A Servant to Servants',
+     'themes': ['comeback']},
+    {'id': 143, 'text': 'If one advances confidently in the direction of his '
+             'dreams, he will meet with a success unexpected in common '
+             'hours.',
+     'author': 'Henry David Thoreau', 'source': 'Walden, Conclusion',
+     'themes': ['start']},
+    {'id': 144, 'text': 'I went to the woods because I wished to live deliberately.',
+     'author': 'Henry David Thoreau', 'source': 'Walden, 2',
+     'themes': ['rest']},
+    {'id': 145, 'text': 'Our life is frittered away by detail. Simplify, simplify.',
+     'author': 'Henry David Thoreau', 'source': 'Walden, 2',
+     'themes': ['rest']},
+    {'id': 146, 'text': 'Finish each day and be done with it.',
+     'author': 'Ralph Waldo Emerson', 'source': 'letter to his daughter',
+     'themes': ['rest']},
+    {'id': 147, 'text': 'Adopt the pace of nature: her secret is patience.',
+     'author': 'Ralph Waldo Emerson', 'source': 'Education',
+     'themes': ['steady']},
+    {'id': 148, 'text': 'Trust thyself: every heart vibrates to that iron string.',
+     'author': 'Ralph Waldo Emerson', 'source': 'Self-Reliance',
+     'themes': ['strength']},
+    {'id': 149, 'text': 'The only way to have a friend is to be one.',
+     'author': 'Ralph Waldo Emerson', 'source': 'Friendship',
+     'themes': ['gratitude']},
+    {'id': 150, 'text': 'Nothing great was ever achieved without enthusiasm.',
+     'author': 'Ralph Waldo Emerson', 'source': 'Circles',
+     'themes': ['start']},
+    {'id': 151, 'text': 'Write it on your heart that every day is the best day in '
+             'the year.',
+     'author': 'Ralph Waldo Emerson', 'source': 'Works and Days',
+     'themes': ['gratitude']},
+    {'id': 152, 'text': 'Knowing is not enough; we must apply.',
+     'author': 'Johann Wolfgang von Goethe', 'source': "Wilhelm Meister's Journeyman Years",
+     'themes': ['start']},
+    {'id': 153, 'text': 'There is no charm equal to tenderness of heart.',
+     'author': 'Jane Austen', 'source': 'Emma',
+     'themes': ['gratitude']},
+    {'id': 154, 'text': 'I declare after all there is no enjoyment like reading!',
+     'author': 'Jane Austen', 'source': 'Pride and Prejudice, 11',
+     'themes': ['rest']},
+    {'id': 155, 'text': 'I must learn to be content with being happier than I '
+             'deserve.',
+     'author': 'Jane Austen', 'source': 'Pride and Prejudice, 60',
+     'themes': ['gratitude']},
+    {'id': 156, 'text': 'Know your own happiness.',
+     'author': 'Jane Austen', 'source': 'Sense and Sensibility, 19',
+     'themes': ['gratitude']},
+    {'id': 157, 'text': 'No one is useless in this world who lightens the burdens '
+             'of another.',
+     'author': 'Charles Dickens', 'source': 'Our Mutual Friend',
+     'themes': ['gratitude']},
+    {'id': 158, 'text': 'Reflect upon your present blessings, of which every man '
+             'has plenty; not on your past misfortunes, of which all men '
+             'have some.',
+     'author': 'Charles Dickens', 'source': 'Sketches by Boz, A Christmas Dinner',
+     'themes': ['gratitude']},
+    {'id': 159, 'text': 'Have a heart that never hardens, and a temper that never '
+             'tires, and a touch that never hurts.',
+     'author': 'Charles Dickens', 'source': 'Our Mutual Friend',
+     'themes': ['mind']},
+    {'id': 160, 'text': 'The two most powerful warriors are patience and time.',
+     'author': 'Leo Tolstoy', 'source': 'War and Peace',
+     'themes': ['steady']},
+    {'id': 161, 'text': 'Begin at the beginning, and go on till you come to the '
+             'end: then stop.',
+     'author': 'Lewis Carroll', 'source': "Alice's Adventures in Wonderland, 12",
+     'themes': ['start']},
+    {'id': 162, 'text': 'To travel hopefully is a better thing than to arrive.',
+     'author': 'Robert Louis Stevenson', 'source': 'Virginibus Puerisque, El Dorado',
+     'themes': ['steady']},
+    {'id': 163, 'text': 'What do we live for, if it is not to make life less '
+             'difficult to each other?',
+     'author': 'George Eliot', 'source': 'Middlemarch, 72',
+     'themes': ['gratitude']},
+    {'id': 164, 'text': 'I am no bird; and no net ensnares me.',
+     'author': 'Charlotte Brontë', 'source': 'Jane Eyre, 23',
+     'themes': ['strength']},
+    {'id': 165, 'text': 'I am not afraid of storms, for I am learning how to sail '
+             'my ship.',
+     'author': 'Louisa May Alcott', 'source': 'Little Women, 44',
+     'themes': ['strength']},
+    {'id': 166, 'text': "Isn't it nice to think that tomorrow is a new day with no "
+             'mistakes in it yet?',
+     'author': 'L. M. Montgomery', 'source': 'Anne of Green Gables, 21',
+     'themes': ['comeback']},
+    {'id': 167, 'text': 'Where you tend a rose, my lad, a thistle cannot grow.',
+     'author': 'Frances Hodgson Burnett', 'source': 'The Secret Garden, 27',
+     'themes': ['mind']},
+    {'id': 168, 'text': 'There is nothing - absolutely nothing - half so much worth '
+             'doing as simply messing about in boats.',
+     'author': 'Kenneth Grahame', 'source': 'The Wind in the Willows, 1',
+     'themes': ['rest']},
+    {'id': 169, 'text': 'Nothing contributes so much to tranquillise the mind as a '
+             'steady purpose.',
+     'author': 'Mary Shelley', 'source': 'Frankenstein, Letter 1',
+     'themes': ['mind']},
+    {'id': 170, 'text': 'An adventure is only an inconvenience rightly considered.',
+     'author': 'G. K. Chesterton', 'source': "On Running After One's Hat",
+     'themes': ['comeback']},
+    {'id': 171, 'text': 'It is impossible to enjoy idling thoroughly unless one has '
+             'plenty of work to do.',
+     'author': 'Jerome K. Jerome', 'source': 'Idle Thoughts of an Idle Fellow',
+     'themes': ['rest']},
+    {'id': 172, 'text': 'To love oneself is the beginning of a lifelong romance.',
+     'author': 'Oscar Wilde', 'source': 'An Ideal Husband, 3',
+     'themes': ['mind']},
+    {'id': 173, 'text': 'We are all in the gutter, but some of us are looking at '
+             'the stars.',
+     'author': 'Oscar Wilde', 'source': "Lady Windermere's Fan, 3",
+     'themes': ['comeback']},
+    {'id': 174, 'text': 'Patience, and shuffle the cards.',
+     'author': 'Miguel de Cervantes', 'source': 'Don Quixote, 2.23',
+     'themes': ['steady']},
+    {'id': 175, 'text': 'The greatest thing in the world is to know how to belong '
+             'to oneself.',
+     'author': 'Michel de Montaigne', 'source': 'Essays, Of Solitude',
+     'themes': ['mind']},
+    {'id': 176, 'text': "All of humanity's problems stem from man's inability to "
+             'sit quietly in a room alone.',
+     'author': 'Blaise Pascal', 'source': 'Pensées, 139',
+     'themes': ['rest']},
+    {'id': 177, 'text': 'The perfect is the enemy of the good.',
+     'author': 'Voltaire', 'source': 'La Bégueule',
+     'themes': ['start']},
+    {'id': 178, 'text': 'Let us cultivate our garden.',
+     'author': 'Voltaire', 'source': 'Candide, 30',
+     'themes': ['steady']},
+    {'id': 179, 'text': 'Life can only be understood backwards; but it must be '
+             'lived forwards.',
+     'author': 'Søren Kierkegaard', 'source': 'Journals, 1843',
+     'themes': ['mind']},
+    {'id': 180, 'text': 'What does not kill me makes me stronger.',
+     'author': 'Friedrich Nietzsche', 'source': 'Twilight of the Idols, Maxims 8',
+     'themes': ['comeback']},
+    {'id': 181, 'text': 'Great works are performed not by strength but by '
+             'perseverance.',
+     'author': 'Samuel Johnson', 'source': 'Rasselas, 13',
+     'themes': ['steady']},
+    {'id': 182, 'text': 'All shall be well, and all shall be well, and all manner '
+             'of thing shall be well.',
+     'author': 'Julian of Norwich', 'source': 'Revelations of Divine Love, 27',
+     'themes': ['rest']},
+    {'id': 183, 'text': 'If I have seen further it is by standing on the shoulders '
+             'of giants.',
+     'author': 'Isaac Newton', 'source': 'letter to Robert Hooke, 1675',
+     'themes': ['gratitude']},
+    {'id': 184, 'text': 'Great things are done by a series of small things brought '
+             'together.',
+     'author': 'Vincent van Gogh', 'source': 'letter to Theo, 1882',
+     'themes': ['steady']},
+    {'id': 185, 'text': 'What would life be if we had no courage to attempt '
+             'anything?',
+     'author': 'Vincent van Gogh', 'source': 'letter to Theo, 1881',
+     'themes': ['start']},
+    {'id': 186, 'text': "If you hear a voice within you say 'you cannot paint', "
+             'then by all means paint, and that voice will be silenced.',
+     'author': 'Vincent van Gogh', 'source': 'letter to Theo, 1883',
+     'themes': ['strength']},
+    {'id': 187, 'text': 'In every walk with nature one receives far more than he '
+             'seeks.',
+     'author': 'John Muir', 'source': 'Steep Trails',
+     'themes': ['rest']},
+    {'id': 188, 'text': 'The mountains are calling and I must go.',
+     'author': 'John Muir', 'source': 'letter to his sister, 1873',
+     'themes': ['start']},
+    {'id': 189, 'text': 'Those who contemplate the beauty of the earth find '
+             'reserves of strength that will endure as long as life '
+             'lasts.',
+     'author': 'Rachel Carson', 'source': 'The Sense of Wonder',
+     'themes': ['rest']},
+    {'id': 190, 'text': 'Success is to be measured not so much by the position that '
+             'one has reached in life as by the obstacles which he has '
+             'overcome.',
+     'author': 'Booker T. Washington', 'source': 'Up from Slavery, 2',
+     'themes': ['comeback']},
+    {'id': 191, 'text': 'If there is no struggle, there is no progress.',
+     'author': 'Frederick Douglass', 'source': 'West India Emancipation speech, 1857',
+     'themes': ['strength']},
+    {'id': 192, 'text': 'The credit belongs to the man who is actually in the '
+             'arena.',
+     'author': 'Theodore Roosevelt', 'source': 'Citizenship in a Republic, 1910',
+     'themes': ['strength']},
+    {'id': 193, 'text': 'Never give in, never give in, never, never, never, never.',
+     'author': 'Winston Churchill', 'source': 'speech at Harrow School, 1941',
+     'themes': ['strength']},
+    {'id': 194, 'text': 'Life is either a daring adventure, or nothing.',
+     'author': 'Helen Keller', 'source': 'The Open Door',
+     'themes': ['start']},
+    {'id': 195, 'text': 'Although the world is full of suffering, it is full also '
+             'of the overcoming of it.',
+     'author': 'Helen Keller', 'source': 'Optimism',
+     'themes': ['comeback']},
+    {'id': 196, 'text': 'You must do the thing you think you cannot do.',
+     'author': 'Eleanor Roosevelt', 'source': 'You Learn by Living',
+     'themes': ['strength']},
+    {'id': 197, 'text': 'Everything can be taken from a man but one thing: the last '
+             "of the human freedoms - to choose one's attitude in any "
+             'given set of circumstances.',
+     'author': 'Viktor Frankl', 'source': "Man's Search for Meaning",
+     'themes': ['mind']},
+    {'id': 198, 'text': 'When we are no longer able to change a situation, we are '
+             'challenged to change ourselves.',
+     'author': 'Viktor Frankl', 'source': "Man's Search for Meaning",
+     'themes': ['comeback']},
+    {'id': 199, 'text': 'Whoever is happy will make others happy too.',
+     'author': 'Anne Frank', 'source': 'Diary, 1944',
+     'themes': ['gratitude']},
+    {'id': 200, 'text': 'How wonderful it is that nobody need wait a single moment '
+             'before starting to improve the world.',
+     'author': 'Anne Frank', 'source': 'Give!',
+     'themes': ['start']},
+    {'id': 201, 'text': 'Your pain is the breaking of the shell that encloses your '
+             'understanding.',
+     'author': 'Kahlil Gibran', 'source': 'The Prophet, On Pain',
+     'themes': ['comeback']},
+    {'id': 202, 'text': 'Work is love made visible.',
+     'author': 'Kahlil Gibran', 'source': 'The Prophet, On Work',
+     'themes': ['steady']},
+    {'id': 203, 'text': 'The deeper that sorrow carves into your being, the more '
+             'joy you can contain.',
+     'author': 'Kahlil Gibran', 'source': 'The Prophet, On Joy and Sorrow',
+     'themes': ['comeback']},
+    {'id': 204, 'text': 'In the depth of winter, I finally learned that within me '
+             'there lay an invincible summer.',
+     'author': 'Albert Camus', 'source': 'Return to Tipasa',
+     'themes': ['comeback']},
+    {'id': 205, 'text': 'Autumn is a second spring when every leaf is a flower.',
+     'author': 'Albert Camus', 'source': 'The Misunderstanding',
+     'themes': ['gratitude']},
+    {'id': 206, 'text': 'The world breaks everyone and afterward many are strong at '
+             'the broken places.',
+     'author': 'Ernest Hemingway', 'source': 'A Farewell to Arms, 34',
+     'themes': ['comeback']},
+    {'id': 207, 'text': 'All we have to decide is what to do with the time that is '
+             'given us.',
+     'author': 'J. R. R. Tolkien', 'source': 'The Fellowship of the Ring',
+     'themes': ['start']},
+    {'id': 208, 'text': 'Not all those who wander are lost.',
+     'author': 'J. R. R. Tolkien', 'source': 'The Fellowship of the Ring',
+     'themes': ['rest']},
+    {'id': 209, 'text': 'Breathing in, I calm body and mind. Breathing out, I '
+             'smile.',
+     'author': 'Thich Nhat Hanh', 'source': 'Being Peace',
+     'themes': ['rest']},
+    {'id': 210, 'text': "In everyone's life, at some time, our inner fire goes out. "
+             'It is then burst into flame by an encounter with another '
+             'human being.',
+     'author': 'Albert Schweitzer', 'source': 'Memoirs of Childhood and Youth',
+     'themes': ['gratitude']},
+    {'id': 211, 'text': "Courage doesn't always roar. Sometimes courage is the "
+             "quiet voice at the end of the day saying, 'I will try "
+             "again tomorrow.'",
+     'author': 'Mary Anne Radmacher', 'source': '',
+     'themes': ['comeback']},
+    {'id': 212, 'text': 'At first people refuse to believe that a strange new thing '
+             'can be done, then they begin to hope it can be done, then '
+             'they see it can be done.',
+     'author': 'Frances Hodgson Burnett', 'source': 'The Secret Garden, 27',
+     'themes': ['start']},
+    {'id': 213, 'text': 'Early to bed and early to rise makes a man healthy, '
+             'wealthy, and wise.',
+     'author': 'Benjamin Franklin', 'source': "Poor Richard's Almanack",
+     'themes': ['rest']},
+    {'id': 214, 'text': 'Diligence is the mother of good luck.',
+     'author': 'Benjamin Franklin', 'source': 'The Way to Wealth',
+     'themes': ['steady']},
+    {'id': 215, 'text': 'Little strokes fell great oaks.',
+     'author': 'Benjamin Franklin', 'source': "Poor Richard's Almanack",
+     'themes': ['steady']},
+    {'id': 216, 'text': 'Never leave that till tomorrow which you can do today.',
+     'author': 'Benjamin Franklin', 'source': "Poor Richard's Almanack",
+     'themes': ['start']},
+    {'id': 217, 'text': 'He that can have patience can have what he will.',
+     'author': 'Benjamin Franklin', 'source': "Poor Richard's Almanack",
+     'themes': ['steady']},
+    {'id': 218, 'text': 'Haste makes waste.',
+     'author': 'Benjamin Franklin', 'source': "Poor Richard's Almanack",
+     'themes': ['steady']},
+    {'id': 219, 'text': 'An ounce of prevention is worth a pound of cure.',
+     'author': 'Benjamin Franklin', 'source': 'Pennsylvania Gazette, 1735',
+     'themes': ['rest']},
+    {'id': 220, 'text': 'It is always darkest just before the day dawneth.',
+     'author': 'Thomas Fuller', 'source': 'A Pisgah-Sight of Palestine',
+     'themes': ['comeback']},
+    {'id': 221, 'text': 'He that would have the fruit must climb the tree.',
+     'author': 'Thomas Fuller', 'source': 'Gnomologia',
+     'themes': ['start']},
+    {'id': 222, 'text': 'All things are difficult before they are easy.',
+     'author': 'Thomas Fuller', 'source': 'Gnomologia',
+     'themes': ['start']},
+    {'id': 223, 'text': 'Health is not valued till sickness comes.',
+     'author': 'Thomas Fuller', 'source': 'Gnomologia',
+     'themes': ['gratitude']},
+    {'id': 224, 'text': 'To every thing there is a season, and a time to every '
+             'purpose under the heaven.',
+     'author': 'Ecclesiastes', 'source': '3:1',
+     'themes': ['rest']},
+    {'id': 225, 'text': 'A merry heart doeth good like a medicine.',
+     'author': 'Proverbs', 'source': '17:22',
+     'themes': ['gratitude']},
+    {'id': 226, 'text': 'Weeping may endure for a night, but joy cometh in the '
+             'morning.',
+     'author': 'Psalms', 'source': '30:5',
+     'themes': ['comeback']},
+    {'id': 227, 'text': 'A smooth sea never made a skilled sailor.',
+     'author': 'English proverb', 'source': '',
+     'themes': ['strength']},
+    {'id': 228, 'text': 'After rain comes fair weather.',
+     'author': 'English proverb', 'source': '',
+     'themes': ['comeback']},
+    {'id': 229, 'text': 'Many hands make light work.',
+     'author': 'English proverb', 'source': '',
+     'themes': ['gratitude']},
+    {'id': 230, 'text': "Where there's a will, there's a way.",
+     'author': 'English proverb', 'source': '',
+     'themes': ['strength']},
+    {'id': 231, 'text': 'Every cloud has a silver lining.',
+     'author': 'English proverb', 'source': '',
+     'themes': ['comeback']},
+    {'id': 232, 'text': 'Laughter is the best medicine.',
+     'author': 'Proverb', 'source': '',
+     'themes': ['rest']},
+    {'id': 233, 'text': 'Tomorrow is another day.',
+     'author': 'Proverb', 'source': '',
+     'themes': ['rest']},
+    {'id': 234, 'text': 'Practice makes perfect.',
+     'author': 'Proverb', 'source': '',
+     'themes': ['steady']},
+    {'id': 235, 'text': 'A good laugh and a long sleep are the best cures in the '
+             "doctor's book.",
+     'author': 'Irish proverb', 'source': '',
+     'themes': ['rest']},
+    {'id': 236, 'text': 'Measure twice, cut once.',
+     'author': 'Proverb', 'source': '',
+     'themes': ['steady']},
+    {'id': 237, 'text': 'Even monkeys fall from trees.',
+     'author': 'Japanese proverb', 'source': '',
+     'themes': ['comeback']},
+    {'id': 238, 'text': 'Be not afraid of growing slowly; be afraid only of '
+             'standing still.',
+     'author': 'Chinese proverb', 'source': '',
+     'themes': ['steady']},
+    {'id': 239, 'text': 'Worry often gives a small thing a big shadow.',
+     'author': 'Swedish proverb', 'source': '',
+     'themes': ['mind']},
+    {'id': 240, 'text': 'Better bend than break.',
+     'author': 'Scottish proverb', 'source': '',
+     'themes': ['strength']},
+]
+
+
+BY_ID = {q['id']: q for q in QUOTES}
+IDS = [q['id'] for q in QUOTES]
+
+
+def unseen(seen):
+    """The ids not yet seen this round - all of them once every one has
+    been (the round starts again)."""
+    seen = set(seen or ())
+    left = [i for i in IDS if i not in seen]
+    return left or list(IDS)
+
+
+def pick(user_id, day, ids):
+    """One of these ids for this person and day: steady all day, spread
+    evenly, so two people in one house usually differ."""
+    ids = sorted(ids)
+    key = ('%s:%s' % (user_id, day.isoformat())).encode('utf-8')
+    return ids[int(hashlib.sha256(key).hexdigest(), 16) % len(ids)]
+
+
+'''),
+    ]),
+]
+
+
+def read(p):
+    with open(p, encoding='utf-8', newline='') as f:
+        return f.read()
+
+
+def write_file(p, t):
+    with open(p, 'w', encoding='utf-8', newline='') as f:
+        f.write(t)
+
+
+def backup(p):
+    b = p + SUFFIX
+    if not os.path.exists(b) and not CHECK:
+        write_file(b, read(p))
+
+
+def refuse(msg):
+    raise SystemExit('QL-1 REFUSED: %s' % msg)
+
+
+def fit(text, lit):
+    if '\n' not in lit:
+        return lit
+    crlf = text.count('\r\n')
+    lf = text.count('\n') - crlf
+    body = lit.replace('\r\n', '\n')
+    return body.replace('\n', '\r\n') if crlf > lf else body
+
+
+def once(text, lit, where):
+    got = text.count(fit(text, lit))
+    if got != 1:
+        refuse('%s: the anchor appears %d time(s), expected exactly 1 - %r'
+               % (where, got, lit[:72]))
+
+
+def swap(text, old, new, where):
+    once(text, old, where)
+    return text.replace(fit(text, old), fit(text, new))
+
+
+def main(argv):
+    global CHECK
+    CHECK = '--check' in argv
+    root = os.path.dirname(os.path.abspath(__file__))
+    out = {}
+
+    pq = os.path.join(root, PS1)
+    if "'test_quotes.py'" in read(pq):
+        print('QL-1 already applied.')
+        return 0
+    if "'test_travel_fifteen.py'" not in read(pq):
+        refuse('TR-15 (apply_travel_fifteen.py, Release 96) is not applied - this round registers after it.')
+    for rel in CREATES:
+        if not os.path.isfile(os.path.join(root, *rel.split('/'))):
+            refuse('%s is missing - it ships with this patcher; copy the '
+                   'new files and the suite in first.' % rel)
+
+    for rel, pairs in SWAPS:
+        pth = os.path.join(root, rel)
+        t = read(pth)
+        for i, (was, now) in enumerate(pairs):
+            t = swap(t, was, now, '%s (swap %d of %d)'
+                     % (rel, i + 1, len(pairs)))
+        out[pth] = t
+
+    if CHECK:
+        print('QL-1 --check: %d file(s) would change, none written; %d '
+              'ship with it.' % (len(out), len(CREATES)))
+        for k in sorted(out):
+            print('        %s' % os.path.relpath(k, root))
+        return 0
+
+    for k, val in sorted(out.items()):
+        backup(k)
+        write_file(k, val)
+    for k in sorted(out):
+        if read(k) != out[k]:
+            refuse('%s was not written' % os.path.relpath(k, root))
+    print('QL-1 applied - 240 quotes, none twice in a round.')
+    print('      %d file(s) written, backed up to %s' % (len(out), SUFFIX))
+    print('      %d file(s) ship with it, wired in rather than written'
+          % len(CREATES))
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))

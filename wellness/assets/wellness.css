@@ -998,3 +998,210 @@ body.cm-on { overflow: hidden; }
    WhatsApp button with its mark. */
 .w-gr-text { min-height: 150px; resize: vertical; font-size: 16px; line-height: 1.5; padding: 12px 14px; }
 .w-gr-send { display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+
+/* CY-5, 17 Nov 2026 - the Cycle Tracker redesign (canvas "Cycle Tracker
+   before and after", approved by Demetri on 17 Nov). Softer pinks on the
+   cycle pages ONLY - the rest of Wellness keeps its sage and sand. A page
+   carries <span class="cy-page" hidden> and the palette follows. Flow in
+   five shades of red, the fertile estimate pale blue, the likely
+   ovulation day dark blue, PMS lilac, the expected period dashed. */
+:root {
+  --cy-bg: #FFF6F7;
+  --cy-pink: #F7D9E0;
+  --cy-pink-soft: #FCEBEF;
+  --cy-line: #F1D7DE;
+  --cy-rose: #C2185B;
+  --cy-rose-deep: #9C1249;
+  --cy-ink: #3A2A30;
+  --cy-quiet: #6E5A61;
+  --cy-sp: #F6C9D0;
+  --cy-li: #F08A9B;
+  --cy-me: #E04F68;
+  --cy-he: #B4233D;
+  --cy-vh: #7E1328;
+  --cy-fert: #5AA9C8;
+  --cy-fert-soft: #E3F2F8;
+  --cy-ov: #1F5F8B;
+  --cy-pms: #B9A3D9;
+  --cy-pred: #F3B6C2;
+  --cy-feel: #C26A12;
+  --cy-sleep: #5B6FB5;
+  --cy-sex: #C2185B;
+  --cy-pain: #8E5BB5;
+  --cy-energy: #2E8B6F;
+  --cy-dis: #2F7FA0;
+  --cy-tag: #6E5A61;
+  /* the help's swatches name Wellness colours (test_wellness_eight). */
+  --w-cy-period: var(--cy-me);
+  --w-cy-expected: var(--cy-pred);
+  --w-cy-fertile: var(--cy-fert);
+  --w-cy-ovulation: var(--cy-ov);
+  --w-cy-pms: var(--cy-pms);
+  --w-cy-logged: var(--cy-rose);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --cy-bg: #221A1D;
+    --cy-pink: #4A2A35;
+    --cy-pink-soft: #33242A;
+    --cy-line: #46323A;
+    --cy-rose: #F48FB1;
+    --cy-rose-deep: #F8BBD0;
+    --cy-ink: #F3E6EA;
+    --cy-quiet: #C9B3BA;
+    --cy-fert-soft: #1E3542;
+    --cy-feel: #F0A75A;
+    --cy-sleep: #9AAAE0;
+    --cy-sex: #F48FB1;
+    --cy-pain: #C3A0E0;
+    --cy-energy: #6CC9A8;
+    --cy-dis: #7FC4E0;
+    --cy-tag: #C9B3BA;
+  }
+}
+body:has(.cy-page) {
+  --w-bg: var(--cy-bg);
+  --w-tint-morning: var(--cy-bg);
+  --w-tint-afternoon: var(--cy-bg);
+  --w-tint-evening: var(--cy-bg);
+  --w-soft: var(--cy-pink-soft);
+  --w-sand: var(--cy-pink-soft);
+  --w-sand-line: var(--cy-line);
+  --w-sand-ink: var(--cy-rose-deep);
+  --w-sage: var(--cy-me);
+  --w-sage-deep: var(--cy-rose);
+  --w-sage-track: var(--cy-pink-soft);
+  --w-line: var(--cy-line);
+  --w-empty: var(--cy-pink-soft);
+  --w-ink: var(--cy-ink);
+  --w-quiet: var(--cy-quiet);
+  --w-rose: var(--cy-rose);
+  --w-rose-deep: var(--cy-rose-deep);
+  --w-rose-soft: var(--cy-pink);
+  --w-rose-wash: var(--cy-pink-soft);
+  background: var(--cy-bg);
+}
+@media (prefers-color-scheme: dark) {
+  body:has(.cy-page) { --w-on-accent: #2A0F1A; --w-card: #2E2226; }
+}
+
+/* the ring */
+.cy-wheel { display: flex; justify-content: center; }
+.cy-wheel svg { max-width: 100%; height: auto; }
+.cy-b { fill: none; stroke: var(--cy-pink-soft); }
+.cy-b.rest { stroke: var(--cy-pink); }
+.cy-b.f-spotting { stroke: var(--cy-sp); }
+.cy-b.f-light { stroke: var(--cy-li); }
+.cy-b.f-medium { stroke: var(--cy-me); }
+.cy-b.f-heavy { stroke: var(--cy-he); }
+.cy-b.f-very_heavy { stroke: var(--cy-vh); }
+.cy-b.fert { stroke: var(--cy-fert); }
+.cy-b.ov { stroke: var(--cy-ov); }
+.cy-b.pms { stroke: var(--cy-pms); opacity: .8; }
+.cy-b.pred { stroke: var(--cy-pred); }
+.cy-mark { fill: var(--cy-rose); }
+.cy-ovdot { fill: var(--cy-ov); stroke: var(--w-card); stroke-width: 3; }
+.cy-now { fill: var(--w-card); stroke: var(--cy-ink); stroke-width: 3; }
+.cy-now-n { font-size: 13px; font-weight: 700; fill: var(--cy-ink); }
+.cy-t-when { font-size: 13px; fill: var(--cy-quiet); }
+.cy-t-big { font-size: 27px; font-weight: 700; fill: var(--cy-ink); }
+.cy-t-small { font-size: 15px; fill: var(--cy-ink); }
+.cy-t-ov { font-size: 12.5px; font-weight: 600; fill: var(--cy-ov); }
+@media (prefers-color-scheme: dark) { .cy-t-ov { fill: var(--cy-fert); } }
+.cy-key, .cy-flowkey { display: flex; flex-wrap: wrap; gap: 8px 14px; justify-content: center; font-size: 12.5px; color: var(--cy-ink); }
+.cy-key span, .cy-flowkey span { display: inline-flex; align-items: center; gap: 6px; }
+.cy-key i, .cy-flowkey i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.cy-flowkey { justify-content: flex-start; gap: 8px 12px; }
+.cy-flowkey i { width: 26px; height: 12px; border-radius: 6px; }
+.cy-flowkey.cy-small { justify-content: flex-start; font-size: 12px; }
+.cy-flowkey.cy-small i { width: 12px; border-radius: 50%; }
+:is(.cy-key, .cy-flowkey, .cy-hist-bar, .cy-week) .f-spotting { background: var(--cy-sp); }
+:is(.cy-key, .cy-flowkey, .cy-hist-bar, .cy-week) .f-light { background: var(--cy-li); }
+:is(.cy-key, .cy-flowkey, .cy-hist-bar, .cy-week) .f-medium { background: var(--cy-me); }
+:is(.cy-key, .cy-flowkey, .cy-hist-bar, .cy-week) .f-heavy { background: var(--cy-he); }
+:is(.cy-key, .cy-flowkey, .cy-hist-bar, .cy-week) .f-very_heavy { background: var(--cy-vh); }
+:is(.cy-key, .cy-flowkey, .cy-hist-bar) .fert { background: var(--cy-fert); }
+:is(.cy-key, .cy-flowkey, .cy-hist-bar) .ov { background: var(--cy-ov); }
+.cy-key .pms { background: var(--cy-pms); }
+.cy-key .pred { border: 2px dashed var(--cy-pred); box-sizing: border-box; }
+.cy-info { background: var(--cy-pink-soft); }
+.cy-acts { display: flex; gap: 10px; }
+.cy-acts form { display: flex; }
+.cy-track { flex: 1; border-radius: 26px; min-height: 52px; }
+.cy-quick { border-radius: 26px; min-height: 52px; white-space: nowrap; }
+
+/* the calendar: a circle per day in its flow's shade */
+.cy-monthbar { display: flex; justify-content: space-between; align-items: center; }
+.cy-nav { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--cy-line); background: var(--w-card); color: var(--cy-rose); font-size: 20px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+span.cy-nav { border-color: transparent; background: none; }
+.w-month.cy-month { gap: 2px; }
+.w-month.cy-month a, .w-month.cy-month span.day { min-height: 50px; border-radius: 0; background: none; box-shadow: none; gap: 2px; justify-content: flex-start; padding-top: 2px; }
+.cy-month a b, .cy-month span.day b { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+.cy-month .out b { font-weight: 400; }
+.cy-month i { height: 6px; display: flex; gap: 2px; font-style: normal; }
+.cy-month i s { width: 5px; height: 5px; border-radius: 50%; display: inline-block; background: var(--cy-rose); text-decoration: none; }
+.cy-month i s.feel { background: var(--cy-feel); }
+.cy-month i s.sleep { background: var(--cy-sleep); }
+.cy-month i s.more { background: var(--cy-quiet); }
+.w-month.cy-month .logged::after { content: none; }
+.cy-month .f-spotting b { background: var(--cy-sp); color: var(--cy-ink); }
+.cy-month .f-light b { background: var(--cy-li); color: #3A0E19; }
+.cy-month .f-medium b { background: var(--cy-me); color: #FFFFFF; }
+.cy-month .f-heavy b { background: var(--cy-he); color: #FFFFFF; }
+.cy-month .f-very_heavy b { background: var(--cy-vh); color: #FFFFFF; }
+.cy-month .fertile b { background: var(--cy-fert-soft); color: var(--cy-ov); }
+.cy-month .ov b { background: var(--cy-ov); color: #FFFFFF; }
+.cy-month .expected b { border: 2px dashed var(--cy-pred); }
+.cy-month .pms b { background: color-mix(in srgb, var(--cy-pms) 35%, transparent); }
+.cy-month .today b { box-shadow: inset 0 0 0 2.5px var(--cy-ink); }
+.cy-month .picked b { outline: 2px solid var(--cy-rose); outline-offset: 2px; }
+.cy-month .out { color: var(--cy-quiet); opacity: .7; }
+.w-legend .ov { background: var(--cy-ov); border-radius: 50%; }
+.w-legend .dotkey { width: 6px; height: 6px; border-radius: 50%; background: var(--cy-rose); }
+body:has(.cy-page) .w-legend i { border-radius: 50%; }
+body:has(.cy-page) .w-legend .fertile { background: var(--cy-fert-soft); box-shadow: inset 0 0 0 1px var(--cy-fert); }
+body:has(.cy-page) .w-legend .expected { box-shadow: none; border: 2px dashed var(--cy-pred); box-sizing: border-box; }
+body:has(.cy-page) .w-legend .pms { background: var(--cy-pms); }
+.cy-picked { background: var(--cy-pink-soft); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.cy-picked .w-btn { align-self: flex-start; }
+
+/* Log a day: icon tiles by group */
+.cy-week { display: flex; gap: 6px; }
+.cy-week a { flex: 1; min-height: 52px; border-radius: 12px; background: var(--w-card); color: var(--cy-ink); text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; position: relative; }
+.cy-week a b { font-size: 15px; }
+.cy-week a[class*="f-"] { box-shadow: inset 0 -4px 0 0 var(--cy-me); background: var(--w-card); }
+.cy-week a.on { background: var(--cy-rose); color: var(--w-on-accent); }
+.cy-group-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.cy-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 10px 8px; }
+.cy-tile { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; position: relative; }
+.cy-tile input { position: absolute; opacity: 0; pointer-events: none; }
+.cy-ic { --g: var(--cy-rose); width: 58px; height: 58px; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: var(--w-card); color: var(--g); border: 2px solid color-mix(in srgb, var(--g) 35%, transparent); box-sizing: border-box; }
+.cy-lb { font-size: 11.5px; line-height: 1.2; text-align: center; color: var(--cy-ink); }
+.cy-tile input:checked + .cy-ic { background: var(--g); border-color: var(--g); color: var(--w-card); }
+.cy-tile input:checked ~ .cy-lb { font-weight: 600; }
+.cy-tile input:focus-visible + .cy-ic { outline: 2px solid var(--cy-ink); outline-offset: 2px; }
+.g-period .cy-ic { --g: var(--cy-rose); }
+.g-period .cy-tile:nth-child(1) .cy-ic { color: var(--cy-li); }
+.g-period .cy-tile:nth-child(2) .cy-ic { color: var(--cy-li); }
+.g-period .cy-tile:nth-child(3) .cy-ic { color: var(--cy-me); }
+.g-period .cy-tile:nth-child(4) .cy-ic { color: var(--cy-he); }
+.g-period .cy-tile:nth-child(5) .cy-ic { color: var(--cy-vh); }
+.g-period .cy-tile input:checked + .cy-ic { background: var(--cy-pink-soft); border-color: var(--cy-rose); border-width: 3px; }
+.g-feel .cy-ic { --g: var(--cy-feel); }
+.g-sleep .cy-ic { --g: var(--cy-sleep); }
+.g-sex .cy-ic { --g: var(--cy-sex); }
+.g-pain .cy-ic { --g: var(--cy-pain); }
+.g-energy .cy-ic { --g: var(--cy-energy); }
+.g-discharge .cy-ic { --g: var(--cy-dis); }
+.g-tags .cy-ic { --g: var(--cy-tag); }
+
+/* Cycle history */
+.cy-stats { display: flex; gap: 8px; }
+.cy-stats div { flex: 1; background: var(--cy-pink-soft); border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cy-stats span { font-size: 11.5px; color: var(--cy-quiet); }
+.cy-stats b { font-size: 19px; color: var(--cy-ink); white-space: nowrap; }
+.cy-hist { display: flex; flex-direction: column; gap: 4px; }
+.cy-hist-top { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--cy-ink); }
+.cy-hist-bar { display: flex; gap: 1px; height: 14px; border-radius: 7px; overflow: hidden; background: var(--cy-pink); }
+.cy-hist-bar i { flex: 1; background: var(--cy-pink); }
+@media print { body:has(.cy-page) { background: #FFFFFF; } }

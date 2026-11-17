@@ -50,8 +50,10 @@ SCREENS = {
         ],
         'signs': [
             ('--w-sage-deep', 'A filled ring and a tick: done today.'),
-            ('--w-sand', 'The quote of the day - and under it, if you '
-                         'allow it, a line from Claude.'),
+            ('--w-sand', 'The quote of the day - one you have not seen '
+                         'before; no repeats until you have seen all 240 - '
+                         'and under it, if you allow it, a line from '
+                         'Claude.'),
         ],
     },
     # WL-16, 12 Nov 2026 - Catch up.
@@ -385,14 +387,19 @@ SCREENS = {
         'purpose': 'Where you are in your cycle, its phase, and when the '
                    'next period is likely.',
         'steps': [
-            'The card at the top shows the day of your cycle and its phase '
-            'on a soft wave. Tomorrow shows the next day.',
+            'The ring is your cycle, one bead a day: where you are, how many '
+            'days until the next period and, if you turned it on, when '
+            'ovulation is likely.',
+            'The phase card shows the day of your cycle and its phase on a '
+            'soft wave. Tomorrow shows the next day.',
             'Tap My period started on day one, and My period ended when it '
             'stops - the days between are filled in for you.',
             'Ideas for today: general wellbeing ideas, loosely matched to '
             'the phase. Tap one for why and how; hide any you do not want.',
-            'Or tap Log today to add flow, symptoms and a note.',
-            'Tap any past day on the calendar to fill it in or change it.',
+            'Or tap + Log today to add flow, feelings, sleep, symptoms and '
+            'a note.',
+            'Tap a day you logged on the calendar to see a one-line summary '
+            'and change it; tap an empty past day to fill it in.',
             'A first guess at the next period appears after one full cycle, '
             'as a window of a few days; it gets steadier from two.',
             'The cog opens settings: modes, the fertile estimate, download '
@@ -402,25 +409,37 @@ SCREENS = {
             ('--w-rose-deep', 'The dot on the wave: where you are. The '
                               'phases are estimates from your own '
                               'averages.'),
-            ('--w-rose-soft', 'Rose days: your period.'),
-            ('--w-rose', 'Outlined days: when the next one is expected.'),
-            ('--w-sky-soft', 'Pale blue: the fertile estimate, only if you '
-                             'turned it on. An estimate, not contraception.'),
-            ('--w-rose-wash', 'Faint rose: PMS days - when symptoms usually '
-                              'come before a period, from what you logged. '
-                              'The calendar looks six months ahead.'),
+            ('--w-cy-period', 'Red: your period, darker for a heavier '
+                              'flow - spotting, light, medium, heavy, '
+                              'very heavy.'),
+            ('--w-cy-expected', 'Dashed pink: when the next one is '
+                                'expected.'),
+            ('--w-cy-fertile', 'Blue: the fertile estimate, only if you '
+                               'turned it on. An estimate, not '
+                               'contraception.'),
+            ('--w-cy-ovulation', 'Dark blue: the likely ovulation day, if '
+                                 'you turned that on as well.'),
+            ('--w-cy-pms', 'Lilac: PMS days - when symptoms usually come '
+                           'before a period, from what you logged. The '
+                           'calendar looks six months ahead.'),
+            ('--w-cy-logged', 'Small dots: something logged that day - '
+                              'red for body, orange for feelings, blue for '
+                              'sleep, grey for anything else.'),
         ],
     },
     'cycle_log': {
         'title': 'Log a day',
         'purpose': 'How today is - everything is optional.',
         'steps': [
-            'Pick the flow, or leave No bleeding.',
-            'Tick anything you notice - from cramps to mood swings, with '
-            'more in perimenopause mode - and move the pain slider if you '
-            'like.',
-            'Mood, energy, sleep, discharge and your own tags appear here '
-            'when you switch them on in Cycle settings.',
+            'The strip at the top is this week - tap a day to log it.',
+            'Tap a drop for the flow - the fuller, the heavier - or leave '
+            'No bleeding.',
+            'Tap the tiles for anything you notice: feelings, sleep, pain '
+            'and body, with more in perimenopause mode. Tap a tile again '
+            'to clear it. Move the pain slider if you like.',
+            'Mood, energy, sleep, sex, discharge and your own tags appear '
+            'here when you switch them on in Cycle settings. Sex is only '
+            'ever seen here.',
             'A private note is only for you.',
         ],
         'signs': [('', 'Locked before it is saved. Never in emails.')],
@@ -435,8 +454,10 @@ SCREENS = {
             'Pregnancy and hormonal contraception pause predictions.',
             'Reminders - a day before, a nudge to log, a daily pill time - '
             'only ever say "A Wellness reminder".',
-            'More to log adds mood, energy, sleep, discharge or your own '
-            'tags to Log today, and to Patterns.',
+            'The fertile estimate can show the likely ovulation day too, '
+            'in dark blue. Both are estimates, not contraception.',
+            'More to log adds mood, energy, sleep, sex, discharge or your '
+            'own tags to Log today, and to Patterns.',
             'Download my log saves everything as a file.',
             'Turning it off keeps your log, locked. Delete everything '
             'removes it for good.',
@@ -448,6 +469,10 @@ SCREENS = {
         'purpose': 'Your last cycles and what tends to come around your '
                    'period.',
         'steps': [
+            'The three tiles: your usual cycle, your usual period and how '
+            'much your cycles vary.',
+            'Cycle history draws each cycle as a bar of its days, newest '
+            'first, with the period in its shades.',
             'Patterns appear after three periods with symptoms logged. '
             'Mood, sleep, energy and your own tags count too.',
             'Make the report for a one-page summary to show a doctor.',

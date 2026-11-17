@@ -248,13 +248,34 @@ HOWTO = [
     # CY-3, 31 Oct 2026 - deeper cycle tracking.
     {'q': 'Can I log my mood, sleep or my own things in the cycle tracker?',
      'a': 'Yes. In Cycle settings, under More to log, switch on mood, '
-          'energy, sleep, discharge or your own tags (type them, separated '
+          'energy, sleep, sex, discharge or your own tags (type them, '
+          'separated '
           'by commas). They appear in Log today, and Patterns shows how '
           'they follow your cycle. All of it is locked like the rest.'},
     {'q': 'What are PMS days?',
      'a': 'After three periods with symptoms logged, the calendar shades '
           'the days before each expected period when your symptoms usually '
-          'begin - faint rose. The calendar looks six months ahead.'},
+          'begin - lilac. The calendar looks six months ahead.'},
+    # CY-5, 17 Nov 2026 - the Cycle Tracker redesign.
+    {'q': 'What do the colours on the cycle pages mean?',
+     'a': 'Red is your period, darker for a heavier flow - spotting, '
+          'light, medium, heavy and very heavy. Dashed pink is when the '
+          'next one is expected, lilac the PMS days, blue the fertile '
+          'estimate and dark blue the likely ovulation day (both only if '
+          'you turned them on). The ring shows the same for this cycle, '
+          'one bead a day. The softer pinks are on the cycle pages only.'},
+    {'q': 'Can I see the likely ovulation day?',
+     'a': 'Yes. In Cycle settings turn on the fertile estimate, then "Also '
+          'show the likely ovulation day". It is counted about 14 days '
+          'back from your next expected period and shown in dark blue. It '
+          'is an estimate, not contraception - never rely on it to prevent '
+          'a pregnancy.'},
+    {'q': 'Can I track sex, and who sees it?',
+     'a': 'Yes, if you switch Sex on under More to log: protected, '
+          'unprotected, none, and how your drive is. Only you see it, only '
+          'in Log a day - it never shows in a day\'s summary, the doctor '
+          'report, a reminder or an email, and it is locked like the '
+          'rest.'},
     {'q': 'Can Wellness remind me to take my pill?',
      'a': 'Yes. In Cycle settings set a daily pill reminder time. Like '
           'every cycle reminder it only says "A Wellness reminder". You can '
@@ -386,8 +407,17 @@ HOWTO = [
           'Nothing is sent once a thing is done, and each reminder comes '
           'once a day at most. On iPhone, use the Wellness app on your '
           'home screen.'},
+    # WL-25 / QL-1, 17 Nov 2026 - no quote twice until all have been seen.
+    {'q': 'Will I see the same quote again?',
+     'a': 'Not until you have seen them all. The library holds 240 real '
+          'quotes, each with its source, and Wellness keeps a note of the '
+          'ones you have been shown. Each day\'s quote comes from the ones '
+          'you have not seen yet; once you have seen all 240, it starts '
+          'again from the beginning. The quote stays the same all day, '
+          'on every device.'},
     {'q': 'Where does the line under the quote come from?',
-     'a': 'Claude picks one quote from the same library of real quotes and '
+     'a': 'Claude picks one quote from the same library of real quotes '
+          '(only from the ones you have not seen yet) and '
           'writes one short line under it, labelled "A line from Claude". '
           'It sees only your first name, today\'s habit names and how the '
           'week has gone - never your journal, weight or cycle log. Turn '
@@ -523,8 +553,8 @@ HOWTO += [
          'cycle, In perimenopause, Pregnant or On hormonal contraception.',
          'Optional: a day-before reminder, a nudge to log, a daily pill '
          'time. Each only ever says "A Wellness reminder".',
-         'Optional: More to log - mood, energy, sleep, discharge or your '
-         'own tags.']},
+         'Optional: More to log - mood, energy, sleep, sex, discharge or '
+         'your own tags.']},
     # ---- When something is not working
     {'q': 'Reminders do not arrive',
      'a': 'Usually the phone, not Wellness.',
@@ -599,7 +629,7 @@ _TOPIC_WORDS = [
                'keep me logged in', 'How do reminders work',
                'turn the sounds off', 'time zone', 'At home today')),
     ('cycle', ('cycle', 'period', 'PMS', 'pill', 'perimenopause',
-               'fertile')),
+               'fertile', 'ovulation', 'track sex')),
     ('calm', ('Calm', 'voice', 'Guided')),
     ('body', ('trend weight', 'weigh in', 'goal weight', 'progress photos')),
     ('workouts', ('weight', 'record', 'calories', 'train', 'routine',

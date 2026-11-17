@@ -1648,6 +1648,10 @@ ROUNDS = [
     '.bak_travel14',
     # TR-15, 17 Nov 2026 - Release 96: the phone's version moves with its style.
     '.bak_travel15',
+    # QL-1, 17 Nov 2026 - Release 97: 240 quotes, none twice in a round.
+    '.bak_quotes1',
+    # CY-5, 17 Nov 2026 - Release 98: the Cycle Tracker redesign.
+    '.bak_cyclelook',
 ]
 
 

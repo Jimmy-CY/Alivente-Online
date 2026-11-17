@@ -4,6 +4,7 @@
 {% block top_left %}<a class="w-home" href="{% url 'wellness:cycle' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Cycle</a>{% endblock %}
 {% block tabs %}{% endblock %}
 {% block content %}
+<span class="cy-page" hidden></span>
 <h1 class="w-title">Cycle settings</h1>
 
 {% if prefs.on %}
@@ -17,13 +18,15 @@
     <p class="w-small w-quiet" style="margin:0">In perimenopause, predictions become a rough, wider guide and the phases give way to ideas for these years; hot flushes, night sweats and more are added to Log today. Pregnancy and hormonal contraception switch predictions off. You can still log anything.</p>
   </fieldset>
   <label style="display:flex;align-items:flex-start;gap:10px;min-height:44px;font-size:15px"><input type="checkbox" name="fertile" value="1"{% if prefs.fertile %} checked{% endif %} style="width:22px;height:22px;margin-top:1px;accent-color:var(--w-sage-deep)"> <span>Show a fertile-window estimate<br><span class="w-small w-quiet">{{ fertile_label }} Never rely on it to prevent a pregnancy.</span></span></label>
+  {% comment %} CY-5, 17 Nov 2026 - the likely ovulation day, with the fertile estimate (Demetri: "Ovulation Days (as suggested)"). {% endcomment %}
+  <label style="display:flex;align-items:flex-start;gap:10px;min-height:44px;font-size:15px;padding-left:32px"><input type="checkbox" name="ovulation" value="1"{% if prefs.ovulation %} checked{% endif %} style="width:22px;height:22px;margin-top:1px;accent-color:var(--w-sage-deep)"> <span>Also show the likely ovulation day<br><span class="w-small w-quiet">A dark blue day inside the fertile estimate, about 14 days before the next expected period. Only with the fertile estimate on. {{ fertile_label }}</span></span></label>
   <label style="display:flex;align-items:flex-start;gap:10px;min-height:44px;font-size:15px"><input type="checkbox" name="remind" value="1"{% if prefs.remind %} checked{% endif %} style="width:22px;height:22px;margin-top:1px;accent-color:var(--w-sage-deep)"> <span>Remind me a day before it is expected<br><span class="w-small w-quiet">The reminder only says "A Wellness reminder", on the phones you turned reminders on for.</span></span></label>
   {% comment %} CY-3, 31 Oct 2026 - a nudge to log, a daily pill reminder, more to log, your own tags. {% endcomment %}
   <label style="display:flex;align-items:flex-start;gap:10px;min-height:44px;font-size:15px"><input type="checkbox" name="nudge" value="1"{% if prefs.nudge %} checked{% endif %} style="width:22px;height:22px;margin-top:1px;accent-color:var(--w-sage-deep)"> <span>Nudge me to log once it is due<br><span class="w-small w-quiet">If the expected days have begun and nothing is logged, one gentle "A Wellness reminder" in the morning.</span></span></label>
   <label style="display:flex;flex-direction:column;gap:6px;font-size:15px"><span>A daily pill reminder at <span class="w-small w-quiet">(optional)</span></span><input class="w-input" type="time" name="pill_at" value="{{ prefs.pill_at }}" style="max-width:160px"><span class="w-small w-quiet">It says only "A Wellness reminder". Leave it empty for none.</span></label>
   <fieldset style="border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px">
     <legend class="w-h2" style="margin-bottom:8px">More to log <span class="w-small w-quiet" style="font-weight:400">optional</span></legend>
-    <p class="w-small w-quiet" style="margin:0 0 4px">Each one adds a short question to Log today, and shows in Patterns.</p>
+    <p class="w-small w-quiet" style="margin:0 0 4px">Each one adds a short question to Log today, and shows in Patterns. Sex stays inside Log today: it is never in a day's summary, the doctor report or anything sent.</p>
     {% for key, label in track_opts %}
     <label class="w-toggle"><span>{{ label }}</span><input type="checkbox" name="track" value="{{ key }}"{% if key in tracked %} checked{% endif %}></label>
     {% endfor %}

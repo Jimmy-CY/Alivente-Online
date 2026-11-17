@@ -1,13 +1,18 @@
 {% extends "wellness/base.html" %}
-{% comment %} CY-1, 30 Oct 2026 - log a day: flow, symptoms, pain, a private note. Everything optional; an empty day is removed. {% endcomment %}
+{% comment %} CY-1, 30 Oct 2026 - log a day: flow, symptoms, pain, a private note. Everything optional; an empty day is removed. CY-5, 17 Nov 2026 - icon tiles by group (the approved redesign); the same fields as before. {% endcomment %}
 {% block title %}Log a day · Cycle · Wellness{% endblock %}
 {% block top_left %}<a class="w-home" href="{% url 'wellness:cycle' %}"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Cycle</a>{% endblock %}
 {% block tabs %}{% endblock %}
 {% block content %}
-<form method="post" style="display:flex;flex-direction:column;gap:16px">
+<span class="cy-page" hidden></span>
+<form method="post" style="display:flex;flex-direction:column;gap:16px" data-cy-tiles>
   {% csrf_token %}
   <input type="hidden" name="date" value="{{ day|date:'Y-m-d' }}">
-  <div style="display:flex;flex-direction:column;gap:2px">
+  <div style="display:flex;flex-direction:column;gap:4px">
+    {% comment %} CY-5, 17 Nov 2026 - the week's days as a strip; tap one to log it. {% endcomment %}
+    <nav class="cy-week" aria-label="Days this week">
+      {% for w in week %}<a href="?date={{ w.date }}" class="{% if w.on %}on{% endif %}{% if w.flow %} f-{{ w.flow }}{% endif %}{% if w.logged %} logged{% endif %}"{% if w.on %} aria-current="date"{% endif %}><span>{{ w.dow }}</span><b>{{ w.n }}</b></a>{% endfor %}
+    </nav>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
       <a class="w-small" href="?date={{ yesterday }}" aria-label="The day before" style="min-width:44px;min-height:44px;display:flex;align-items:center">‹ Day before</a>
       {% if tomorrow %}<a class="w-small" href="?date={{ tomorrow }}" aria-label="The day after" style="min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:flex-end">Day after ›</a>{% endif %}
@@ -16,48 +21,51 @@
     <h1 class="w-hello" style="font-size:28px">{% if is_today %}How is today?{% else %}How was this day?{% endif %}</h1>
   </div>
 
-  <section class="w-card" aria-labelledby="flow-h">
-    <div style="display:flex;justify-content:space-between;align-items:center">
+  <section class="w-card cy-group g-period" aria-labelledby="flow-h">
+    <div class="cy-group-h">
       <h2 class="w-h2" id="flow-h">Period</h2>
       {% if starting %}<span class="w-small w-quiet">Started this day</span>{% endif %}
     </div>
-    <div class="w-flow" role="radiogroup" aria-labelledby="flow-h">
-      {% for key, label in flows %}
-      <label><input type="radio" name="flow" value="{{ key }}"{% if e.flow == key %} checked{% endif %}><span><i>{% if key == 'spotting' %}<b style="width:6px;height:6px"></b>{% elif key == 'light' %}<b></b>{% elif key == 'medium' %}<b></b><b></b>{% else %}<b></b><b></b><b></b>{% endif %}</i>{{ label }}</span></label>
-      {% endfor %}
-    </div>
+    <div class="cy-tiles" role="radiogroup" aria-labelledby="flow-h">{% include "wellness/_cy_tiles.html" with tiles=T.flow name="flow" kind="radio" %}</div>
     <label class="w-small w-quiet" style="display:flex;align-items:center;gap:8px;min-height:44px"><input class="w-radio" type="radio" name="flow" value=""{% if not e.flow %} checked{% endif %}> No bleeding</label>
   </section>
 
-  <section class="w-card" aria-labelledby="sym-h">
-    <h2 class="w-h2" id="sym-h">Anything else? <span class="w-small w-quiet" style="font-weight:400">Optional</span></h2>
-    <div class="w-chips w-sym">
-      {% for key, label in symptoms %}
-      <label class="w-chip"><input type="checkbox" name="sym" value="{{ key }}"{% if key in e.sym %} checked{% endif %}><span>{{ label }}</span></label>
-      {% endfor %}
-    </div>
+  <section class="w-card cy-group g-feel" aria-labelledby="feel-h">
+    <h2 class="w-h2" id="feel-h">Feelings</h2>
+    {% if 'mood' in track %}<div class="cy-tiles" role="radiogroup" aria-label="Mood">{% include "wellness/_cy_tiles.html" with tiles=T.mood name="mood" kind="radio" %}</div>{% endif %}
+    <div class="cy-tiles">{% include "wellness/_cy_tiles.html" with tiles=T.feel_sym name="sym" %}</div>
   </section>
 
-  {% comment %} CY-3, 31 Oct 2026 - only what is switched on in the tracker's settings. {% endcomment %}
-  {% if 'mood' in track %}
-  <section class="w-card" aria-labelledby="mood-h"><h2 class="w-h2" id="mood-h">Mood</h2>
-    <div class="w-chips">{% for k, label in moods %}<label class="w-chip"><input type="radio" name="mood" value="{{ k }}"{% if e.mood == k %} checked{% endif %}><span>{{ label }}</span></label>{% endfor %}</div></section>
-  {% endif %}
   {% if 'energy' in track %}
-  <section class="w-card" aria-labelledby="energy-h"><h2 class="w-h2" id="energy-h">Energy</h2>
-    <div class="w-chips">{% for k, label in energy %}<label class="w-chip"><input type="radio" name="energy" value="{{ k }}"{% if e.energy == k %} checked{% endif %}><span>{{ label }}</span></label>{% endfor %}</div></section>
+  <section class="w-card cy-group g-energy" aria-labelledby="energy-h"><h2 class="w-h2" id="energy-h">Energy</h2>
+    <div class="cy-tiles" role="radiogroup" aria-labelledby="energy-h">{% include "wellness/_cy_tiles.html" with tiles=T.energy name="energy" kind="radio" %}</div></section>
   {% endif %}
-  {% if 'sleep' in track %}
-  <section class="w-card" aria-labelledby="sleep-h"><h2 class="w-h2" id="sleep-h">Sleep last night</h2>
-    <div class="w-chips">{% for k, label in sleep %}<label class="w-chip"><input type="radio" name="sleep" value="{{ k }}"{% if e.sleep == k %} checked{% endif %}><span>{{ label }}</span></label>{% endfor %}</div></section>
+
+  <section class="w-card cy-group g-sleep" aria-labelledby="sleep-h">
+    <h2 class="w-h2" id="sleep-h">{% if 'sleep' in track %}Sleep last night{% else %}Sleep{% endif %}</h2>
+    {% if 'sleep' in track %}<div class="cy-tiles" role="radiogroup" aria-labelledby="sleep-h">{% include "wellness/_cy_tiles.html" with tiles=T.sleep name="sleep" kind="radio" %}</div>{% endif %}
+    <div class="cy-tiles">{% include "wellness/_cy_tiles.html" with tiles=T.sleep_sym name="sym" %}</div>
+  </section>
+
+  {% if 'sex' in track %}
+  <section class="w-card cy-group g-sex" aria-labelledby="sex-h">
+    <div class="cy-group-h"><h2 class="w-h2" id="sex-h">Sex</h2><span class="w-small w-quiet">Only you</span></div>
+    <div class="cy-tiles">{% include "wellness/_cy_tiles.html" with tiles=T.sex name="sex" %}</div>
+  </section>
   {% endif %}
+
+  <section class="w-card cy-group g-pain" aria-labelledby="sym-h">
+    <div class="cy-group-h"><h2 class="w-h2" id="sym-h">Pain and body</h2><span class="w-small w-quiet">Optional</span></div>
+    <div class="cy-tiles">{% include "wellness/_cy_tiles.html" with tiles=T.body_sym name="sym" %}</div>
+  </section>
+
   {% if 'discharge' in track %}
-  <section class="w-card" aria-labelledby="dis-h"><h2 class="w-h2" id="dis-h">Discharge</h2>
-    <div class="w-chips">{% for k, label in discharge %}<label class="w-chip"><input type="radio" name="discharge" value="{{ k }}"{% if e.discharge == k %} checked{% endif %}><span>{{ label }}</span></label>{% endfor %}</div></section>
+  <section class="w-card cy-group g-discharge" aria-labelledby="dis-h"><h2 class="w-h2" id="dis-h">Discharge</h2>
+    <div class="cy-tiles" role="radiogroup" aria-labelledby="dis-h">{% include "wellness/_cy_tiles.html" with tiles=T.discharge name="discharge" kind="radio" %}</div></section>
   {% endif %}
   {% if 'tags' in track and my_tags %}
-  <section class="w-card" aria-labelledby="tags-h"><h2 class="w-h2" id="tags-h">Your tags</h2>
-    <div class="w-chips">{% for tg in my_tags %}<label class="w-chip"><input type="checkbox" name="tag" value="{{ tg }}"{% if tg in e.tags %} checked{% endif %}><span>{{ tg }}</span></label>{% endfor %}</div></section>
+  <section class="w-card cy-group g-tags" aria-labelledby="tags-h"><h2 class="w-h2" id="tags-h">Your tags</h2>
+    <div class="cy-tiles">{% include "wellness/_cy_tiles.html" with tiles=T.tags name="tag" %}</div></section>
   {% endif %}
 
   <section class="w-card" aria-labelledby="pain-h">

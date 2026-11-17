@@ -196,15 +196,17 @@ ok(DL.parse('{"quote": 3, "line": "A gentle start is still a start."}') ==
 ok(DL.parse('Sure! {"quote": 3, "line": "Steady   does it."} Hope that '
             'helps') == {'quote': 3, 'line': 'Steady does it.'},
    '  found inside chatter, spaces tidied')
-ok(DL.parse('{"quote": %d, "line": "x"}' % len(Q.QUOTES)) is None and
-   DL.parse('{"quote": -1, "line": "x"}') is None,
+# QL-1, 17 Nov 2026 - "quote" is the quote's fixed id (1 - 240) now.
+ok(DL.parse('{"quote": %d, "line": "x"}' % (len(Q.QUOTES) + 1)) is None and
+   DL.parse('{"quote": -1, "line": "x"}') is None and
+   DL.parse('{"quote": 0, "line": "x"}') is None,
    'NEVER A QUOTE OUTSIDE THE LIBRARY')
 ok(DL.parse('{"quote": 1, "line": "%s"}' % ('word ' * 40).strip()) is None,
    '  never a long speech')
 ok(DL.parse('{"quote": 1, "line": "read www.example.com"}') is None and
    DL.parse('{"quote": 1, "line": "<b>hi</b>"}') is None,
    '  never a link or markup')
-ok(DL.parse('{"quote": 1, "line": "%s"}' % Q.QUOTES[1]['text']) is None,
+ok(DL.parse('{"quote": 1, "line": "%s"}' % Q.BY_ID[1]['text']) is None,
    '  and never the quote passed off as the line')
 ok(DL.parse('no json here') is None and DL.parse('') is None,
    'anything else is no line at all')
@@ -212,7 +214,7 @@ f = {'name': 'Demetri', 'weekday': 'Monday', 'today': ['Walk', 'Read'],
      'yesterday_done': 3, 'yesterday_due': 4, 'good_weeks': 2,
      'workouts_this_week': 1}
 pr = DL.prompt(f)
-ok('%d. "%s"' % (0, Q.QUOTES[0]['text']) in pr and
+ok('%d. "%s"' % (1, Q.BY_ID[1]['text']) in pr and
    "Today's habits: Walk, Read" in pr and '3 of 4' in pr,
    'the prompt: the numbered library and the few plain facts')
 ok(set(f) == {'name', 'weekday', 'today', 'yesterday_done', 'yesterday_due',
@@ -302,8 +304,12 @@ if have_db:
             pa = WellnessProfile.objects.get(user=a)
             ok(pa.prefs.get('seen') == today.isoformat(),
                '  and Today noted it was opened today')
-            fake = FakeClaude('{"quote": 7, "line": "A short walk counts, '
-                              'Alex."}')
+            # QL-1 - Today already showed a quote, so Claude is offered
+            # that one alone and writes its line for it.
+            pa.refresh_from_db()
+            fid = DL.today_id(pa.prefs, today)
+            fake = FakeClaude('{"quote": %d, "line": "A short walk counts, '
+                              'Alex."}' % fid)
             now = timezone.localtime()
             ok(DL.run(now, client=fake) == 1 and len(fake.calls) == 1,
                'the job makes one line, for the person who uses Wellness '
@@ -314,7 +320,7 @@ if have_db:
                sent.lower(), '  Claude was told her name and habits - '
                'nothing private')
             t = ca.get('/wellness/').content.decode()
-            ok(Q.QUOTES[7]['text'] in t and 'A short walk counts, Alex.'
+            ok(Q.BY_ID[fid]['text'] in t and 'A short walk counts, Alex.'
                in t and 'A line from Claude' in t,
                "Today: Claude's pick from the library, and its line, "
                'labelled')
