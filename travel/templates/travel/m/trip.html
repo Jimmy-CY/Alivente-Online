@@ -67,4 +67,5 @@
 </details>
 <p class="tv-muted tv-small" style="text-align: center; margin: 0">On this trip: {% for p in people %}{{ p.get_full_name|default:p.username }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
 {% if sub == 'itinerary' %}{% include 'travel/_reorder.html' %}{% endif %}
+{% include 'travel/_lookup_refresh.html' %}
 {% endblock %}

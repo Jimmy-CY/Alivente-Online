@@ -1644,6 +1644,8 @@ ROUNDS = [
     '.bak_travel12',
     # TR-13, 17 Nov 2026 - Release 94: trips latest first.
     '.bak_travel13',
+    # TR-14, 17 Nov 2026 - Release 95: Show me more keeps the ticks.
+    '.bak_travel14',
 ]
 
 

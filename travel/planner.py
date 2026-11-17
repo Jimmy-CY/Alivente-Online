@@ -686,11 +686,25 @@ def notes_of(out, items):
         notes.append('%s usually need%s tickets booked ahead - book the '
                      'times in this plan.' % (_and(book),
                                               's' if len(book) == 1 else ''))
-    for day in out['days']:
-        if day['minutes'] >= 300:
-            notes.append('%s is the fullest day - about %d hours of visits.'
-                         % (dt.date.fromisoformat(day['day']).strftime('%A'),
-                            round(day['minutes'] / 60.0)))
+    # TR-14 (Demetri, 17 Nov: "How can both Monday and Wednesday be the
+    # fullest day?? Maybe it should say that Wednesday is the fullest day.
+    # and maybe that Monday is a very full day?"): one fullest day - the
+    # one with the most hours - and any other long one "also very full".
+    full = sorted([d for d in out['days'] if d['minutes'] >= 300],
+                  key=lambda d: (-d['minutes'], d['day']))
+    if full:
+        name = lambda d: dt.date.fromisoformat(d['day']).strftime(  # noqa
+            '%A %d').replace(' 0', ' ')
+        hours = lambda d: round(d['minutes'] / 60.0)               # noqa
+        line = '%s is the fullest day - about %d hours of visits.' % (
+            name(full[0]), hours(full[0]))
+        rest = sorted(full[1:], key=lambda d: d['day'])
+        if rest:
+            line += ' %s %s also very full (%s).' % (
+                _and([name(d) for d in rest]),
+                'is' if len(rest) == 1 else 'are',
+                ', '.join('about %d hours' % hours(d) for d in rest))
+        notes.append(line)
     unknown = [r['name'] for day in out['days'] for r in day['items']
                if r['unknown']]
     if unknown:

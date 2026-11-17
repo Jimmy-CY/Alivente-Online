@@ -131,6 +131,16 @@ def ideas(request, trip_id):
         if i.city not in order:
             order.append(i.city)
     shown = [i for i in all_ideas if i.state == '']
+    # TR-14 (Demetri, 17 Nov: "it is not clear which ones are new? Maybe we
+    # should always mark the new ones added with a new label each time"):
+    # what the latest Show me more brought is marked New - until the next.
+    latest = t.idea_runs.first()
+    fresh = latest.pk if latest and latest.more else None
+    first_new = None
+    for i in all_ideas:
+        i.new = fresh is not None and i.run_id == fresh
+        if i.new and i.state == '' and first_new is None:
+            first_new = i.pk
     counts = [{'city': c, 'n': sum(1 for i in shown if i.city == c)}
               for c in order]
     groups = []
@@ -161,11 +171,14 @@ def ideas(request, trip_id):
         'show_hidden': show_hidden, 'left': len(shown),
         'failed': failed, 'error': last.error if last and failed else '',
         'saved': last.created_at if last else None,
-        'ticked_n': len(ticked)})
+        'ticked_n': len(ticked),
+        'n_new': sum(1 for i in shown if i.new), 'first_new': first_new,
+        'new_city': (latest.answers or {}).get('more') or
+        next(iter(latest.progress or {}), '') if fresh else ''})
     return _show(request, 'ideas.html', ctx)
 
 
-def _back(request, t, extra=''):
+def _back(request, t, extra='', anchor=''):
     q = []
     c = request.POST.get('city_f') or ''
     if c:
@@ -179,7 +192,8 @@ def _back(request, t, extra=''):
     if extra:
         q.append(extra)
     return redirect(_url(request, 'ideas', t.pk) + ('?' + '&'.join(q)
-                                                    if q else ''))
+                                                    if q else '') +
+                    ('#' + anchor if anchor else ''))
 
 
 @require_POST
@@ -223,4 +237,6 @@ def more(request, trip_id):
                                      'style': 'mix'}
     job = ID.begin(t, request.user, answers, more=city)
     ID.start(job)
-    return redirect(_url(request, 'ideas', t.pk))
+    # TR-14 (Demetri, 17 Nov: "the ones I ticked must remain ticked, even
+    # though new ones are added"): back with what was ticked, at the new.
+    return _back(request, t, anchor='new')

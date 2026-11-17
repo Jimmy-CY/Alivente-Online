@@ -57,6 +57,9 @@
     </form>
 </section>
 {% endif %}
+{% comment %} TR-14, 17 Nov 2026 (Demetri: "The calendar should just be another view that the user can activate"). {% endcomment %}
+{% if count %}<div class="tv-row" style="margin: 0 0 12px; align-items: center"><nav class="tv-view" aria-label="View" data-view-switch><a href="?view=list"{% if view == 'list' %} class="on" aria-current="page"{% endif %}><i class="fas fa-th-large" aria-hidden="true"></i> List</a><a href="?view=calendar"{% if view == 'calendar' %} class="on" aria-current="page"{% endif %} data-view-calendar><i class="far fa-calendar-alt" aria-hidden="true"></i> Calendar</a></nav></div>{% endif %}
+{% if view == 'calendar' %}{% include 'travel/_calendar.html' %}{% else %}
 {% if count %}
 <nav class="tv-chips" aria-label="Show">
     <a class="tv-chip{% if show == 'upcoming' and not auto_past %} is-on{% endif %}" href="?show=upcoming">Upcoming <span class="tv-sub">{{ n_upcoming }}</span></a>
@@ -89,7 +92,7 @@
     <p class="text-muted">{% if count %}No trips here.{% else %}No trips yet. Start one above, or forward a booking email.{% endif %}</p>
 {% endfor %}
 </div>
-{% endif %}
+{% endif %}{% endif %}
 
 
 

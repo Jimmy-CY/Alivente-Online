@@ -221,3 +221,51 @@ html.tv-turn-90 body.tv-holding .tv-nav, html.tv-turn-270 body.tv-holding .tv-na
 .tv-id-bar button[disabled] { opacity: .5; cursor: default; }
 .tv-id-sugg { display: flex; align-items: center; justify-content: center; gap: 8px; }
 [data-idea-step][hidden], [data-idea-next][hidden], [data-idea-back][hidden], [data-idea-go][hidden] { display: none !important; }
+/* TR-14, 17 Nov 2026 - what the latest Show me more brought. */
+.tv-id-new { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #FFFFFF; background: #B85C00; border-radius: 999px; padding: 1px 8px; vertical-align: 2px; }
+.tv-id-card.is-new { background: #FFFBF6; }
+.tv-id-card[id] { scroll-margin-top: 80px; }
+/* TR-14, 17 Nov 2026 - the trips on a calendar; List | Calendar. */
+.tv-view { display: inline-flex; border: 1px solid #C9D3D6; border-radius: 999px; overflow: hidden; background: #FFFFFF; }
+.tv-view a { min-height: 36px; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: .9rem; color: #1D2B31; text-decoration: none; }
+.tv-view a.on { background: #0F7480; color: #FFFFFF; }
+.tv-cal { background: #FFFFFF; border: 1px solid #E1E6E8; border-radius: 12px; padding: 12px; }
+.tv-cal-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
+.tv-cal-title { font-size: 1.35rem; font-weight: 700; margin: 0; min-width: 9.5em; text-align: center; }
+.tv-cal-arrow { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid #C9D3D6; font-size: 1.5rem; line-height: 1; color: #0F7480; text-decoration: none; background: #FFFFFF; }
+.tv-cal-pick { display: inline-flex; gap: 6px; align-items: center; margin: 0 0 0 auto; }
+.tv-cal-pick select { min-height: 38px; border: 1px solid #C9D3D6; border-radius: 8px; padding: 0 8px; font: inherit; background: #FFFFFF; }
+.tv-cal-go { min-height: 38px; border: 1px solid #0F7480; color: #0F7480; background: #FFFFFF; border-radius: 8px; padding: 0 10px; font: inherit; font-weight: 600; }
+.tv-cal-today { min-height: 38px; display: inline-flex; align-items: center; padding: 0 12px; border-radius: 8px; background: #0F7480; color: #FFFFFF; font-weight: 600; text-decoration: none; }
+.tv-cal-sr { position: absolute; left: -9999px; }
+.tv-cal-dow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); font-size: .72rem; font-weight: 700; color: #5B6B72; text-transform: uppercase; letter-spacing: .04em; text-align: center; padding-bottom: 4px; }
+.tv-cal-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); row-gap: 3px; min-height: 92px; border-top: 1px solid #E1E6E8; align-content: start; }
+.tv-cal-day { border-left: 1px solid #EEF1F2; padding: 4px 6px 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 3px; align-content: flex-start; min-height: 88px; }
+.tv-cal-day:first-child { border-left: 0; }
+.tv-cal-day .n { font-size: .85rem; font-weight: 600; color: #1D2B31; width: 1.9em; height: 1.9em; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
+.tv-cal-day.out .n { color: #8A9BA2; font-weight: 400; }
+.tv-cal-day.out { background: #FAFBFB; }
+.tv-cal-day.today .n { background: #0F7480; color: #FFFFFF; }
+.tv-cal-plane { flex: none; }
+.tv-cal-bar { position: relative; z-index: 1; margin: 0 3px; border-radius: 6px; color: #FFFFFF; font-size: .8rem; font-weight: 700; line-height: 26px; padding: 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none; align-self: stretch; }
+.tv-cal-bar:hover, .tv-cal-bar:focus { color: #FFFFFF; text-decoration: none; filter: brightness(1.1); }
+.tv-cal-bar.ml { margin-left: 0; border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.tv-cal-bar.mr { margin-right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.tv-cal-bar.past { opacity: .5; }
+.tv-cal-none { margin: 10px 2px 0; font-size: .88rem; color: #4A5A61; }
+.tv-cal-list { display: flex; flex-direction: column; margin-top: 10px; border-top: 1px solid #E1E6E8; }
+.tv-cal-item { display: flex; gap: 10px; align-items: center; padding: 10px 2px; border-bottom: 1px solid #EEF1F2; color: #1D2B31; text-decoration: none; min-height: 44px; }
+.tv-cal-item i { flex: none; width: 12px; height: 32px; border-radius: 4px; }
+.tv-cal-item span { display: flex; flex-direction: column; }
+.tv-cal-item small { color: #5B6B72; font-size: 12px; }
+.tv-cal-item.past { opacity: .6; }
+@media (max-width: 560px) {
+  .tv-cal { padding: 10px 6px; }
+  .tv-cal-title { font-size: 1.1rem; min-width: 0; flex: 1; }
+  .tv-cal-pick { margin: 0; width: 100%; }
+  .tv-cal-pick select { flex: 1; }
+  .tv-cal-week { min-height: 64px; }
+  .tv-cal-day { min-height: 60px; padding: 2px 2px 4px; gap: 1px; }
+  .tv-cal-day .n { font-size: 12px; }
+  .tv-cal-bar { font-size: 10px; line-height: 20px; padding: 0 4px; margin: 0 1px; border-radius: 4px; }
+}

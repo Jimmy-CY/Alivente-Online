@@ -336,8 +336,16 @@ def last_answers(trip):
 def page_state(trip, request):
     """What Things to do shows: how many suggestions are left to look at,
     one still being worked out, and a line after adding."""
+    from django.utils import timezone
     out = {'ideas_left': trip.ideas.filter(state='').count(),
-           'ideas_open': trip.idea_runs.filter(status='working').exists()}
+           'ideas_open': trip.idea_runs.filter(status='working').exists(),
+           # TR-14 (Demetri, 17 Nov: "This page needs to keep refreshing, so
+           # that I know when the 'Looking it up' is complete"): places
+           # still being looked up - the page asks again until there are
+           # none. One stuck for ten minutes (a restart) stops it asking.
+           'looking': trip.places.filter(
+               lookup='waiting', updated_at__gte=timezone.now() -
+               dt.timedelta(minutes=10)).count()}
     n = request.GET.get('added') or ''
     if n.isdigit():
         out['ideas_added'] = int(n)

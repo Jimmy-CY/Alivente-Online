@@ -315,7 +315,14 @@ def trips(request):
         due = unsettled(t, list(t.bookings.all()), today) if t.past else []
         t.owing = eur(sum((b.due_eur or Decimal('0')) for b in due)) \
             if due else ''
-    return render(request, 'travel/trips.html', {
+    # TR-14, 17 Nov 2026 - List | Calendar; the calendar is every trip,
+    # on the month asked for (this one first), and the choice is kept.
+    from . import calendar_view as CV
+    view, asked = CV.view_of(request)
+    cal = CV.build(rows, CV.month_of(request.GET.get('month'), today),
+                   today) if view == 'calendar' else None
+    return CV.remember(render(request, 'travel/trips.html', {
+        'view': view, 'cal': cal,
         'trips': sel, 'show': show, 'years': sorted(years, reverse=True),
         'auto_past': auto_past,
         'n_upcoming': len([t for t in rows if not t.past]),
@@ -328,7 +335,7 @@ def trips(request):
         # TR-4 - only when the Phone app button is pressed.
         'phone_qr': phone_qr(request) if request.GET.get('phone') == '1'
         else '',
-        'requests': requests_for(request.user)})
+        'requests': requests_for(request.user)}), view, asked)
 
 
 @travel_view
@@ -411,7 +418,7 @@ def plan_state(t, request, tab):
 def idea_state(t, request, tab):
     """TR-12 - Suggest things to do: suggestions left, one being found,
     the line after adding."""
-    if tab != 'wish':
+    if tab not in ('wish', 'itinerary'):
         return {}
     from .ideas import page_state
     return page_state(t, request)

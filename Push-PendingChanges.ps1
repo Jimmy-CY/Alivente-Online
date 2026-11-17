@@ -3343,7 +3343,10 @@ $suites = @(
     # each city, ticked into Things to do.
     'test_travel_twelve.py',
     # TR-13, 17 Nov 2026 - Release 94: trips listed latest first.
-    'test_travel_thirteen.py'
+    'test_travel_thirteen.py',
+    # TR-14, 17 Nov 2026 - Release 95: Show me more keeps the ticks and
+    # marks the new ones.
+    'test_travel_fourteen.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

@@ -4,6 +4,9 @@
 {% block top %}<h1>My trips</h1>{% endblock %}
 {% block sub %}<div class="sub">Yours and the ones shared with you</div>{% endblock %}
 {% block content %}
+{% comment %} TR-14, 17 Nov 2026 - List | Calendar (Demetri: "The calendar should just be another view that the user can activate"). {% endcomment %}
+<nav class="tv-view" aria-label="View" data-view-switch style="align-self: flex-start; margin-bottom: 10px"><a href="?view=list"{% if view == 'list' %} class="on" aria-current="page"{% endif %}>List</a><a href="?view=calendar"{% if view == 'calendar' %} class="on" aria-current="page"{% endif %} data-view-calendar>Calendar</a></nav>
+{% if view == 'calendar' %}{% include 'travel/_calendar.html' with phone=True %}{% else %}
 <nav class="tv-chips" aria-label="Show"><a class="tv-chip{% if not past and not auto_past %} on{% endif %}" href="{% url 'travel:m_trips' %}">Upcoming</a><a class="tv-chip{% if past or auto_past %} on{% endif %}" href="?show=past">Past</a>{% if can_compare %}<a class="tv-chip" href="{% url 'travel:m_compare' %}" data-compare-link>Compare</a>{% endif %}</nav>
 {% if auto_past %}<section class="tv-card" data-auto-past><p class="tv-muted" style="margin: 0">Nothing coming up &mdash; your past trips, newest first.</p></section>{% endif %}
 {% for t in trips %}
@@ -17,5 +20,6 @@
 {% empty %}
 <section class="tv-card"><p class="tv-muted" style="margin: 0">{% if past %}No past trips.{% else %}No trips coming up. New trips are made on the computer, or from To check.{% endif %}</p></section>
 {% endfor %}
+{% endif %}
 <a href="{% url 'travel:trips' %}" class="tv-muted tv-out" style="text-align: center">Open Travel on the full site</a>
 {% endblock %}

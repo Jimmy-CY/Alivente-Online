@@ -268,6 +268,13 @@ if have_db:
         'address': 'Somewhere 1, Lisboa'}
     PP.SYNC = True
     ID.SYNC = True
+    # TR-14 (17 Nov): a hotel on the trip has its missing details looked
+    # up on the web when the trip opens - a real, slow, paid call on a
+    # machine with the Anthropic key (31.7s in the gate's pool, and the
+    # connection guard closed the test's transaction). Never from a test.
+    def _no_details(b, client=None):
+        raise PP.LookupError_('not in tests')
+    PP.call_details = _no_details
 
     class Rollback(Exception):
         pass

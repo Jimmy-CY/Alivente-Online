@@ -170,6 +170,21 @@ PHONE = ('Mozilla/5.0 (Linux; Android 15; SM-S936B) AppleWebKit/537.36 '
 T = dt.time
 D9, D10 = dt.date(2026, 11, 9), dt.date(2026, 11, 10)
 
+# TR-14, 17 Nov 2026 (Demetri: "Please stub those out"): a test never
+# looks anything up on the web for real. Opening a trip with a hotel looks
+# up the hotel's missing details, and adding a place looks the place up -
+# both paid Claude calls with web search on a machine with the Anthropic
+# key. A suite that wants one stubs it again below, over these.
+try:
+    from travel import places as _no_web
+
+    def _no_web_call(*_a, **_k):
+        raise _no_web.LookupError_('no web look-ups in tests')
+    _no_web.call_details = _no_web_call
+    _no_web.call = _no_web_call
+except Exception:                                             # noqa: BLE001
+    pass
+
 if have_db:
     from django.conf import settings as _dj
     _dj.DB_FORCE_CLEANUP_INTERVAL = 10 ** 9

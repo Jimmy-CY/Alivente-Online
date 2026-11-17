@@ -1,0 +1,20 @@
+{% comment %} TR-14, 17 Nov 2026 (Demetri: "This page needs to keep refreshing, so that I know when the 'Looking it up' is complete") - while a place on this page is being looked up, the page asks again every 5 seconds; never while you are choosing a day, typing, dragging or have a menu open. {% endcomment %}
+{% if looking %}<script data-lookup-refresh>
+(function () {
+  var touched = false;
+  document.addEventListener('input', function () { touched = true; }, true);
+  document.addEventListener('change', function () { touched = true; }, true);
+  function busy() {
+    var a = document.activeElement;
+    if (touched) { return true; }
+    if (a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)) { return true; }
+    if (document.querySelector('details[open], .is-sorting, .is-lifted, .tv-toast.on, .modal.show')) { return true; }
+    return false;
+  }
+  function tick() {
+    if (document.hidden || busy()) { setTimeout(tick, 5000); return; }
+    window.location.reload();
+  }
+  setTimeout(tick, 5000);
+})();
+</script>{% endif %}

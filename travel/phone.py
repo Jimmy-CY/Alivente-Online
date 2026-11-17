@@ -240,10 +240,18 @@ def trips(request):
                      key=lambda t: t.start or far, reverse=True)
     for t in sel:
         t.past = bool(t.end and t.end < day)
-    return page(request, 'travel/m/trips.html', {
+    # TR-14, 17 Nov 2026 - List | Calendar, as on the computer.
+    from . import calendar_view as CV
+    view, asked = CV.view_of(request)
+    for t in rows:
+        t.where = getattr(t, 'where', '')
+    cal = CV.build(rows, CV.month_of(request.GET.get('month'), day), day) \
+        if view == 'calendar' else None
+    return CV.remember(page(request, 'travel/m/trips.html', {
+        'view': view, 'cal': cal,
         'trips': sel, 'past': past, 'tab': 'trips', 'auto_past': auto_past,
         'can_compare': len(rows) > 1,
-        'checks': inbox.open_count(request.user)})
+        'checks': inbox.open_count(request.user)}), view, asked)
 
 
 @travel_view
@@ -280,7 +288,8 @@ def trip(request, trip_id):
         **(planner.page_state(t, request)
            if sub in ('itinerary', 'wish') else {}),
         # TR-12 - Suggest things to do.
-        **(ideas.page_state(t, request) if sub == 'wish' else {})})
+        **(ideas.page_state(t, request)
+           if sub in ('wish', 'itinerary') else {})})
 
 
 def _days_of(t):

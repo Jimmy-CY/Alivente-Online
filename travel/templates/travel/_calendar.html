@@ -1,0 +1,42 @@
+{% comment %} TR-14, 17 Nov 2026 - the trips on a month (Demetri: "a monthly calendar view with the trips being displayed on the calendar. It should default to today on opening and then the user should the ability to scroll month and year"). Each trip a bar, a plane on the days it flies; a bar opens the trip's itinerary. phone=True on the phone. Rules in travel/calendar_view.py. {% endcomment %}
+<section class="tv-cal" data-calendar data-prev="?view=calendar&amp;month={{ cal.prev }}" data-next="?view=calendar&amp;month={{ cal.next }}">
+  <div class="tv-cal-head">
+    <a class="tv-cal-arrow" href="?view=calendar&amp;month={{ cal.prev }}" aria-label="Previous month" data-cal-prev>&lsaquo;</a>
+    <h2 class="tv-cal-title" data-cal-title>{{ cal.first|date:"F Y" }}</h2>
+    <a class="tv-cal-arrow" href="?view=calendar&amp;month={{ cal.next }}" aria-label="Next month" data-cal-next>&rsaquo;</a>
+    <form method="get" class="tv-cal-pick" data-cal-pick><input type="hidden" name="view" value="calendar">
+      <label class="tv-cal-sr" for="cal-m">Month</label><select id="cal-m" data-cal-month>{% for n, name in cal.months %}<option value="{{ n }}"{% if n == cal.first.month %} selected{% endif %}>{{ name }}</option>{% endfor %}</select>
+      <label class="tv-cal-sr" for="cal-y">Year</label><select id="cal-y" data-cal-year>{% for y in cal.years %}<option value="{{ y }}"{% if y == cal.first.year %} selected{% endif %}>{{ y }}</option>{% endfor %}</select>
+      <input type="hidden" name="month" value="{{ cal.first|date:'Y-m' }}" data-cal-value>
+      <button type="submit" class="tv-cal-go">Go</button>
+    </form>
+    {% if not cal.is_this %}<a class="tv-cal-today" href="?view=calendar&amp;month={{ cal.this }}" data-cal-today>Today</a>{% endif %}
+  </div>
+  <div class="tv-cal-dow" aria-hidden="true"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+  {% for w in cal.weeks %}<div class="tv-cal-week" style="grid-template-rows: {% if phone %}28px repeat({{ w.rows }}, 20px){% else %}34px repeat({{ w.rows }}, 26px){% endif %} 1fr">
+    {% for d in w.days %}<div class="tv-cal-day{% if not d.in_month %} out{% endif %}{% if d.today %} today{% endif %}" style="grid-column: {{ forloop.counter }}; grid-row: 1 / span {{ w.rows|add:2 }}"{% if d.today %} aria-current="date"{% endif %}><span class="n">{{ d.date.day }}</span>{% for c in d.planes %}<svg class="tv-cal-plane" data-cal-plane width="{% if phone %}11{% else %}14{% endif %}" height="{% if phone %}11{% else %}14{% endif %}" viewBox="0 0 24 24" fill="{{ c }}" role="img" aria-label="Flight"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>{% endfor %}</div>{% endfor %}
+    {% for b in w.bars %}<a class="tv-cal-bar{% if b.past %} past{% endif %}{% if b.more_left %} ml{% endif %}{% if b.more_right %} mr{% endif %}" data-cal-bar="{{ b.trip.pk }}" href="{% if phone %}{% url 'travel:m_trip' b.trip.pk %}?tab=itinerary{% else %}{% url 'travel:trip_itinerary' b.trip.pk %}{% endif %}" style="grid-column: {{ b.col }} / span {{ b.span }}; grid-row: {{ b.lane }}; background: {{ b.colour }}" title="{{ b.trip.name }} &middot; {{ b.trip.start|date:'j M' }}{% if b.trip.end and b.trip.end != b.trip.start %} &ndash; {{ b.trip.end|date:'j M Y' }}{% endif %}">{% if b.more_left %}&lsaquo; {% endif %}{{ b.trip.name }}</a>{% endfor %}
+  </div>{% endfor %}
+  {% if phone %}<div class="tv-cal-list" data-cal-list>{% for t in cal.trips %}<a href="{% url 'travel:m_trip' t.pk %}?tab=itinerary" class="tv-cal-item{% if t.cal_past %} past{% endif %}"><i style="background: {{ t.colour }}"></i><span><b>{{ t.name }}</b><small>{{ t.start|date:"D j M" }}{% if t.end and t.end != t.start %} &ndash; {{ t.end|date:"D j M" }}{% endif %}{% if t.where %} &middot; {{ t.where }}{% endif %}</small></span></a>{% empty %}<p class="tv-cal-none">No trips in {{ cal.first|date:"F" }}.</p>{% endfor %}</div>
+  {% elif not cal.trips %}<p class="tv-cal-none">No trips in {{ cal.first|date:"F Y" }}.</p>{% endif %}
+  {% if cal.undated %}<p class="tv-cal-none">Not on the calendar yet (no dates): {% for t in cal.undated %}<a href="{% if phone %}{% url 'travel:m_trip' t.pk %}{% else %}{% url 'travel:trip' t.pk %}{% endif %}">{{ t.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}.</p>{% endif %}
+</section>
+<script>
+(function () {
+  var cal = document.querySelector('[data-calendar]');
+  if (!cal) { return; }
+  var pick = cal.querySelector('[data-cal-pick]');
+  var mo = cal.querySelector('[data-cal-month]'), yr = cal.querySelector('[data-cal-year]'), val = cal.querySelector('[data-cal-value]');
+  function go() { val.value = yr.value + '-' + ('0' + mo.value).slice(-2); pick.submit(); }
+  mo.addEventListener('change', go); yr.addEventListener('change', go);
+  pick.querySelector('.tv-cal-go').hidden = true;
+  var x0 = null, y0 = null;
+  cal.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, {passive: true});
+  cal.addEventListener('touchend', function (e) {
+    if (x0 === null) { return; }
+    var dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    x0 = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) { window.location.href = cal.getAttribute(dx < 0 ? 'data-next' : 'data-prev'); }
+  }, {passive: true});
+})();
+</script>
