@@ -1,0 +1,8 @@
+{% extends 'travel/m/base.html' %}
+{% comment %} TR-11, 17 Nov 2026 - Plan my days while it works; the page refreshes itself every 3 seconds. {% endcomment %}
+{% block title %}Working out your days - Travel{% endblock %}
+{% block top %}<div style="min-width: 0"><a class="tv-back" href="{{ back }}"><span aria-hidden="true">‹</span> {{ trip.name }}</a><h1>Plan my days</h1></div>{% endblock %}
+{% block content %}
+<section class="tv-card" style="display: flex; flex-direction: column; gap: 14px">{% include 'travel/_plan_working_body.html' %}</section>
+<script>setTimeout(function () { window.location.reload(); }, 3000);</script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% comment %} TR-11, 17 Nov 2026 - Plan my days: the three questions, shared by the computer's one page and the phone's three steps. step1/step2/step3 wrap each part. {% endcomment %}
+{% if movable or locked %}<fieldset class="tv-pl-part" data-plan-step="1" style="border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px">
+  <legend class="tv-pl-legend" style="font-size: 1.05rem; font-weight: 700; margin-bottom: 4px">{% if desk %}<span class="tv-pl-num">1</span> {% endif %}Already on a day &ndash; can they move?</legend>
+  <span class="tv-pl-sub" style="font-size: .9rem; color: #4A5A61">Plan around them, or let them move if it makes the days work better.</span>
+  {% for p in locked %}<div class="tv-pl-lock"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F7480" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span><b>{{ p.name }}</b> &middot; {{ p.day|date:"D j M" }}{% if p.time %} {{ p.time|time:"H:i" }}{% endif %} &ndash; booked, so it stays.</span></div>{% endfor %}
+  {% if planned_last %}<div class="tv-pl-group" data-plan-group style="display: flex; flex-direction: column; gap: 8px; border: 1px solid #E1E6E8; border-radius: 10px; padding: 10px">
+    <b>Planned last time ({{ planned_last|length }})</b>
+    <div class="tv-pl-seg" role="radiogroup" aria-label="Planned last time">
+      <label class="tv-pl-opt"><input type="radio" name="group_last" value="keep" checked data-group-all="keep"><b>Keep all where they are</b></label>
+      <label class="tv-pl-opt"><input type="radio" name="group_last" value="move" data-group-all="move"><b>Allow moving</b></label>
+    </div>
+    <details><summary class="tv-pl-sub" style="cursor: pointer; font-size: .88rem; color: #0F7480; min-height: 32px">One by one</summary>
+    {% for p in planned_last %}<div style="display: flex; flex-direction: column; gap: 6px; padding: 8px 0; border-top: 1px solid #E1E6E8" data-plan-last>
+      <span><b>{{ p.name }}</b> <span style="color: #5B6B72; font-size: .85rem">&middot; {{ p.day|date:"D j M" }}{% if p.time %} {{ p.time|time:"H:i" }}{% endif %}</span></span>
+      <div class="tv-pl-seg" role="radiogroup" aria-label="{{ p.name }}">
+        <label class="tv-pl-opt"><input type="radio" name="keep_{{ p.pk }}" value="keep" checked><b>Keep on {{ p.day|date:"D j" }}</b></label>
+        <label class="tv-pl-opt"><input type="radio" name="keep_{{ p.pk }}" value="move"><b>Can move</b></label>
+      </div></div>{% endfor %}
+    </details>
+  </div>{% endif %}
+  {% for p in movable_other %}<div style="display: flex; flex-direction: column; gap: 6px" data-plan-keep>
+    <span><b>{{ p.name }}</b> <span style="color: #5B6B72; font-size: .85rem">&middot; {{ p.day|date:"D j M" }}{% if p.time %} {{ p.time|time:"H:i" }}{% else %} &middot; no time yet{% endif %}</span></span>
+    <div class="tv-pl-seg" role="radiogroup" aria-label="{{ p.name }}">
+      <label class="tv-pl-opt"><input type="radio" name="keep_{{ p.pk }}" value="keep"{% if p.choice != 'move' %} checked{% endif %}><b>Keep on {{ p.day|date:"D j" }}</b></label>
+      <label class="tv-pl-opt"><input type="radio" name="keep_{{ p.pk }}" value="move"{% if p.choice == 'move' %} checked{% endif %}><b>Can move</b><span>to another day or time</span></label>
+    </div></div>{% endfor %}
+  <span class="tv-pl-sub" style="font-size: .85rem; color: #5B6B72">Also planned around: flights, hotel check-in and check-out, and anything else booked.</span>
+</fieldset>{% endif %}
+<fieldset class="tv-pl-part" data-plan-step="2" style="border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px">
+  <legend class="tv-pl-legend" style="font-size: 1.05rem; font-weight: 700; margin-bottom: 4px">{% if desk %}<span class="tv-pl-num">{% if movable or locked %}2{% else %}1{% endif %}</span> {% endif %}When are you free?</legend>
+  <span class="tv-pl-sub" style="font-size: .9rem; color: #4A5A61">Tap a slot to keep it free of activities. Grey ones are taken by your bookings.</span>
+  <div class="tv-pl-grid" data-plan-grid>
+    <span></span><span class="tv-pl-head">MORNING</span><span class="tv-pl-head">AFTERNOON</span><span class="tv-pl-head">EVENING</span>
+    {% for row in grid %}<span class="tv-pl-day">{{ row.day|date:"D j" }}</span>{% for c in row.cells %}{% if c.state == 'taken' %}<span class="tv-pl-taken" data-plan-taken title="{{ row.day|date:'D j' }} {{ c.name }}: {{ c.label }}">{{ c.label }}</span>{% else %}<label class="tv-pl-cell" data-plan-slot><input type="checkbox" name="off" value="{{ c.code }}"{% if c.state == 'off' %} checked{% endif %} aria-label="{{ row.day|date:'l j F' }}, {{ c.name }}: keep free"><span class="tv-pl-free">Free</span><span class="tv-pl-off">Off</span></label>{% endif %}{% endfor %}{% endfor %}
+  </div>
+  <div class="tv-pl-key"><span><i style="background: #E3F1F3; border: 1px solid #9CC9CF"></i>Free for plans</span><span><i style="background: #FFF1E3; border: 2px solid #B85C00"></i>Off &ndash; you tapped it</span><span><i style="background: #E9EDEF; border: 1px solid #C9D3D6"></i>Taken by a booking</span></div>
+  <span class="tv-pl-sub" style="font-size: .82rem; color: #5B6B72">Morning until 13:00 &middot; afternoon 13:00&ndash;18:00 &middot; evening after 18:00.</span>
+</fieldset>
+<fieldset class="tv-pl-part" data-plan-step="3" style="border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px">
+  <legend class="tv-pl-legend" style="font-size: 1.05rem; font-weight: 700; margin-bottom: 4px">{% if desk %}<span class="tv-pl-num">{% if movable or locked %}3{% else %}2{% endif %}</span> {% endif %}How you like to travel</legend>
+  <b style="font-size: .92rem">Pace</b>
+  <div class="tv-pl-seg" role="radiogroup" aria-label="Pace">{% for k, n, sub in paces %}<label class="tv-pl-opt"><input type="radio" name="pace" value="{{ k }}"{% if pace == k %} checked{% endif %}><b>{{ n }}</b><span>{{ sub }}</span></label>{% endfor %}</div>
+  <b style="font-size: .92rem">Getting around</b>
+  <div class="tv-pl-seg" role="radiogroup" aria-label="Getting around">{% for k, n, sub in modes %}<label class="tv-pl-opt"><input type="radio" name="mode" value="{{ k }}"{% if mode == k %} checked{% endif %}><b>{{ n }}</b><span>{{ sub }}</span></label>{% endfor %}</div>
+  {% if has_car %}<span class="tv-pl-sub" style="font-size: .82rem; color: #5B6B72">There is a car hire on this trip, so Car is picked.</span>{% endif %}
+  {% if plannable %}<div style="display: flex; justify-content: space-between; align-items: baseline"><b style="font-size: .92rem">Must-dos</b><span style="font-size: .8rem; color: #5B6B72">kept in if not everything fits</span></div>
+  <div style="display: flex; flex-direction: column">{% for p in plannable %}<label class="tv-pl-star" data-plan-must><span>{{ p.name }}</span><input type="checkbox" name="must" value="{{ p.pk }}"{% if p.must %} checked{% endif %} aria-label="Must-do: {{ p.name }}"><svg width="22" height="22" viewBox="0 0 24 24" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></label>{% endfor %}</div>{% endif %}
+</fieldset>

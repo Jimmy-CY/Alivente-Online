@@ -126,4 +126,61 @@ a.tv-bk:hover b { color: var(--alv-accent); }
 .tv-toast.on { transform: translate(-50%, 0); }
 .tv-toast button { background: none; border: 0; color: #7FD3DA; font-weight: 700; padding: 0; cursor: pointer; }
 .tv-linkbtn { background: none; border: 0; padding: 0; color: #0F6E77; text-decoration: underline; cursor: pointer; font: inherit; }
+/* TR-11, 17 Nov 2026 - Plan my days: the free-slot grid, the choices, the proposal. */
+.tv-pl-grid { display: grid; grid-template-columns: 4.2rem repeat(3, minmax(0, 1fr)); gap: 6px; align-items: stretch; }
+.tv-pl-grid .tv-pl-head { font-size: .72rem; font-weight: 700; color: #5B6B72; text-align: center; letter-spacing: .04em; align-self: end; }
+.tv-pl-grid .tv-pl-day { font-weight: 700; align-self: center; font-size: .9rem; }
+.tv-pl-cell { position: relative; display: flex; align-items: center; justify-content: center; text-align: center; min-height: 48px; border-radius: 9px; font-size: .8rem; font-weight: 700; line-height: 1.15; padding: 4px; margin: 0; cursor: pointer; border: 1px solid #9CC9CF; background: #E3F1F3; color: #0B5A63; }
+.tv-pl-cell input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.tv-pl-cell .tv-pl-off { display: none; }
+.tv-pl-cell input:checked ~ .tv-pl-free { display: none; }
+.tv-pl-cell input:checked ~ .tv-pl-off { display: inline; }
+.tv-pl-cell:has(input:checked) { border: 2px solid #B85C00; background: #FFF1E3; color: #8A4500; }
+.tv-pl-cell:focus-within { outline: 2px solid #0F7480; outline-offset: 2px; }
+.tv-pl-taken { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 48px; border-radius: 9px; font-size: .74rem; font-weight: 600; line-height: 1.15; padding: 4px; border: 1px solid #C9D3D6; background: #E9EDEF; color: #4A5A61; }
+.tv-pl-key { display: flex; flex-wrap: wrap; gap: 12px; font-size: .8rem; color: #4A5A61; }
+.tv-pl-key i { display: inline-block; width: 13px; height: 13px; border-radius: 4px; vertical-align: -2px; margin-right: 5px; }
+.tv-pl-seg { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); grid-auto-flow: column; gap: 6px; }
+.tv-pl-opt { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 52px; border-radius: 9px; border: 1px solid #C9D3D6; background: #FFFFFF; color: #1D2B31; margin: 0; cursor: pointer; padding: 4px; }
+.tv-pl-opt input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.tv-pl-opt b { font-size: .95rem; }
+.tv-pl-opt span { font-size: .74rem; color: #4A5A61; }
+.tv-pl-opt:has(input:checked) { border: 2px solid #0F7480; background: #E3F1F3; color: #0B5A63; }
+.tv-pl-opt:focus-within { outline: 2px solid #0F7480; outline-offset: 2px; }
+.tv-pl-star { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #E1E6E8; min-height: 44px; margin: 0; cursor: pointer; font-weight: 400; }
+.tv-pl-star input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.tv-pl-star svg { fill: none; stroke: #8A9BA2; }
+.tv-pl-star:has(input:checked) svg { fill: #B85C00; stroke: #B85C00; }
+.tv-pl-star:focus-within { outline: 2px solid #0F7480; outline-offset: -2px; }
+.tv-pl-lock { display: flex; gap: 8px; align-items: center; background: #EEF5F6; border-radius: 9px; padding: 9px 10px; font-size: .88rem; }
+.tv-pl-tag { display: inline-flex; gap: 3px; align-items: center; font-size: .68rem; font-weight: 700; border-radius: 999px; padding: 1px 7px; border: 1px solid #8A9BA2; color: #4A5A61; white-space: nowrap; }
+.tv-pl-tag.moved { border-color: #B85C00; color: #8A4500; }
+.tv-pl-tag.must { border-color: #0F7480; color: #0B5A63; }
+.tv-pl-why { font-size: .86rem; background: #EEF5F6; border-radius: 8px; padding: 7px 9px; }
+.tv-pl-hop { font-size: .76rem; color: #5B6B72; padding-left: 4px; }
+.tv-pl-notes { background: #FFF6EC; border: 1px solid #E8C9A3; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.tv-pl-notes b.h { color: #8A4500; }
+.tv-pl-steps { display: flex; flex-direction: column; }
+.tv-pl-step { display: flex; gap: 12px; align-items: flex-start; padding: 9px 0; }
+.tv-pl-step.now { font-weight: 700; }
+.tv-pl-step.todo { color: #5B6B72; }
+.tv-pl-bar { height: 8px; border-radius: 8px; background: #D5DDE0; overflow: hidden; }
+.tv-pl-bar span { display: block; height: 8px; background: #0F7480; }
+.tv-pl-banner { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; background: #1D2B31; color: #FFFFFF; border-radius: 12px; padding: 8px 14px; }
+.tv-pl-banner button { background: none; border: 0; color: #7FD3DA; font-weight: 700; min-height: 44px; padding: 0 4px; cursor: pointer; font: inherit; font-weight: 700; }
+.tv-pl-cta { background: #0F7480; color: #FFFFFF; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.tv-pl-cta a.go { background: #FFFFFF; color: #0F7480; border-radius: 10px; min-height: 46px; display: flex; align-items: center; justify-content: center; font-weight: 700; text-decoration: none; }
+
+.tv-pl-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; align-items: start; }
+.tv-pl-col { background: #FFFFFF; border: 1px solid #E1E6E8; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px; min-height: 120px; }
+.tv-pl-col.tv-pl-over { outline: 2px dashed #0F7480; outline-offset: 2px; }
+.tv-pl-card { border: 1px solid #E1E6E8; border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; background: #FFFFFF; }
+.tv-pl-card[draggable="true"] { cursor: grab; }
+.tv-pl-card.fixed { background: #F1F3F4; }
+.tv-pl-card .t { color: #0B5A63; font-weight: 700; font-size: .85rem; }
+.tv-pl-cards3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; align-items: start; }
+.tv-pl-num { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; background: #0F7480; color: #FFFFFF; font-size: .85rem; font-weight: 700; align-items: center; justify-content: center; flex: none; }
+.tv-pl-cards3 > .tv-pl-part { background: #FFFFFF; border: 1px solid #E1E6E8 !important; border-radius: 12px; padding: 18px !important; box-shadow: 0 1px 3px rgba(16,34,40,.06); }
+.tv-pl-cards3 > .tv-pl-part > legend { float: left; width: 100%; display: flex; gap: 10px; align-items: center; }
+[data-plan-step][hidden], [data-plan-next][hidden], [data-plan-back][hidden], [data-plan-go][hidden] { display: none !important; }
 </style>

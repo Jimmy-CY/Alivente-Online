@@ -131,9 +131,13 @@ ok('data-reorder' in tp and "include 'travel/_reorder.html'" in tp and
 ok("'custom': bool(rows.custom)" in read(J(TA, 'views_places.py')),
    'the server says whether the day still differs from automatic')
 ph = read(J(TA, 'phone.py'))
-ok("SW_VERSION = 'tv10-1'" in ph and '?v=tv10-1' in read(
-    J(TT, 'm', 'base.html')),
-   'the phone fetches the new script and style (tv10-1)')
+# TR-11 (17 Nov) moved the version on again: tv10-1 or later, worker and
+# page agreeing.
+import re                                                   # noqa: E402
+_v = re.search(r"SW_VERSION = 'tv(\d+)-(\d+)'", ph)
+ok(_v and int(_v.group(1)) >= 10 and
+   '?v=tv%s-%s' % _v.groups() in read(J(TT, 'm', 'base.html')),
+   'the phone fetches the new script and style (tv10-1 or later)')
 hp = read(J(ROOT, 'pages', 'help_content', 'administration.html'))
 mh = read(J(TT, 'm', 'help.html'))
 ok('Order saved &middot; Undo' in hp and 'hold the grip' in mh and

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}Plan my days - Travel{% endblock %}
+{% comment %} TRAVEL - TR-11, 17 Nov 2026. A plan that could not be made: say so, and offer to try again. {% endcomment %}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">{{ trip.name|upper }} &middot; PLAN MY DAYS</h4>
+<div class="page-action-buttons">
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
+    <a href="{{ back }}" class="btn action-back" aria-label="Back to the trip"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+<div class="tv-wrap"><section class="form-card" data-plan-failed><p style="margin: 0 0 10px"><b>The plan could not be made.</b> {{ tp.error|default:"Something went wrong." }} Nothing on the trip has changed.</p><a href="{% url 'travel:plan_setup' trip.pk %}" class="btn action-primary">Try again</a></section></div>
+{% render_help_modal "travel" %}
+{% endblock %}

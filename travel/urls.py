@@ -1,6 +1,7 @@
 from django.urls import path
 
-from . import compare, phone, report, views, views_inbox, views_places
+from . import (compare, phone, report, views, views_inbox, views_places,
+               views_plan)
 
 app_name = 'travel'
 
@@ -30,6 +31,30 @@ urlpatterns = [
          name='day_order'),
     path('m/trip/<int:trip_id>/day-order/', views_places.day_order,
          name='m_day_order'),
+    # TR-11, 17 Nov 2026 - Plan my days.
+    path('<int:trip_id>/plan/', views_plan.setup, name='plan_setup'),
+    path('<int:trip_id>/plan/<int:plan_id>/', views_plan.view,
+         name='plan_view'),
+    path('<int:trip_id>/plan/<int:plan_id>/move/', views_plan.move,
+         name='plan_move'),
+    path('<int:trip_id>/plan/<int:plan_id>/accept/', views_plan.accept,
+         name='plan_accept'),
+    path('<int:trip_id>/plan/<int:plan_id>/undo/', views_plan.undo,
+         name='plan_undo'),
+    path('<int:trip_id>/plan/<int:plan_id>/discard/', views_plan.discard,
+         name='plan_discard'),
+    path('m/trip/<int:trip_id>/plan/', views_plan.setup,
+         name='m_plan_setup'),
+    path('m/trip/<int:trip_id>/plan/<int:plan_id>/', views_plan.view,
+         name='m_plan_view'),
+    path('m/trip/<int:trip_id>/plan/<int:plan_id>/move/', views_plan.move,
+         name='m_plan_move'),
+    path('m/trip/<int:trip_id>/plan/<int:plan_id>/accept/',
+         views_plan.accept, name='m_plan_accept'),
+    path('m/trip/<int:trip_id>/plan/<int:plan_id>/undo/', views_plan.undo,
+         name='m_plan_undo'),
+    path('m/trip/<int:trip_id>/plan/<int:plan_id>/discard/',
+         views_plan.discard, name='m_plan_discard'),
     path('place/<int:place_id>/done/', views_places.place_done,
          name='place_done'),
     path('place/<int:place_id>/again/', views_places.place_again,

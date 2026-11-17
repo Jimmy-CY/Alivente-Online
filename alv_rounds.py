@@ -1638,6 +1638,8 @@ ROUNDS = [
     # GS-4, 16 Nov 2026 - Release 91: test_gate_walk measures its speed
     # ratio twice before it stops a push.
     '.bak_gateretry',
+    # TR-11, 17 Nov 2026 - Release 92: Plan my days.
+    '.bak_travel11',
 ]
 
 

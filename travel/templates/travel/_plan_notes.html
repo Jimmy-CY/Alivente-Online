@@ -1,0 +1,6 @@
+{% comment %} TR-11 - the proposal's "Before you go": tickets to book, a long day, hours not known - and what did not fit, with why. {% endcomment %}
+{% if notes or unfit %}<section class="tv-pl-notes" data-plan-notes>
+  <b class="h">Before you go</b>
+  {% for n in notes %}<div style="display: flex; gap: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A4500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="M12 3l9.5 17H2.5z"/><path d="M12 10v4M12 17.5v.01"/></svg><span>{{ n }}</span></div>{% endfor %}
+  {% for u in unfit %}<div style="display: flex; gap: 8px" data-plan-unfit><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A4500" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex: none; margin-top: 2px"><circle cx="12" cy="12" r="9"/><path d="M8 8l8 8"/></svg><span>Could not fit <b>{{ u.name }}</b> &ndash; {{ u.why }}. It stays in Things to do.</span></div>{% endfor %}
+</section>{% endif %}

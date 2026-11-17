@@ -1,0 +1,23 @@
+{% extends 'travel/m/base.html' %}
+{% comment %} TR-11, 17 Nov 2026 - Plan my days on the phone: three steps, one at a time (Demetri: "I am happy with the steps on the phone screen"). Rules in travel/planner.py. {% endcomment %}
+{% block title %}Plan my days - Travel{% endblock %}
+{% block top %}<div style="min-width: 0"><a class="tv-back" href="{{ back }}"><span aria-hidden="true">‹</span> {{ trip.name }}</a><h1>Plan my days</h1></div>{% endblock %}
+{% block content %}
+{% if not days %}
+<section class="tv-card"><p style="margin: 0">The trip needs its dates first: add a booking, or set From and To on the computer.</p></section>
+{% elif not plannable %}
+<section class="tv-card" data-plan-nothing><p style="margin: 0">Everything in Things to do already has a day. Add more, or choose <b>Can move</b> for something on a day, and plan again.</p></section>
+{% else %}
+<form method="post" action="{% url 'travel:m_plan_setup' trip.pk %}" data-plan-form data-plan-steps style="display: flex; flex-direction: column; gap: 12px">{% csrf_token %}
+  <div class="tv-pl-stephead" data-plan-bar aria-hidden="true">{% if movable or locked %}<span class="on"></span>{% endif %}<span></span><span></span></div>
+  <div class="tv-muted tv-small" data-plan-steplabel>{{ todo|length }} thing{{ todo|length|pluralize }} with no day yet &middot; nothing changes until you accept the plan</div>
+  <section class="tv-card" style="display: flex; flex-direction: column; gap: 14px">{% include 'travel/_plan_choices.html' %}</section>
+  <div class="tv-pl-bottom">
+    <button type="button" class="tv-btn sec" data-plan-back hidden>Back</button>
+    <button type="button" class="tv-btn" data-plan-next hidden>Next</button>
+    <button type="submit" class="tv-btn" data-plan-go>Plan my days</button>
+  </div>
+</form>
+{% endif %}
+{% include 'travel/_plan_js.html' %}
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'travel/m/base.html' %}
+{% comment %} TR-11, 17 Nov 2026 - Fit them in on the phone: the new things go into the gaps of the plan you accepted. {% endcomment %}
+{% block title %}Fit them in - Travel{% endblock %}
+{% block top %}<div style="min-width: 0"><a class="tv-back" href="{{ back }}"><span aria-hidden="true">‹</span> {{ trip.name }}</a><h1>Fit them in</h1></div>{% endblock %}
+{% block content %}
+<section class="tv-card" style="display: flex; flex-direction: column; gap: 12px" data-plan-fit>
+  {% include 'travel/_plan_fit_body.html' %}
+</section>
+<form method="post" action="{% url 'travel:m_plan_setup' trip.pk %}" style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px">{% csrf_token %}<input type="hidden" name="fit" value="1">
+  <button type="submit" class="tv-btn wide" data-plan-go>Fit them in</button>
+  <a href="{% url 'travel:m_plan_setup' trip.pk %}" class="tv-btn sec wide" data-plan-change>Change the answers</a>
+</form>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}Plan my days - {{ trip.name }} - Travel{% endblock %}
+{% comment %} TRAVEL - TR-11, 17 Nov 2026. Plan my days on the computer: the three questions on one page (Demetri approved the canvas "Alivente Travel - Plan my days", 17 Nov). Rules in travel/planner.py. {% endcomment %}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">{{ trip.name|upper }} &middot; PLAN MY DAYS</h4>
+<div class="page-action-buttons">
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
+    <a href="{{ back }}" class="btn action-back" aria-label="Back to the trip"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+<div class="tv-wrap">
+{% if not days %}
+<section class="form-card"><p style="margin: 0">The trip needs its dates first: add a booking, or set From and To under Edit trip.</p></section>
+{% elif not plannable %}
+<section class="form-card" data-plan-nothing><p style="margin: 0">Everything in Things to do already has a day. Add more things to do, or choose <b>Can move</b> for something on a day, and plan again.</p></section>
+{% else %}
+<p class="tv-sub" style="margin: 0 0 14px">{{ todo|length }} thing{{ todo|length|pluralize }} to do ha{{ todo|length|pluralize:"s,ve" }} no day yet. Answer three questions and I will spread {{ todo|length|pluralize:"it,them" }} over the trip. Nothing changes until you accept the plan.</p>
+<form method="post" action="{% url 'travel:plan_setup' trip.pk %}" data-plan-form>{% csrf_token %}
+  <div class="tv-pl-cards3">{% include 'travel/_plan_choices.html' with desk=True %}</div>
+  <div style="display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 16px">
+    <a href="{{ back }}" class="btn action-secondary">Cancel</a>
+    <button type="submit" class="btn action-primary" data-plan-go>Plan my days</button>
+  </div>
+</form>
+{% endif %}
+</div>
+{% include 'travel/_plan_js.html' %}
+{% render_help_modal "travel" %}
+{% endblock %}

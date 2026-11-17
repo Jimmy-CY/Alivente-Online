@@ -35,7 +35,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from . import barcodes, boarding, dayorder, fx, inbox
+from . import barcodes, boarding, dayorder, fx, inbox, planner
 from .models import (BoardingPass, Booking, CheckItem, InboundEmail,
                      trips_for)
 from .views import (coming_up, eur, included, requests_for, shape, span,
@@ -53,7 +53,7 @@ ASSET_TYPES = {
 # Bump this AND the ?v= in travel/m/base.html together whenever the style
 # or script changes: an installed app keeps the old files until it moves.
 # test_travel_three.py checks the two agree.
-SW_VERSION = 'tv10-1'
+SW_VERSION = 'tv11-1'
 
 
 def page(request, template, ctx):
@@ -268,12 +268,21 @@ def trip(request, trip_id):
     return page(request, 'travel/m/trip.html', {
         'sub': sub, 'wish': [p for p in pl if not p.day],
         'itinerary': itinerary(t, bs, pl) if sub == 'itinerary' else [],
-        'trip_days': [d for d, _ in itinerary(t, [], [])] if sub == 'wish'
-        else [],
+        # TR-11 - the trip's own days (its bookings decide them), so Plan
+        # my days shows on Things to do.
+        'trip_days': _days_of(t) if sub == 'wish' else [],
         'trip': t, 'days': list(days.items()), 'undated': undated,
         'bookings': bs, 'money': totals(bs), 'costs': costs,
         'people': [t.owner] + list(t.shared_with.all()), 'tab': 'trips',
-        'coming': coming_up(bs, _today())})
+        'coming': coming_up(bs, _today()),
+        # TR-11 - Plan my days: Undo plan, Fit them in, a plan to review.
+        **(planner.page_state(t, request)
+           if sub in ('itinerary', 'wish') else {})})
+
+
+def _days_of(t):
+    from .views_places import trip_days
+    return trip_days(t)
 
 
 def pass_card(p):

@@ -84,6 +84,7 @@
     {% endif %}
 {% elif tab == 'itinerary' %}
     {% comment %} TR-4 - every day of the trip: the bookings (shaded) and the places planned, in time order. {% endcomment %}
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px">{% include 'travel/_plan_banner.html' %}</div>
     {% if itinerary %}
     <nav class="tv-chips" aria-label="Days">{% for day, rows in itinerary %}<a class="tv-chip" href="#d{{ day|date:'Ymd' }}">{{ day|date:"D j" }}</a>{% endfor %}{% if wish %}<a class="tv-chip" href="#todo">Things to do</a>{% endif %}</nav>
     {% for day, rows in itinerary %}
@@ -102,7 +103,9 @@
     <section class="form-card"><p style="margin: 0">The itinerary needs the trip&rsquo;s dates: add a booking, or set From and To under Edit trip.</p></section>
     {% endif %}
 {% elif tab == 'wish' %}
-    {% comment %} TR-4 - places with no day yet. {% endcomment %}
+    {% comment %} TR-4 - places with no day yet. TR-11 - and Plan my days, to spread them over the trip. {% endcomment %}
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px">{% include 'travel/_plan_banner.html' %}
+    {% if wish and trip_days and not plan_open and not plan_new %}<section class="tv-pl-cta" data-plan-cta><div><b>{{ wish|length }} thing{{ wish|length|pluralize }} to do ha{{ wish|length|pluralize:"s,ve" }} no day yet</b><br><span style="opacity: .92; font-size: .9rem">Let Alivente spread {{ wish|length|pluralize:"it,them" }} over your trip &ndash; by opening hours, busy times and what is near what.</span></div><a class="go" href="{% url 'travel:plan_setup' trip.pk %}" style="max-width: 260px">Plan my days</a></section>{% endif %}</div>
     <section class="form-card" data-wishlist>
         <div class="tv-row"><h3 class="form-section-title" style="margin: 0">Things to do</h3><a href="{% url 'travel:place_new' trip.pk %}" class="btn action-primary btn-sm"><i class="fas fa-plus"></i> Things to do</a></div>
         {% for p in wish %}

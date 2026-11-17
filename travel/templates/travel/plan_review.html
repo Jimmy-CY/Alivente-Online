@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}Your plan - {{ trip.name }} - Travel{% endblock %}
+{% comment %} TRAVEL - TR-11, 17 Nov 2026. The proposal on the computer: the days side by side (Demetri: "I am happy with the plan screens on phone and desktop"). Grey cards stay; drag a planned card to another day, or use its Move, before accepting. {% endcomment %}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">{{ trip.name|upper }} &middot; YOUR PLAN</h4>
+<div class="page-action-buttons">
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
+    <a href="{{ back }}" class="btn action-back" aria-label="Back to the trip"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+<div class="tv-wrap" style="display: flex; flex-direction: column; gap: 14px">
+  <section class="form-card" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; margin: 0" data-plan-summary>
+    <span><b>{{ planned }} of {{ total }} placed</b>{% if moved %} &middot; {{ moved }} moved{% endif %}{% if not unfit %} &middot; nothing left out{% endif %}{% if notes or unfit %} &middot; <span style="color: #8A4500; font-weight: 600">notes below</span>{% endif %}</span>
+    <span class="tv-sub small">Grey cards stay where they are. Drag any other card to another day, or use its Move, before you accept.</span>
+  </section>
+  <div class="tv-pl-cols" data-plan-days>
+  {% for d in days %}<section class="tv-pl-col" data-plan-day="{{ d.iso }}">
+    <div><b style="font-size: 1.05rem">{{ d.day|date:"D j M" }}</b>{% if d.items %}<br><span class="tv-sub small">{{ d.items|length }} planned{% if d.hours %} &middot; about {{ d.hours }} h{% endif %}</span>{% endif %}</div>
+    {% if d.why %}<span class="tv-pl-why">{{ d.why }}</span>{% endif %}
+    {% for r in d.line %}{% if r.fixed %}<div class="tv-pl-card fixed" data-plan-fixed><span class="t">{{ r.time|default:"&ndash;" }}{% if r.booked %} &middot; <span class="tv-pl-tag">BOOKED</span>{% endif %}</span><b>{{ r.name }}</b></div>{% else %}{% if r.hop %}<div class="tv-pl-hop">&darr; {{ r.hop }}</div>{% endif %}<div class="tv-pl-card" draggable="true" data-plan-item="{{ r.place }}">
+      <span class="t" style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center">{{ r.time }}{% if r.new %} <span class="tv-pl-tag must">NEW</span>{% endif %}{% if r.moved_from_date %} <span class="tv-pl-tag moved">MOVED</span>{% endif %}{% if r.must %} <span class="tv-pl-tag must">MUST-DO</span>{% endif %}</span>
+      <b>{{ r.name }}</b>
+      <span class="tv-sub small">about {{ r.minutes }} min{% if r.moved_from_date %} &middot; was {{ r.moved_from_date|date:"D j" }}{% endif %}{% if r.book %} &middot; book ahead{% endif %}{% if r.quiet %} &middot; quiet {{ r.quiet }}{% endif %}</span>
+      <form method="post" action="{% url 'travel:plan_move' trip.pk tp.pk %}" class="tv-acts" style="margin: 4px 0 0" data-plan-move>{% csrf_token %}<input type="hidden" name="place" value="{{ r.place }}"><label class="sr-only" for="mv{{ r.place }}">Move {{ r.name }} to</label><select id="mv{{ r.place }}" name="day" class="form-control form-control-sm" style="max-width: 130px">{% for iso, dd in choices %}<option value="{{ iso }}"{% if iso == d.iso %} selected{% endif %}>{{ dd|date:"D j" }}</option>{% endfor %}</select><button type="submit" class="btn action-secondary btn-sm">Move</button></form>
+    </div>{% endif %}{% endfor %}
+    {% if not d.items and not d.fixed %}<span class="tv-sub small">Nothing planned.</span>{% endif %}
+  </section>{% endfor %}
+  </div>
+  {% include 'travel/_plan_notes.html' %}
+  <div style="display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap">
+    <form method="post" action="{% url 'travel:plan_discard' trip.pk tp.pk %}" style="margin: 0">{% csrf_token %}<button type="submit" class="btn action-secondary" data-plan-discard>Discard</button></form>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap">
+      <a href="{% url 'travel:plan_setup' trip.pk %}" class="btn action-secondary" data-plan-again>Change answers &amp; plan again</a>
+      <form method="post" action="{% url 'travel:plan_accept' trip.pk tp.pk %}" style="margin: 0">{% csrf_token %}<button type="submit" class="btn action-primary" data-plan-accept>Accept plan</button></form>
+    </div>
+  </div>
+</div>
+<script>
+/* TR-11 - drag a planned card onto another day; it is saved at once and the page shows the day again in order. */
+(function () {
+  var dragging = null;
+  document.querySelectorAll('[data-plan-item]').forEach(function (c) {
+    c.addEventListener('dragstart', function (e) { dragging = c; try { e.dataTransfer.setData('text/plain', c.getAttribute('data-plan-item')); } catch (x) {} });
+    c.addEventListener('dragend', function () { dragging = null; });
+  });
+  document.querySelectorAll('[data-plan-day]').forEach(function (col) {
+    col.addEventListener('dragover', function (e) { if (dragging) { e.preventDefault(); col.classList.add('tv-pl-over'); } });
+    col.addEventListener('dragleave', function () { col.classList.remove('tv-pl-over'); });
+    col.addEventListener('drop', function (e) {
+      col.classList.remove('tv-pl-over');
+      if (!dragging) { return; }
+      e.preventDefault();
+      var form = dragging.querySelector('[data-plan-move]');
+      form.querySelector('select').value = col.getAttribute('data-plan-day');
+      form.submit();
+    });
+  });
+})();
+</script>
+{% render_help_modal "travel" %}
+{% endblock %}

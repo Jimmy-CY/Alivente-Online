@@ -1,0 +1,7 @@
+{% extends 'travel/m/base.html' %}
+{% comment %} TR-11, 17 Nov 2026 - a plan that could not be made. {% endcomment %}
+{% block title %}Plan my days - Travel{% endblock %}
+{% block top %}<div style="min-width: 0"><a class="tv-back" href="{{ back }}"><span aria-hidden="true">‹</span> {{ trip.name }}</a><h1>Plan my days</h1></div>{% endblock %}
+{% block content %}
+<section class="tv-card" data-plan-failed><p style="margin: 0 0 10px"><b>The plan could not be made.</b> {{ tp.error|default:"Something went wrong." }} Nothing on the trip has changed.</p><a href="{% url 'travel:m_plan_setup' trip.pk %}" class="tv-btn wide">Try again</a></section>
+{% endblock %}

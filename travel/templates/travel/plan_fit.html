@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}Fit them in - {{ trip.name }} - Travel{% endblock %}
+{% comment %} TRAVEL - TR-11, 17 Nov 2026. Fit them in (Demetri, 17 Nov: "after I've got a whole lot of things to do and I run the plan and I accept the plan, I then add additional things to do to my list. What happens in that scenario?"). {% endcomment %}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">{{ trip.name|upper }} &middot; FIT THEM IN</h4>
+<div class="page-action-buttons">
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
+    <a href="{{ back }}" class="btn action-back" aria-label="Back to the trip"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+<div class="tv-wrap">
+<section class="form-card" style="display: flex; flex-direction: column; gap: 12px; max-width: 720px" data-plan-fit>
+  {% include 'travel/_plan_fit_body.html' %}
+  <form method="post" action="{% url 'travel:plan_setup' trip.pk %}" style="display: flex; gap: 10px; flex-wrap: wrap; margin: 0">{% csrf_token %}<input type="hidden" name="fit" value="1">
+    <button type="submit" class="btn action-primary" data-plan-go>Fit them in</button>
+    <a href="{% url 'travel:plan_setup' trip.pk %}" class="btn action-secondary" data-plan-change>Change the answers</a>
+  </form>
+</section>
+</div>
+{% render_help_modal "travel" %}
+{% endblock %}

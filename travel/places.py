@@ -567,3 +567,146 @@ def unlink_deleted(b):
     from .models import Place
     Place.objects.filter(booking=b).update(booking=None, day=None,
                                            time=None)
+
+
+# ==========================================================================
+# TR-11, 17 Nov 2026 - PLAN MY DAYS: WHAT THE PLANNER NEEDS TO KNOW.
+#
+# Demetri: "It needs to look at opening hours, peak periods, proximity to
+# other activities to reduce travel/walking time". The AI does the knowing
+# (this file); travel/planner.py does the fitting, by rules it always
+# keeps. Busy times are the AI's general knowledge and say so (Demetri:
+# "Busy times based on AI's knowledge is enough"). The small model, no web
+# search: the place's own looked-up hours go in as what to trust.
+# ==========================================================================
+PLAN_MODEL = os.environ.get('TRAVEL_PLAN_MODEL', 'claude-haiku-4-5')
+DAYS7 = ('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')
+FACTS_SYSTEM = """You help plan a family trip. For the one place given, \
+call record_facts once with what a careful local guide would know.
+
+- Opening hours per weekday as "HH:MM-HH:MM", two ranges joined by a comma \
+("09:00-13:00,16:00-20:00"), "closed", or "" when you do not know. The \
+hours given with the place are what to trust; use the trip's dates for \
+season.
+- lat and lng: the place's position to 4 decimals; leave them out if you \
+are not sure of the place.
+- minutes: a typical visit, not the longest one.
+- best: when to go to avoid the crowds or for the light - morning, \
+afternoon, evening or any.
+- busy and quiet: a few words each ("late morning, cruise days"; "first \
+hour, after 17:00"). This is general knowledge, not live data.
+- book: true only when tickets usually need booking ahead (timed entry, \
+sells out); book_note says how, in a few words.
+- For a restaurant or cafe, meal: lunch, dinner or either.
+- Never invent: leave out what you do not know."""
+FACTS_TOOL = {
+    'name': 'record_facts',
+    'description': 'Record what the planner needs to know about the place.',
+    'input_schema': {
+        'type': 'object',
+        'properties': {
+            'lat': {'type': 'number'}, 'lng': {'type': 'number'},
+            'city': {'type': 'string', 'description': 'Its town or city.'},
+            'area': {'type': 'string', 'description':
+                     'Its neighbourhood, in a few words.'},
+            'open': {'type': 'object', 'description':
+                     'mon..sun, each "HH:MM-HH:MM", ranges joined by a '
+                     'comma, "closed", or "".',
+                     'properties': {d: {'type': 'string'} for d in DAYS7}},
+            'minutes': {'type': 'integer'},
+            'best': {'type': 'string', 'enum': ['morning', 'afternoon',
+                                                'evening', 'any']},
+            'busy': {'type': 'string'}, 'quiet': {'type': 'string'},
+            'book': {'type': 'boolean'}, 'book_note': {'type': 'string'},
+            'meal': {'type': 'string', 'enum': ['lunch', 'dinner',
+                                               'either']},
+            'outdoors': {'type': 'boolean'},
+        },
+        'required': ['minutes', 'best'],
+    },
+}
+REASONS_SYSTEM = """You write one short line for each day of a trip plan \
+that has already been made - why the day is shaped as it is (what is near \
+what, when it is quiet, what is closed on another day). At most 22 words a \
+line, plain and friendly, no exclamation marks, no emoji. Never change the \
+plan or add places. Call record_reasons once."""
+REASONS_TOOL = {
+    'name': 'record_reasons',
+    'description': 'One line per day of the plan.',
+    'input_schema': {
+        'type': 'object',
+        'properties': {'days': {'type': 'array', 'items': {
+            'type': 'object', 'properties': {
+                'day': {'type': 'string', 'description': 'YYYY-MM-DD'},
+                'why': {'type': 'string'}},
+            'required': ['day', 'why']}}},
+        'required': ['days'],
+    },
+}
+
+
+def _client(client):
+    if client is not None:
+        return client
+    key = os.environ.get('ANTHROPIC_API_KEY')
+    if not key:
+        raise LookupError_('The Anthropic key is not set on the server.')
+    import anthropic
+    return anthropic.Anthropic(api_key=key, timeout=60.0, max_retries=1)
+
+
+def _tool_input(msg, name):
+    for block in getattr(msg, 'content', None) or []:
+        if getattr(block, 'type', '') == 'tool_use' and \
+                getattr(block, 'name', '') == name and \
+                isinstance(block.input, dict):
+            return block.input
+    raise LookupError_('Nothing came back.')
+
+
+def call_facts(place, start=None, client=None):
+    """record_facts for one place: a dict (see FACTS_TOOL)."""
+    client = _client(client)
+    ask = ['Place: %s' % place.name, 'Kind: %s' % place.kind]
+    for label, v in (('Address', place.address), ('Hours', place.hours),
+                     ('About', place.about), ('Website', place.website)):
+        if v:
+            ask.append('%s: %s' % (label, v))
+    trip = place.trip
+    where = getattr(trip, 'where', '') or trip.countries
+    if where:
+        ask.append('The trip is to: %s' % where)
+    if start:
+        ask.append('The trip starts: %s' % start.isoformat())
+    try:
+        msg = client.messages.create(
+            model=PLAN_MODEL, max_tokens=700, system=FACTS_SYSTEM,
+            tools=[FACTS_TOOL],
+            tool_choice={'type': 'tool', 'name': 'record_facts'},
+            messages=[{'role': 'user', 'content': '\n'.join(ask)}])
+    except Exception as e:                              # noqa: BLE001
+        logger.warning('travel plan facts: %s', e)
+        raise LookupError_('Claude could not be reached (%s).'
+                           % type(e).__name__)
+    return _tool_input(msg, 'record_facts')
+
+
+def call_reasons(summary, client=None):
+    """record_reasons for a finished plan: {day: why}."""
+    client = _client(client)
+    try:
+        msg = client.messages.create(
+            model=PLAN_MODEL, max_tokens=900, system=REASONS_SYSTEM,
+            tools=[REASONS_TOOL],
+            tool_choice={'type': 'tool', 'name': 'record_reasons'},
+            messages=[{'role': 'user', 'content': summary}])
+    except Exception as e:                              # noqa: BLE001
+        logger.warning('travel plan reasons: %s', e)
+        raise LookupError_('Claude could not be reached (%s).'
+                           % type(e).__name__)
+    got = _tool_input(msg, 'record_reasons')
+    out = {}
+    for d in got.get('days') or []:
+        if isinstance(d, dict) and d.get('day') and d.get('why'):
+            out[str(d['day'])[:10]] = str(d['why']).strip()[:200]
+    return out

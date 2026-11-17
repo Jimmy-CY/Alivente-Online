@@ -1,0 +1,34 @@
+{% comment %} TR-11 - Plan my days: "Keep all / Allow moving" sets each place planned last time; on the phone, the three steps one at a time (without the script all three show, with one button). {% endcomment %}
+<script>
+(function () {
+  document.querySelectorAll('[data-group-all]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      var v = r.getAttribute('data-group-all');
+      document.querySelectorAll('[data-plan-last] input[type=radio][value="' + v + '"]').forEach(function (x) { x.checked = true; });
+    });
+  });
+  var form = document.querySelector('[data-plan-steps]');
+  if (!form) { return; }
+  var parts = Array.prototype.slice.call(form.querySelectorAll('[data-plan-step]'));
+  var bars = form.querySelectorAll('[data-plan-bar] span');
+  var label = form.querySelector('[data-plan-steplabel]');
+  var next = form.querySelector('[data-plan-next]');
+  var back = form.querySelector('[data-plan-back]');
+  var go = form.querySelector('[data-plan-go]');
+  var names = ['What is already on a day', 'When you want time off', 'How you like to travel'];
+  var at = 0;
+  function show() {
+    parts.forEach(function (p, i) { p.hidden = i !== at; });
+    bars.forEach(function (b, i) { b.classList.toggle('on', i <= at); });
+    if (label) { label.textContent = 'Step ' + (at + 1) + ' of ' + parts.length + ' · ' + names[parseInt(parts[at].getAttribute('data-plan-step'), 10) - 1]; }
+    if (next) { next.hidden = at === parts.length - 1; }
+    if (go) { go.hidden = at !== parts.length - 1; }
+    if (back) { back.hidden = at === 0; }
+    window.scrollTo(0, 0);
+  }
+  if (next) { next.addEventListener('click', function () { if (at < parts.length - 1) { at++; show(); } }); }
+  if (back) { back.addEventListener('click', function () { if (at > 0) { at--; show(); } }); }
+  form.classList.add('tv-pl-js');
+  show();
+})();
+</script>

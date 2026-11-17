@@ -470,6 +470,13 @@ class Place(models.Model):
                                 null=True, blank=True, related_name='places')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # TR-11, 17 Nov 2026 - for Plan my days: where it is, and what the
+    # planner needs to know about it (weekly hours, how long a visit
+    # takes, when it is quiet, whether to book), worked out once and kept.
+    lat = models.FloatField(null=True, blank=True)
+    lng = models.FloatField(null=True, blank=True)
+    facts = models.JSONField(default=dict, blank=True)
+    facts_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'travel_places'
@@ -508,3 +515,47 @@ class DayOrder(models.Model):
 
     def __str__(self):
         return '%s %s' % (self.trip_id, self.day)
+
+
+class TripPlan(models.Model):
+    """TR-11, 17 Nov 2026 - Plan my days (Demetri: "I want to add a button
+    which will do a whole lot of thinking using AI, to optimise these
+    activities/things to do across the days of my trip").
+
+    answers   what was asked: per place on a day 'keep' or 'move', the
+              slots kept free ['2027-03-15-m', ...], pace, getting around,
+              must-dos.
+    result    the proposal: days with their planned places, times, the
+              way between them and a line about each day; notes; what did
+              not fit.
+    before    each planned place's day and time before the plan, and the
+              day orders it cleared - what Undo plan puts back.
+    applied   each planned place's day and time as the plan left it: Undo
+              only touches a place still exactly there."""
+    STATUS = [('working', 'Working it out'), ('ready', 'Ready to review'),
+              ('failed', 'Could not plan'), ('applied', 'Applied'),
+              ('undone', 'Undone'), ('discarded', 'Discarded'),
+              # A later plan was accepted: this one stays on the trip, but
+              # Undo plan undoes only the latest run.
+              ('replaced', 'Replaced by a later plan')]
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE,
+                             related_name='plans')
+    status = models.CharField(max_length=10, choices=STATUS,
+                              default='working')
+    answers = models.JSONField(default=dict, blank=True)
+    progress = models.JSONField(default=dict, blank=True)
+    result = models.JSONField(default=dict, blank=True)
+    before = models.JSONField(default=dict, blank=True)
+    applied = models.JSONField(default=dict, blank=True)
+    error = models.CharField(max_length=255, blank=True, default='')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL,
+                                   null=True, blank=True, related_name='+')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return 'Plan %s for trip %s (%s)' % (self.pk, self.trip_id,
+                                             self.status)

@@ -1,0 +1,7 @@
+{% comment %} TR-11 - Fit them in: the last plan's answers, shown once; Change goes to the full questions (Demetri agreed, 17 Nov). {% endcomment %}
+<p style="margin: 0">{% if new %}{{ new|length }} new thing{{ new|length|pluralize }} since your plan: <b>{% for p in new %}{{ p.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</b>.{% else %}{{ todo|length }} thing{{ todo|length|pluralize }} with no day yet.{% endif %} Everything already on a day stays where it is; {{ todo|length|pluralize:"it goes,they go" }} into the gaps, near what is already planned.</p>
+<div data-plan-reused style="display: flex; flex-direction: column; gap: 6px; font-size: .92rem">
+  <b>The same as last time</b>
+  <span>Kept free: {% for d, s in off %}{{ d|date:"D j" }} {{ s }}{% if not forloop.last %}, {% endif %}{% empty %}nothing{% endfor %}</span>
+  <span>Pace: {{ pace }} &middot; Getting around: {{ mode }}</span>
+</div>

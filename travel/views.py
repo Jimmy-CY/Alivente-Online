@@ -392,7 +392,16 @@ def trip(request, trip_id):
         'wish': [p for p in pl if not p.day],
         'trip_days': days_of(start, end),
         # TR-7 - after the trip: still To pay? (asked, never done alone)
-        'settle': settle_rows(t, bs)})
+        'settle': settle_rows(t, bs),
+        # TR-11 - Plan my days: Undo plan, Fit them in, a plan to review.
+        **plan_state(t, request, tab)})
+
+
+def plan_state(t, request, tab):
+    if tab not in ('itinerary', 'wish'):
+        return {}
+    from .planner import page_state
+    return page_state(t, request)
 
 
 def settle_rows(t, bs):
