@@ -229,8 +229,9 @@ def trips(request):
         sel = sorted([t for t in rows if t.end and t.end < day],
                      key=lambda t: t.start or far, reverse=True)
     else:
+        # TR-13 - the latest trip first, as on the computer.
         sel = sorted([t for t in rows if not (t.end and t.end < day)],
-                     key=lambda t: t.start or far)
+                     key=lambda t: t.start or far, reverse=True)
     # TR-7 - nothing ahead: the past trips, newest first, said so.
     auto_past = not past and not sel and any(t.end and t.end < day
                                              for t in rows)

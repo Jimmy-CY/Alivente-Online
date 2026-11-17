@@ -607,6 +607,8 @@ FACTS_TOOL = {
         'properties': {
             'lat': {'type': 'number'}, 'lng': {'type': 'number'},
             'city': {'type': 'string', 'description': 'Its town or city.'},
+            # TR-13 - its country, so it only goes on a day you are there.
+            'country': {'type': 'string', 'description': 'Its country.'},
             'area': {'type': 'string', 'description':
                      'Its neighbourhood, in a few words.'},
             'open': {'type': 'object', 'description':

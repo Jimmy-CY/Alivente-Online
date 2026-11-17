@@ -294,6 +294,101 @@ def grid(trip, bookings, days, off=()):
     return rows
 
 
+# ------------------------------------------------------------ where you are
+# TR-13, 17 Nov 2026 - Demetri: "It put the Parthenon on Monday 9th, but the
+# flight from Dublin to Athens is at night and I would land on midnight on
+# Monday". A free morning is only free where you are: a place goes on a
+# day only while you are in its country - before the flight that takes you
+# there has landed, or after the one that takes you away has left, it
+# cannot. Where you are comes from the flights, trains and ferries (when
+# each leaves and lands); a trip with none of those goes by its hotels.
+def country_of_place(p):
+    """The place's country: its address, else its town, else what the AI
+    said ('' if none of them says)."""
+    from .where import CITIES, named_city, named_country
+    f = p.facts or {}
+    addr = getattr(p, 'address', '') or ''
+    for text in (addr, f.get('city'), f.get('area')):
+        c = named_country(text or '')
+        if c:
+            return c
+    for text in (addr, f.get('city')):
+        c = named_city(text or '')
+        if c:
+            return c
+    c = str(f.get('country') or '').strip()
+    if c:
+        return named_country(c) or c
+    return ''
+
+
+def _at(day, t, default):
+    return dt.datetime.combine(day, t or default)
+
+
+def whereabouts(bookings):
+    """[(when, country)] in time order - None while travelling."""
+    from .where import (airport_country, country_of, named_city,
+                        named_country)
+    live = [b for b in bookings if b.status != 'cancelled' and b.start_date]
+    moves = [b for b in live if b.kind in TRANSPORT]
+    out = []
+    if moves:
+        for b in moves:
+            src = getattr(b, 'from_place', '') or ''
+            frm = (named_country(src) or airport_country(src) or
+                   named_city(src))
+            dep = _at(b.start_date, b.start_time, dt.time(0))
+            if b.end_date and b.end_time:
+                arr = _at(b.end_date, b.end_time, dt.time(0))
+            elif b.end_time and b.start_time and b.end_time >= b.start_time:
+                arr = _at(b.start_date, b.end_time, dt.time(0))
+            else:
+                arr = dep + dt.timedelta(hours=3)
+            if arr < dep:
+                arr += dt.timedelta(days=1)
+            if frm:
+                out.append((dep - dt.timedelta(minutes=1), frm))
+            out.append((dep, None))
+            out.append((arr, country_of(b) or ''))
+    else:
+        for b in live:
+            if b.kind in ('stay', 'car'):
+                out.append((_at(b.start_date, None, dt.time(0)),
+                            country_of(b) or ''))
+    out.sort(key=lambda x: x[0])
+    return out
+
+
+def where_at(points, day, minute):
+    """Your country at that minute of that day: '' when it cannot be told
+    (before anything is booked), None while travelling."""
+    when = dt.datetime.combine(day, dt.time(0)) + dt.timedelta(
+        minutes=minute)
+    here = ''
+    for at, c in points:
+        if at <= when:
+            here = c
+        else:
+            break
+    return here
+
+
+def there(points, country, day, start, minutes):
+    """Are you in the place's country for the whole visit? Unknown either
+    way is not a reason to say no."""
+    if not country or not points:
+        return True
+    want = country.lower()
+    for m in (start, start + minutes):
+        c = where_at(points, day, m)
+        if c is None:
+            return False
+        if c and c.lower() != want:
+            return False
+    return True
+
+
 # ------------------------------------------------------------ fitting
 class Item(object):
     def __init__(self, p, must):
@@ -307,6 +402,7 @@ class Item(object):
             'morning', 'afternoon', 'evening') else 'any'
         self.food = p.kind == 'food'
         self.meal = f.get('meal') or 'either'
+        self.country = country_of_place(p)
 
 
 def fits(it, day, key, free, used):
@@ -382,6 +478,7 @@ def plan(trip, places, bookings, days, answers, client=None,
             hotels[h.pk] = pos
         hotels[d] = hotels.get(h.pk) if h else None
     free = {d: free_of(d, busy_of(bookings, d), off) for d in days}
+    points = whereabouts(bookings)
     used = {d: {} for d in days}
     count = {d: 0 for d in days}
     on_day = {d: [] for d in days}
@@ -407,7 +504,8 @@ def plan(trip, places, bookings, days, answers, client=None,
                 continue
             for key, _a, _b, _n in SLOTS:
                 t = fits(it, d, key, free[d], used[d])
-                if t is not None:
+                if t is not None and there(points, it.country, d, t,
+                                           it.minutes):
                     out.append((d, key, t))
         return out
 
@@ -481,17 +579,22 @@ def plan(trip, places, bookings, days, answers, client=None,
                    bookings, fit=bool(answers.get('fit')))
     out['fit'] = bool(answers.get('fit'))
     out['unfit'] = [{'place': it.pk, 'name': it.p.name,
-                     'why': why_unfit(it, days, free, hotels, pace)}
+                     'why': why_unfit(it, days, free, hotels, pace,
+                                      points)}
                     for it in unfit]
     out['notes'] = notes_of(out, items)
     out['mode'] = mode
     return out
 
 
-def why_unfit(it, days, free, hotels, pace):
+def why_unfit(it, days, free, hotels, pace, points=()):
     shut = [d for d in days if open_on(it.p, d) == []]
     if shut and len(shut) == len(days):
         return 'closed on every day of the trip'
+    if it.country and points and not any(
+            there(points, it.country, d, m, 60) for d in days
+            for m in range(9 * 60, 21 * 60, 60)):
+        return 'you are not in %s on any day with time free' % it.country
     if it.pos and days and all(hotels.get(d) and km(hotels[d], it.pos) >
                                NEAR_KM for d in days):
         return 'too far from where you are staying'

@@ -305,8 +305,10 @@ def trips(request):
     else:
         show, sel = 'all', rows
     far = dt.date(9999, 1, 1)
-    sel.sort(key=lambda t: (t.start or far),
-             reverse=(show == 'past' or auto_past))
+    # TR-13, 17 Nov 2026 (Demetri: "When trips are listed, they should be
+    # sorted from the latest one, to the oldest one"): every list, the
+    # latest trip first. A trip with no dates yet is newest of all.
+    sel.sort(key=lambda t: (t.start or far), reverse=True)
     # TR-7 - a finished trip with something still To pay says so.
     from .compare import unsettled
     for t in sel:

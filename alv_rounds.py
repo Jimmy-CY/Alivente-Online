@@ -1642,6 +1642,8 @@ ROUNDS = [
     '.bak_travel11',
     # TR-12, 17 Nov 2026 - Release 93: Suggest things to do.
     '.bak_travel12',
+    # TR-13, 17 Nov 2026 - Release 94: trips latest first.
+    '.bak_travel13',
 ]
 
 
