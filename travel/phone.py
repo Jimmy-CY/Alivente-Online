@@ -59,8 +59,9 @@ ASSET_TYPES = {
 # of the two it was moved for; test_travel_fifteen.py fails the gate when
 # they change and it does not.
 # TR-16, 18 Nov 2026 - the trip filters' badges and menus.
-SW_VERSION = 'tv16-1'
-SW_ASSETS = '37ece7f3cd8d'
+# RA01, 18 Nov 2026 - their drop-downs.
+SW_VERSION = 'tv17-1'
+SW_ASSETS = '07328398c1b2'
 
 
 def page(request, template, ctx):

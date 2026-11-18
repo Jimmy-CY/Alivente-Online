@@ -3356,7 +3356,9 @@ $suites = @(
     # RU-1, 18 Nov 2026 - Release 99: adding a measurement works again.
     'test_recipe_units_null.py',
     # TR-16, 18 Nov 2026 - Release 100: tidier trip filters.
-    'test_travel_sixteen.py'
+    'test_travel_sixteen.py',
+    # RA01, 18 Nov 2026 - Compare in the trip card, proper drop-downs.
+    'test_ra01_trip_cards.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

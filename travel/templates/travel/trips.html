@@ -66,11 +66,11 @@
 
 {% comment %} TR-7, 16 Nov 2026 (Demetri: "If there are not upcoming, then it must show the past ones in descending date order (highlighting that they are Past)"; "I must be able to multi select trips for comparison"). {% endcomment %}
 {% if auto_past %}<p class="tv-note" data-auto-past>Nothing coming up{% if F.year or F.country %} here{% endif %} &mdash; here are your <b>past trips</b>, newest first.</p>{% endif %}
-{% if count > 1 %}<form method="get" action="{% url 'travel:compare' %}" id="tv-compare" class="tv-row" style="margin: 0 0 12px; align-items: center" data-compare-form><span class="tv-sub">Tick two or more trips to compare their costs.</span><button type="submit" class="btn action-secondary btn-sm" title="Compare the ticked trips side by side"><i class="fas fa-balance-scale"></i> Compare ticked trips</button></form>{% endif %}
+{% if count > 1 %}<form method="get" action="{% url 'travel:compare' %}" id="tv-compare" class="tv-cmpbar" data-compare-form><span class="tv-sub" data-compare-hint>Tick <b>Compare</b> on two or more trips to see their costs side by side.</span><button type="submit" class="btn action-secondary btn-sm" title="Compare the ticked trips side by side"><i class="fas fa-balance-scale"></i> Compare ticked trips <span class="tv-count" data-compare-n hidden>0</span></button></form>{% endif %}
 <div class="tv-grid" data-trips>
 {% for t in trips %}
-    <div class="tv-pickcard">
-    <a class="tv-card form-card" href="{% url 'travel:trip' t.pk %}" data-trip>
+    <div class="tv-pickcard form-card">
+    <a class="tv-card" href="{% url 'travel:trip' t.pk %}" data-trip>
         <div class="tv-row"><p class="tv-name">{{ t.name }}</p><span>{% if t.past %}<span class="tv-tag tv-pasttag" data-past>Past</span> {% endif %}{% if t.shared_with.all or not t.mine %}<span class="tv-tag tv-shared"><i class="fas fa-share-alt" aria-hidden="true"></i> Shared</span>{% endif %}</span></div>
         <div class="tv-sub">{% if t.start %}{{ t.start|date:"j M" }}{% if t.end and t.end != t.start %} – {{ t.end|date:"j M Y" }}{% else %} {{ t.start|date:"Y" }}{% endif %}{% else %}No dates yet{% endif %}{% if t.where %} · {{ t.where }}{% endif %}</div>
         <div class="tv-row small"><span>{{ t.n }} booking{{ t.n|pluralize }}</span><span class="tv-people">{% for p in t.people %}<span class="tv-av" title="{{ p.get_full_name|default:p.username }}">{{ p.first_name|default:p.username|slice:":1"|upper }}{{ p.last_name|slice:":1"|upper }}</span>{% endfor %}</span></div>
@@ -80,12 +80,22 @@
         {% endif %}
         {% if t.owing %}<div class="small tv-due" data-owing><b>{{ t.owing }} still To pay</b> &middot; settle up on the trip</div>{% endif %}
     </a>
-    {% if count > 1 %}<label class="tv-pick small"><input type="checkbox" name="t" value="{{ t.pk }}" form="tv-compare"> Compare</label>{% endif %}
+    {% comment %} RA01, 18 Nov 2026 - Compare lives in the card's own footer. {% endcomment %}
+    {% if count > 1 %}<label class="tv-pick" data-compare-pick><span><i class="fas fa-balance-scale" aria-hidden="true"></i> <span class="tv-pick-off">Compare</span><span class="tv-pick-on">Ticked to compare</span></span><input type="checkbox" name="t" value="{{ t.pk }}" form="tv-compare" aria-label="Compare {{ t.name }}"><span class="tv-tick" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></label>{% endif %}
     </div>
 {% empty %}
     <p class="text-muted">{% if count %}No trips match these filters. <a href="?show=all">Show all trips</a>{% else %}No trips yet. Start one above, or forward a booking email.{% endif %}</p>
 {% endfor %}
 </div>
+{% if count > 1 %}<script>
+/* RA01 - the Compare button counts the ticked trips. */
+(function () {
+  var n = document.querySelector('[data-compare-n]');
+  function count() { var k = document.querySelectorAll('input[form="tv-compare"]:checked').length; n.textContent = k; n.hidden = !k; }
+  document.addEventListener('change', function (e) { if (e.target.matches && e.target.matches('input[form="tv-compare"]')) count(); });
+  count();
+})();
+</script>{% endif %}
 {% endif %}{% endif %}
 
 

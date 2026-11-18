@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""travel/trip_filter.py - TR-16, 18 Nov 2026. The trip list's filters, on
+"""travel/trip_filter.py - TR-16, 18 Nov 2026 (RA01 the same day: the
+menus became our own drop-downs). The trip list's filters, on
 the computer and the phone alike.
 
 Demetri, 18 Nov: "I don't like how the 1 is placed near the Upcoming and
@@ -99,6 +100,15 @@ def apply(request, rows, today):
         'countries': [(names[k], n) for k, n in
                       sorted(countries.items(),
                              key=lambda kv: (-kv[1], names[kv[0]]))],
+        # RA01, 18 Nov 2026 - the menus are our own drop-downs now, each
+        # choice a link that keeps the other picks.
+        'year_menu': [{'label': str(y), 'n': years[y],
+                       'url': link(year=str(y))}
+                      for y in sorted(years, reverse=True)],
+        'country_menu': [{'label': names[k], 'n': n,
+                          'url': link(country=names[k])} for k, n in
+                         sorted(countries.items(),
+                                key=lambda kv: (-kv[1], names[kv[0]]))],
         'link_all': link(show='all'),
         'link_upcoming': link(show='upcoming'),
         'link_past': link(show='past'),

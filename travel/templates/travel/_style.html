@@ -9,11 +9,19 @@
 .tv-count { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 20px; padding: 0 7px; border-radius: 10px; background: rgba(0, 0, 0, .07); color: var(--alv-ink-soft); font-size: 0.78rem; font-weight: 600; }
 .tv-chip.is-on .tv-count { background: var(--alv-accent); color: #fff; }
 .tv-fsep { width: 1px; height: 24px; background: var(--alv-line); margin: 0 4px; align-self: center; }
-.tv-menu { display: inline-flex; margin: 0; }
-.tv-menu-chip { position: relative; cursor: pointer; padding-right: 30px; color: var(--alv-ink-soft); }
-.tv-menu-chip select { appearance: none; -webkit-appearance: none; border: 0; background: transparent; color: var(--alv-ink); font: inherit; padding: 0; cursor: pointer; min-height: 34px; }
-.tv-menu-chip::after { content: ""; position: absolute; right: 13px; top: 50%; width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-70%) rotate(45deg); pointer-events: none; }
-.tv-menu-chip:focus-within { border-color: var(--alv-accent); box-shadow: 0 0 0 2px rgba(14, 124, 139, .2); }
+.tv-dd { position: relative; display: inline-flex; }
+.tv-dd > summary { list-style: none; cursor: pointer; user-select: none; }
+.tv-dd > summary::-webkit-details-marker { display: none; }
+.tv-menu-chip { position: relative; padding-right: 30px; color: var(--alv-ink); }
+.tv-menu-chip svg { color: var(--alv-ink-soft); }
+.tv-menu-chip::after { content: ""; position: absolute; right: 13px; top: 50%; width: 7px; height: 7px; border-right: 1.5px solid var(--alv-ink-soft); border-bottom: 1.5px solid var(--alv-ink-soft); transform: translateY(-70%) rotate(45deg); transition: transform .15s; }
+.tv-dd[open] > .tv-menu-chip { border-color: var(--alv-accent); color: var(--alv-accent); }
+.tv-dd[open] > .tv-menu-chip::after { transform: translateY(-25%) rotate(225deg); }
+.tv-menu-chip:focus-visible { outline: 2px solid var(--alv-accent); outline-offset: 2px; }
+.tv-pop { position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; min-width: 230px; max-height: 340px; overflow-y: auto; padding: 6px; background: #fff; border: 1px solid var(--alv-line); border-radius: 12px; box-shadow: 0 10px 28px rgba(0, 0, 0, .12); }
+.tv-pop-h { padding: 6px 10px 4px; font-size: 0.75rem; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: var(--alv-ink-soft); }
+.tv-pop a { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; padding: 0 10px; border-radius: 8px; color: var(--alv-ink); text-decoration: none; }
+.tv-pop a:hover, .tv-pop a:focus-visible { background: rgba(14, 124, 139, .08); color: var(--alv-accent); text-decoration: none; outline: none; }
 .tv-picked { border: 1.5px solid var(--alv-accent); background: rgba(14, 124, 139, .08); color: var(--alv-accent); font-weight: 700; }
 .tv-picked .tv-x { font-size: 0.8rem; }
 .tv-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -87,10 +95,28 @@ a.tv-bk:hover b { color: var(--alv-accent); }
 /* TR-7, 16 Nov 2026 - past trips, ticking trips to compare, settling up. */
 .tv-steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
 @media screen and (max-width: 575.98px) { .tv-phone.tv-phone-wide { grid-template-columns: 1fr !important; } }
-.tv-pickcard { display: flex; flex-direction: column; gap: 6px; }
-.tv-pickcard > .tv-card { flex: 1; }
 .tv-pick { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; margin: 0; padding-left: 4px; cursor: pointer; }
 .tv-pick input { width: 18px; height: 18px; }
+/* RA01, 18 Nov 2026 (Demetri: "How better can better do the Compare tickboxes? Make it look better. Can it be in the trip box?") - the tick sits in the card's own footer; a ticked card takes the accent. */
+.tv-pickcard { display: flex; flex-direction: column; padding: 0; margin: 0; overflow: hidden; transition: border-color .15s, box-shadow .15s; }
+.tv-pickcard:hover { border-color: var(--alv-accent); }
+.tv-pickcard > .tv-card { flex: 1; border: 0; border-radius: 0; background: transparent; }
+.tv-pickcard > a.tv-card:hover { border: 0; }
+.tv-pickcard .tv-pick { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; margin: 0; padding: 0 16px; border-top: 1px solid var(--alv-line); cursor: pointer; color: var(--alv-ink-soft); font-size: 0.85rem; user-select: none; }
+.tv-pickcard .tv-pick:hover { color: var(--alv-accent); background: rgba(14, 124, 139, .04); }
+.tv-pickcard .tv-pick input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.tv-pickcard .tv-tick { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--alv-line); background: #fff; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.tv-pickcard .tv-tick svg { opacity: 0; }
+.tv-pickcard .tv-pick input:checked ~ .tv-tick { background: var(--alv-accent); border-color: var(--alv-accent); }
+.tv-pickcard .tv-pick input:checked ~ .tv-tick svg { opacity: 1; }
+.tv-pickcard .tv-pick input:focus-visible ~ .tv-tick { outline: 2px solid var(--alv-accent); outline-offset: 2px; }
+.tv-pickcard:has(input:checked) { border-color: var(--alv-accent); box-shadow: 0 0 0 2px rgba(14, 124, 139, .25), 0 4px 12px rgba(0, 0, 0, .06); }
+.tv-pickcard:has(input:checked) .tv-pick { color: var(--alv-accent); font-weight: 600; background: rgba(14, 124, 139, .06); }
+.tv-pickcard .tv-pick-on { display: none; }
+.tv-pickcard:has(input:checked) .tv-pick-on { display: inline; }
+.tv-pickcard:has(input:checked) .tv-pick-off { display: none; }
+.tv-cmpbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 12px; }
+.tv-cmpbar .btn[disabled] { opacity: .55; }
 .tv-pasttag { color: var(--alv-ink-soft); }
 .tv-note { padding: 10px 14px; border-radius: var(--alv-radius); border: 1px solid var(--alv-line); background: var(--alv-surface); }
 .tv-settle { border: 2px solid var(--alv-warn-ink); }

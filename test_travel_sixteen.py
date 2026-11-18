@@ -174,9 +174,11 @@ css = read(J(TT, '_style.html')) + read(J(TA, 'assets', 'travel.css'))
 ok(css.count('.tv-count {') >= 2 and css.count('.tv-picked {') >= 2,
    '  styled on the computer and the phone')
 ph = read(J(TA, 'phone.py'))
-ok("SW_VERSION = 'tv16-1'" in ph and
-   read(J(TT, 'm', 'base.html')).count('?v=tv16-1') == 2,
-   'THE PHONE APP fetches the new look (tv16-1)')
+# RA01, 18 Nov 2026 - tv16-1 or later (it moves with every new look).
+_v = re.search(r"SW_VERSION = 'tv(\d+)-(\d+)'", ph)
+ok(_v and int(_v.group(1)) >= 16 and
+   read(J(TT, 'm', 'base.html')).count('?v=tv%s-%s' % _v.groups()) == 2,
+   'THE PHONE APP fetches the new look (tv16-1 or later)')
 try:
     ok('Upcoming <span class="tv-sub">' in was(J(TT, 'trips.html')),
        'CONTROL: before this round the count sat after the name')
@@ -232,9 +234,13 @@ if have_db:
             h = A.get('/travel/?view=list&show=all').content.decode()
             ok('data-trip-filters' in h and
                'All <span class="tv-count" aria-label="3 trips">3</span>' in h
-               and 'name="year"' in h and 'name="country"' in h,
+               and 'data-menu="year"' in h and 'data-menu="country"' in h,
                'THE COMPUTER: All 3 in a badge, and the two menus')
-            ok('<option value="Greece">Greece (2)</option>' in h,
+            # RA01 - our own drop-down: Greece first, with its count.
+            pop = h.split('data-pop="country"')[1].split('</div></details>')[0]
+            ok(pop.index('Greece') < pop.index('Turkey') and
+               'country=Greece">Greece <span class="tv-count" '
+               'aria-label="2 trips">2</span>' in pop,
                '  Greece first in the Country menu, with its 2 trips')
             h = A.get('/travel/?view=list&show=past&country=Greece'
                       ).content.decode()

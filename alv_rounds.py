@@ -1656,6 +1656,8 @@ ROUNDS = [
     '.bak_units1',
     # TR-16, 18 Nov 2026 - Release 100: tidier trip filters.
     '.bak_travel16',
+    # RA01, 18 Nov 2026 - Compare in the trip card, proper drop-downs.
+    '.bak_ra01',
 ]
 
 
