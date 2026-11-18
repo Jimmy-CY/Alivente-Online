@@ -24,6 +24,18 @@ a.tv-card:active { border-color: var(--tv-teal); }
 .tv-chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .tv-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid #C9D3D6; background: #fff; color: var(--tv-ink); font-size: 13px; text-decoration: none; }
 .tv-chip.on { background: var(--tv-teal); border-color: var(--tv-teal); color: #fff; font-weight: 600; }
+/* TR-16, 18 Nov 2026 - the count as its own badge; Year and Country as menus. */
+.tv-count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 18px; padding: 0 6px; border-radius: 9px; background: rgba(0, 0, 0, .07); color: var(--tv-soft); font-size: 11.5px; font-weight: 600; }
+.tv-chip.on .tv-count { background: rgba(255, 255, 255, .28); color: #fff; }
+.tv-fsep { width: 1px; height: 22px; background: #C9D3D6; margin: 0 2px; align-self: center; }
+.tv-menu { display: inline-flex; margin: 0; }
+.tv-menu-chip { position: relative; padding-right: 28px; }
+.tv-menu-chip select { appearance: none; -webkit-appearance: none; border: 0; background: transparent; color: inherit; font: inherit; padding: 0; min-height: 34px; }
+.tv-menu-chip::after { content: ""; position: absolute; right: 12px; top: 50%; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+.tv-picked { border: 1.5px solid var(--tv-teal); color: var(--tv-teal); font-weight: 600; }
+.tv-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* on the phone the menus start their own row */
+.tv-filters .tv-fsep { flex-basis: 100%; width: auto; height: 0; margin: 0; background: none; }
 .tv-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; border: 1px solid currentColor; white-space: nowrap; }
 .tv-tag.paid { color: var(--tv-good); } .tv-tag.due { color: var(--tv-warn); } .tv-tag.sh { color: var(--tv-teal); }
 .tv-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--tv-teal); background: var(--tv-teal); color: #fff; font: inherit; font-weight: 600; font-size: 14px; text-decoration: none; cursor: pointer; }
@@ -77,6 +89,8 @@ html.tv-turn-90 body.tv-holding .tv-app { transform: translate(-50%, -50%) rotat
 html.tv-turn-270 body.tv-holding .tv-app { transform: translate(-50%, -50%) rotate(90deg); }
 html.tv-turn-90 body.tv-holding .tv-nav, html.tv-turn-270 body.tv-holding .tv-nav { position: sticky; }
 @media (prefers-color-scheme: dark) {
+  .tv-count { background: rgba(255, 255, 255, .12); color: #C9D3D6; }
+  .tv-picked { border-color: #5FC3CC; color: #5FC3CC; }
   body, .tv-app { background: #11191C; color: #E6ECEE; }
   .tv-card, .tv-tabs, .tv-nav, .tv-select, .tv-input, .tv-chip { background: #1A2428; border-color: #2B383D; color: #E6ECEE; }
   .tv-muted, .tv-tab, .tv-nav a, .tv-h3 { color: #A9B7BC; }

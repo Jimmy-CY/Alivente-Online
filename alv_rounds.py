@@ -1654,6 +1654,8 @@ ROUNDS = [
     '.bak_cyclelook',
     # RU-1, 18 Nov 2026 - Release 99: adding a measurement works again.
     '.bak_units1',
+    # TR-16, 18 Nov 2026 - Release 100: tidier trip filters.
+    '.bak_travel16',
 ]
 
 

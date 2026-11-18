@@ -5,6 +5,18 @@
 .tv-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--alv-line); color: var(--alv-ink); text-decoration: none; font-size: 0.9rem; }
 .tv-chip:hover { color: var(--alv-accent); text-decoration: none; }
 .tv-chip.is-on { border-color: var(--alv-accent); color: var(--alv-accent); font-weight: 700; }
+/* TR-16, 18 Nov 2026 - the count as its own badge; Year and Country as menus. */
+.tv-count { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 20px; padding: 0 7px; border-radius: 10px; background: rgba(0, 0, 0, .07); color: var(--alv-ink-soft); font-size: 0.78rem; font-weight: 600; }
+.tv-chip.is-on .tv-count { background: var(--alv-accent); color: #fff; }
+.tv-fsep { width: 1px; height: 24px; background: var(--alv-line); margin: 0 4px; align-self: center; }
+.tv-menu { display: inline-flex; margin: 0; }
+.tv-menu-chip { position: relative; cursor: pointer; padding-right: 30px; color: var(--alv-ink-soft); }
+.tv-menu-chip select { appearance: none; -webkit-appearance: none; border: 0; background: transparent; color: var(--alv-ink); font: inherit; padding: 0; cursor: pointer; min-height: 34px; }
+.tv-menu-chip::after { content: ""; position: absolute; right: 13px; top: 50%; width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+.tv-menu-chip:focus-within { border-color: var(--alv-accent); box-shadow: 0 0 0 2px rgba(14, 124, 139, .2); }
+.tv-picked { border: 1.5px solid var(--alv-accent); background: rgba(14, 124, 139, .08); color: var(--alv-accent); font-weight: 700; }
+.tv-picked .tv-x { font-size: 0.8rem; }
+.tv-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .tv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
 .tv-card { display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: var(--alv-radius); border: 1px solid var(--alv-line); color: var(--alv-ink); text-decoration: none; }
 a.tv-card:hover { border-color: var(--alv-accent); text-decoration: none; color: var(--alv-ink); }

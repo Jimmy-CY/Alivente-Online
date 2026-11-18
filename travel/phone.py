@@ -58,8 +58,9 @@ ASSET_TYPES = {
 # moves whenever travel.css or travel.js does. SW_ASSETS is the fingerprint
 # of the two it was moved for; test_travel_fifteen.py fails the gate when
 # they change and it does not.
-SW_VERSION = 'tv15-1'
-SW_ASSETS = 'aace7b3e2c05'
+# TR-16, 18 Nov 2026 - the trip filters' badges and menus.
+SW_VERSION = 'tv16-1'
+SW_ASSETS = '37ece7f3cd8d'
 
 
 def page(request, template, ctx):
@@ -229,23 +230,13 @@ def today(request):
 def trips(request):
     day = _today()
     rows = _trip_list(request.user)
-    past = request.GET.get('show') == 'past'
-    far = dt.date(9999, 1, 1)
-    if past:
-        sel = sorted([t for t in rows if t.end and t.end < day],
-                     key=lambda t: t.start or far, reverse=True)
-    else:
-        # TR-13 - the latest trip first, as on the computer.
-        sel = sorted([t for t in rows if not (t.end and t.end < day)],
-                     key=lambda t: t.start or far, reverse=True)
-    # TR-7 - nothing ahead: the past trips, newest first, said so.
-    auto_past = not past and not sel and any(t.end and t.end < day
-                                             for t in rows)
-    if auto_past:
-        sel = sorted([t for t in rows if t.end and t.end < day],
-                     key=lambda t: t.start or far, reverse=True)
-    for t in sel:
-        t.past = bool(t.end and t.end < day)
+    # TR-16, 18 Nov 2026 - the same chips and menus as the computer: All,
+    # Upcoming and Past with their counts, Year and Country menus, and
+    # they combine (travel/trip_filter.py, where TR-7 and TR-13 live on).
+    from . import trip_filter as TF
+    F = TF.apply(request, rows, day)
+    sel, auto_past = F['trips'], F['auto_past']
+    past = F['show'] == 'past'
     # TR-14, 17 Nov 2026 - List | Calendar, as on the computer.
     from . import calendar_view as CV
     view, asked = CV.view_of(request)
@@ -256,6 +247,7 @@ def trips(request):
     return CV.remember(page(request, 'travel/m/trips.html', {
         'view': view, 'cal': cal,
         'trips': sel, 'past': past, 'tab': 'trips', 'auto_past': auto_past,
+        'F': F,
         'can_compare': len(rows) > 1,
         'checks': inbox.open_count(request.user)}), view, asked)
 

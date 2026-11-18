@@ -270,9 +270,7 @@ def trips(request):
     from . import inbox
     inbox.kick()
     today = dt.date.today()
-    show = request.GET.get('show') or 'upcoming'
     rows = []
-    years, countries = set(), set()
     for t in trips_for(request.user).prefetch_related('bookings',
                                                       'shared_with'):
         bs = list(t.bookings.all())
@@ -282,33 +280,14 @@ def trips(request):
         t.money = totals(bs)
         t.people = [t.owner] + list(t.shared_with.all())
         t.mine = t.owner_id == request.user.id
-        if start:
-            years.add(start.year)
-        countries.update(t.where_list)
-        t.past = bool(end and end < today)
         rows.append(t)
-    auto_past = False
-    if show == 'upcoming':
-        sel = [t for t in rows if not t.past]
-        # TR-7, 16 Nov 2026 (Demetri: "I don't like that Personal ->
-        # Travel is blank until I press Past. If there are not upcoming,
-        # then it must show the past ones in descending date order
-        # (highlighting that they are Past).")
-        if not sel and any(t.past for t in rows):
-            sel, auto_past = [t for t in rows if t.past], True
-    elif show == 'past':
-        sel = [t for t in rows if t.past]
-    elif show.isdigit():
-        sel = [t for t in rows if t.start and t.start.year == int(show)]
-    elif show.startswith('c:'):
-        sel = [t for t in rows if show[2:] in t.where_list]
-    else:
-        show, sel = 'all', rows
-    far = dt.date(9999, 1, 1)
-    # TR-13, 17 Nov 2026 (Demetri: "When trips are listed, they should be
-    # sorted from the latest one, to the oldest one"): every list, the
-    # latest trip first. A trip with no dates yet is newest of all.
-    sel.sort(key=lambda t: (t.start or far), reverse=True)
+    # TR-16, 18 Nov 2026 - All, Upcoming and Past as chips with their
+    # counts as badges; Year and Country as menus; the three combine
+    # (travel/trip_filter.py). TR-7 and TR-13 live on inside it: nothing
+    # ahead shows the past ones, and every list is the latest trip first.
+    from . import trip_filter as TF
+    F = TF.apply(request, rows, today)
+    sel, auto_past = F['trips'], F['auto_past']
     # TR-7 - a finished trip with something still To pay says so.
     from .compare import unsettled
     for t in sel:
@@ -323,11 +302,8 @@ def trips(request):
                    today) if view == 'calendar' else None
     return CV.remember(render(request, 'travel/trips.html', {
         'view': view, 'cal': cal,
-        'trips': sel, 'show': show, 'years': sorted(years, reverse=True),
-        'auto_past': auto_past,
-        'n_upcoming': len([t for t in rows if not t.past]),
-        'n_past': len([t for t in rows if t.past]),
-        'countries': sorted(countries), 'count': len(rows),
+        'trips': sel, 'F': F, 'show': F['show'],
+        'auto_past': auto_past, 'count': len(rows),
         'checks': inbox.open_count(request.user),
         'address': inbox.inbox_address(),
         'new_open': request.GET.get('new') == '1' or not rows,

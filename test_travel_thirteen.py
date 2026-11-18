@@ -103,11 +103,15 @@ TT = J(TA, 'templates', 'travel')
 head('1. THE SOURCE')
 # ==========================================================================
 v = read(J(TA, 'views.py'))
-ok('sel.sort(key=lambda t: (t.start or far), reverse=True)' in v and
+# TR-16, 18 Nov 2026 - the computer and the phone share one filter
+# (travel/trip_filter.py), and it sorts every list latest first.
+tf = read(J(TA, 'trip_filter.py'))
+ok('sel.sort(key=lambda t: (t.start or FAR), reverse=True)' in tf and
+   'TF.apply(request, rows, today)' in v and
    "reverse=(show == 'past' or auto_past)" not in v,
    'COMPUTER: every list sorted latest first')
 ph = read(J(TA, 'phone.py'))
-ok(ph.count('key=lambda t: t.start or far, reverse=True)') == 3,
+ok('TF.apply(request, rows, day)' in ph,
    'PHONE: Upcoming too, as Past already was')
 pl = read(J(TA, 'planner.py'))
 ok('def whereabouts(' in pl and 'def there(' in pl and

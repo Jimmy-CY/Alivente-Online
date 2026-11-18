@@ -61,17 +61,11 @@
 {% if count %}<div class="tv-row" style="margin: 0 0 12px; align-items: center"><nav class="tv-view" aria-label="View" data-view-switch><a href="?view=list"{% if view == 'list' %} class="on" aria-current="page"{% endif %}><i class="fas fa-th-large" aria-hidden="true"></i> List</a><a href="?view=calendar"{% if view == 'calendar' %} class="on" aria-current="page"{% endif %} data-view-calendar><i class="far fa-calendar-alt" aria-hidden="true"></i> Calendar</a></nav></div>{% endif %}
 {% if view == 'calendar' %}{% include 'travel/_calendar.html' %}{% else %}
 {% if count %}
-<nav class="tv-chips" aria-label="Show">
-    <a class="tv-chip{% if show == 'upcoming' and not auto_past %} is-on{% endif %}" href="?show=upcoming">Upcoming <span class="tv-sub">{{ n_upcoming }}</span></a>
-    <a class="tv-chip{% if show == 'past' or auto_past %} is-on{% endif %}" href="?show=past">Past <span class="tv-sub">{{ n_past }}</span></a>
-    {% for y in years %}<a class="tv-chip{% if show == y|stringformat:'d' %} is-on{% endif %}" href="?show={{ y }}">{{ y }}</a>{% endfor %}
-    {% for c in countries %}<a class="tv-chip{% if show == 'c:'|add:c %} is-on{% endif %}" href="?show=c:{{ c|urlencode }}">{{ c }}</a>{% endfor %}
-    <a class="tv-chip{% if show == 'all' %} is-on{% endif %}" href="?show=all">All</a>
-</nav>
+{% include 'travel/_trip_filters.html' with on='is-on' %}
 {% endif %}
 
 {% comment %} TR-7, 16 Nov 2026 (Demetri: "If there are not upcoming, then it must show the past ones in descending date order (highlighting that they are Past)"; "I must be able to multi select trips for comparison"). {% endcomment %}
-{% if auto_past %}<p class="tv-note" data-auto-past>Nothing coming up &mdash; here are your <b>past trips</b>, newest first.</p>{% endif %}
+{% if auto_past %}<p class="tv-note" data-auto-past>Nothing coming up{% if F.year or F.country %} here{% endif %} &mdash; here are your <b>past trips</b>, newest first.</p>{% endif %}
 {% if count > 1 %}<form method="get" action="{% url 'travel:compare' %}" id="tv-compare" class="tv-row" style="margin: 0 0 12px; align-items: center" data-compare-form><span class="tv-sub">Tick two or more trips to compare their costs.</span><button type="submit" class="btn action-secondary btn-sm" title="Compare the ticked trips side by side"><i class="fas fa-balance-scale"></i> Compare ticked trips</button></form>{% endif %}
 <div class="tv-grid" data-trips>
 {% for t in trips %}
@@ -89,7 +83,7 @@
     {% if count > 1 %}<label class="tv-pick small"><input type="checkbox" name="t" value="{{ t.pk }}" form="tv-compare"> Compare</label>{% endif %}
     </div>
 {% empty %}
-    <p class="text-muted">{% if count %}No trips here.{% else %}No trips yet. Start one above, or forward a booking email.{% endif %}</p>
+    <p class="text-muted">{% if count %}No trips match these filters. <a href="?show=all">Show all trips</a>{% else %}No trips yet. Start one above, or forward a booking email.{% endif %}</p>
 {% endfor %}
 </div>
 {% endif %}{% endif %}

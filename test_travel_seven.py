@@ -235,9 +235,11 @@ if have_db:
                h.index('TV7 Swiss') and h.count('data-past') == 2,
                'NOTHING COMING UP: Travel shows the past trips, newest first, '
                'each marked Past')
-            ok('Upcoming <span class="tv-sub">0</span>' in h and
-               'Past <span class="tv-sub">2</span>' in h,
-               '  the chips say how many')
+            # TR-16, 18 Nov 2026 - the count is its own badge now.
+            ok('Upcoming <span class="tv-count" aria-label="0 trips">0'
+               '</span>' in h and
+               'Past <span class="tv-count" aria-label="2 trips">2</span>'
+               in h, '  the chips say how many')
             ok('data-owing' in h.split('TV7 Swiss')[0],
                '  a finished trip still owing says so')
             h = A.get('/travel/?phone=1').content.decode()
