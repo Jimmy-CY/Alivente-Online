@@ -127,10 +127,11 @@ def add_measurement_unit(request):
     """Add a new measurement unit."""
     if request.method == 'POST':
         data = json.loads(request.body)
-        unit_name = data.get('name', '').strip()
-        name_plural = data.get('name_plural', '').strip()
-        abbreviation = data.get('abbreviation', '').strip()
-        abbreviation_plural = data.get('abbreviation_plural', '').strip()
+        # RU-1, 18 Nov 2026 - null-safe, as in add_measurement_ajax.
+        unit_name = (data.get('name') or '').strip()
+        name_plural = (data.get('name_plural') or '').strip()
+        abbreviation = (data.get('abbreviation') or '').strip()
+        abbreviation_plural = (data.get('abbreviation_plural') or '').strip()
         unit_type = data.get('unit_type', 'other')
 
         # Validate name is not empty
@@ -157,9 +158,9 @@ def add_measurement_unit(request):
         # Create new unit with plural fields
         unit = MeasurementUnit.objects.create(
             name=unit_name,
-            name_plural=name_plural if name_plural else None,
-            abbreviation=abbreviation if abbreviation else None,
-            abbreviation_plural=abbreviation_plural if abbreviation_plural else None,
+            name_plural=name_plural,
+            abbreviation=abbreviation,
+            abbreviation_plural=abbreviation_plural,
             unit_type=unit_type
         )
 
@@ -187,10 +188,11 @@ def update_measurement_unit(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         unit_id = data.get('unit_id')
-        new_name = data.get('name', '').strip()
-        new_name_plural = data.get('name_plural', '').strip()
-        new_abbreviation = data.get('abbreviation', '').strip()
-        new_abbreviation_plural = data.get('abbreviation_plural', '').strip()
+        # RU-1, 18 Nov 2026 - null-safe, as in add_measurement_ajax.
+        new_name = (data.get('name') or '').strip()
+        new_name_plural = (data.get('name_plural') or '').strip()
+        new_abbreviation = (data.get('abbreviation') or '').strip()
+        new_abbreviation_plural = (data.get('abbreviation_plural') or '').strip()
         new_unit_type = data.get('unit_type', 'other')
 
         try:
@@ -219,9 +221,9 @@ def update_measurement_unit(request):
 
             # Update unit with plural fields
             unit.name = new_name
-            unit.name_plural = new_name_plural if new_name_plural else None
-            unit.abbreviation = new_abbreviation if new_abbreviation else None
-            unit.abbreviation_plural = new_abbreviation_plural if new_abbreviation_plural else None
+            unit.name_plural = new_name_plural
+            unit.abbreviation = new_abbreviation
+            unit.abbreviation_plural = new_abbreviation_plural
             unit.unit_type = new_unit_type
             unit.save()
 
@@ -355,17 +357,30 @@ def delete_measurement_unit(request):
 @permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def add_measurement_ajax(request):
-    """Add new measurement unit via AJAX (inline from recipe forms)."""
+    """Add new measurement unit via AJAX (inline from recipe forms).
+
+    RU-1, 18 Nov 2026 - Demetri: "I can't seem to add a measurement in
+    recipes" (Error: 'NoneType' object has no attribute 'strip'). A field
+    sent as null came back from data.get(key, '') as None, and .strip()
+    on None is that error. Every field is now read with (value or ''), an
+    unknown unit type falls back to 'other', and a missing name gets a
+    plain sentence instead of a Python error.
+    """
     try:
         data = json.loads(request.body)
-        name = data.get('name', '').strip()
-        name_plural = data.get('name_plural', '').strip()
-        abbreviation = data.get('abbreviation', '').strip()
-        abbreviation_plural = data.get('abbreviation_plural', '').strip()
-        unit_type = data.get('unit_type', 'other')
+
+        def text(key):
+            return str(data.get(key) or '').strip()
+        name = text('name')
+        name_plural = text('name_plural')
+        abbreviation = text('abbreviation')
+        abbreviation_plural = text('abbreviation_plural')
+        unit_type = text('unit_type') or 'other'
+        if unit_type not in dict(MeasurementUnit.UNIT_TYPE_CHOICES):
+            unit_type = 'other'
 
         if not name:
-            return JsonResponse({'success': False, 'message': 'Name is required'})
+            return JsonResponse({'success': False, 'message': 'The measurement has no name - close this box and choose Add again from the list.'})
 
         # Check if already exists
         if MeasurementUnit.objects.filter(name__iexact=name).exists():
@@ -376,12 +391,16 @@ def add_measurement_ajax(request):
             if MeasurementUnit.objects.filter(abbreviation__iexact=abbreviation).exists():
                 return JsonResponse({'success': False, 'message': f'A unit with abbreviation "{abbreviation}" already exists'})
 
-        # Create new measurement with all fields
+        # Create new measurement with all fields. RU-1 - a blank optional
+        # field is stored as '' : since migration 0095 (N1) these columns
+        # are NOT NULL, and None made MySQL refuse the row ('Column
+        # 'abbreviation' cannot be null') whenever Abbreviation was left
+        # empty.
         measurement = MeasurementUnit.objects.create(
             name=name,
-            name_plural=name_plural if name_plural else None,
-            abbreviation=abbreviation if abbreviation else None,
-            abbreviation_plural=abbreviation_plural if abbreviation_plural else None,
+            name_plural=name_plural,
+            abbreviation=abbreviation,
+            abbreviation_plural=abbreviation_plural,
             unit_type=unit_type
         )
 
@@ -403,7 +422,7 @@ def add_preparation_ajax(request):
     """Add new preparation method via AJAX (inline from recipe forms)."""
     try:
         data = json.loads(request.body)
-        name = data.get('name', '').strip().lower()
+        name = (data.get('name') or '').strip().lower()
 
         if not name:
             return JsonResponse({'success': False, 'message': 'Name is required'})

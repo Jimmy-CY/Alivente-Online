@@ -1652,6 +1652,8 @@ ROUNDS = [
     '.bak_quotes1',
     # CY-5, 17 Nov 2026 - Release 98: the Cycle Tracker redesign.
     '.bak_cyclelook',
+    # RU-1, 18 Nov 2026 - Release 99: adding a measurement works again.
+    '.bak_units1',
 ]
 
 

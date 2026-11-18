@@ -3352,7 +3352,9 @@ $suites = @(
     # QL-1, 17 Nov 2026 - Release 97: 240 quotes, none twice in a round.
     'test_quotes.py',
     # CY-5, 17 Nov 2026 - Release 98: the Cycle Tracker redesign.
-    'test_cycle_look.py'
+    'test_cycle_look.py',
+    # RU-1, 18 Nov 2026 - Release 99: adding a measurement works again.
+    'test_recipe_units_null.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

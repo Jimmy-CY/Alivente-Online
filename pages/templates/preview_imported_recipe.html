@@ -2571,7 +2571,12 @@ function addNewMeasurement(input, name) {
 }
 
 function confirmAddMeasurement() {
-    const name = pendingMeasurementName;
+    // RU-1, 18 Nov 2026 - the name is read from the box itself (it is
+    // read-only and was filled when the box opened), so it is there on a
+    // second try too. Before, a failed try cleared the remembered name,
+    // the box stayed open, and pressing Add again sent no name at all -
+    // "Error: 'NoneType' object has no attribute 'strip'".
+    const name = (document.getElementById('newMeasurementName').value || pendingMeasurementName || '').trim();
     const namePlural = document.getElementById('newMeasurementNamePlural').value.trim();
     const abbreviation = document.getElementById('newMeasurementAbbr').value.trim();
     const abbreviationPlural = document.getElementById('newMeasurementAbbrPlural').value.trim();
@@ -2600,6 +2605,8 @@ function confirmAddMeasurement() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            pendingMeasurementInput = null;
+            pendingMeasurementName = null;
             existingMeasurements.push(name);
             existingMeasurements.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
             input.value = name;
@@ -2621,13 +2628,10 @@ function confirmAddMeasurement() {
         alert('Error adding measurement');
     })
     .finally(() => {
-        // Re-enable button
+        // Re-enable button. RU-1 - the context is cleared only after a
+        // success, so the box can be corrected and Add pressed again.
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = '<i class="fas fa-check"></i> Add Measurement';
-        
-        // Clear pending context
-        pendingMeasurementInput = null;
-        pendingMeasurementName = null;
     });
 }
 
@@ -2827,7 +2831,8 @@ function suggestShoppingUnit() {
 }
 
 function confirmAddIngredient() {
-    const name = pendingIngredientName;
+    // RU-1, 18 Nov 2026 - as for measurements: the name comes from the box.
+    const name = (document.getElementById('newIngredientName').value || pendingIngredientName || '').trim();
     const categoryId = document.getElementById('newIngredientCategory').value;
     const shoppingUnitId = document.getElementById('newIngredientShoppingUnit').value;
     const input = pendingIngredientInput;
@@ -2862,6 +2867,8 @@ function confirmAddIngredient() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            pendingIngredientInput = null;
+            pendingIngredientName = null;
             existingIngredients.push(name);
             existingIngredients.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
             input.value = name;
@@ -2883,13 +2890,10 @@ function confirmAddIngredient() {
         alert('Error adding ingredient');
     })
     .finally(() => {
-        // Re-enable button
+        // Re-enable button. RU-1 - the context is cleared only after a
+        // success, so Add can be pressed again after an error.
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = '<i class="fas fa-check"></i> Add Ingredient';
-        
-        // Clear pending context
-        pendingIngredientInput = null;
-        pendingIngredientName = null;
     });
 }
 
