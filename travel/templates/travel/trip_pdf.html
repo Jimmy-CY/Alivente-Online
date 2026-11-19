@@ -41,7 +41,7 @@ On this trip: {% for p in people %}{{ p.get_full_name|default:p.username }}{% if
   <td><table><tr><td class="mlbl">STILL TO PAY</td></tr><tr><td class="mval"><span class="due">{{ money.due }}</span></td></tr></table></td>
 </tr></table>
 {% endif %}
-{% if bud %}<p class="muted" data-pdf-budget>Daily spending budget: {{ bud.per_day_label }} a day{% if bud.total_label %}, {{ bud.total_label }} for the holiday{% endif %} · spent {{ bud.spent_label }}{% if bud.when == 'on' %} · {{ bud.gap_label }} {% if bud.ahead %}ahead of{% else %}behind{% endif %} plan{% elif bud.when == 'after' %} · {{ bud.left_label }} {% if bud.over %}over{% else %}under{% endif %} budget{% endif %}</p>{% endif %}{# RA05 #}
+{% if bud %}<p class="muted" data-pdf-budget>Daily spending budget: {{ bud.per_day_label }} a day{% if bud.total_label %}, {{ bud.total_label }} for the holiday{% endif %} · spent {{ bud.spent_label }}{% if bud.when == 'on' %} · {{ bud.gap_label }} {% if bud.ahead %}ahead of{% else %}behind{% endif %} plan{% elif bud.when == 'after' %} · {{ bud.left_label }} {% if bud.over %}more{% else %}less{% endif %} than budgeted{% if bud.empty_days %} ({{ bud.empty_days }} of {{ bud.days_so_far }} days with nothing recorded){% endif %}{% endif %}</p>{% endif %}{# RA05 #}
 
 <h2 class="sec">Day by day</h2>
 {% for day, rows in days %}

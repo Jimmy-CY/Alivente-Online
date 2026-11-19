@@ -1666,6 +1666,8 @@ ROUNDS = [
     '.bak_ra04',
     # RA05, 19 Nov 2026 - the daily spending budget; sharing the costs.
     '.bak_ra05',
+    # RA06, 19 Nov 2026 - By kind on one line each, in whole euros.
+    '.bak_ra06',
 ]
 
 

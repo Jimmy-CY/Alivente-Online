@@ -9,7 +9,7 @@ delete the trip) check trip.owner as well.
 import datetime as dt
 import mimetypes
 from collections import OrderedDict
-from decimal import Decimal, InvalidOperation
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
@@ -168,8 +168,12 @@ def totals(bookings, spends=()):
         kinds['spend'] = kinds.get('spend', Decimal('0')) + s.amount_eur
     top = max(kinds.values()) if kinds else None
     label = dict(Booking.KINDS, spend='Daily spending')
+    # RA06, 19 Nov 2026 - By kind in whole euros (Demetri: "for this
+    # graph, we can remove the decimal places and round up to the nearest
+    # Euro"); the totals keep their cents.
     by_kind = [{'kind': label[k], 'icon': ICONS.get(k, 'fa-wallet'),
-                'eur': eur(v), 'pct': int(v / top * 100) if top else 0}
+                'eur': eur(v.quantize(Decimal('1'), ROUND_HALF_UP)),
+                'pct': int(v / top * 100) if top else 0}
                for k, v in sorted(kinds.items(), key=lambda kv: -kv[1])]
     return {'total': eur(total), 'paid': eur(paid),
             'due': eur(total - paid), 'pending': pending,
@@ -398,7 +402,8 @@ def trip(request, trip_id):
         'requests': requests_for(request.user, t),
         # TR-4 - the itinerary (every day, bookings and places) and the
         # wish list (places with no day yet).
-        'itinerary': itinerary(t, bs, pl) if tab == 'itinerary' else [],
+        'itinerary': with_weather(itinerary(t, bs, pl), bs)
+        if tab == 'itinerary' else [],
         'wish': [p for p in pl if not p.day],
         'trip_days': days_of(start, end),
         # TR-7 - after the trip: still To pay? (asked, never done alone)
@@ -408,6 +413,17 @@ def trip(request, trip_id):
         **plan_state(t, request, tab),
         # TR-12 - Suggest things to do.
         **idea_state(t, request, tab)})
+
+
+def with_weather(days, bs):
+    """RA06, 19 Nov 2026 - each day of the itinerary the forecast reaches
+    gets the weather where you are (travel/weather.py). Demetri: "show it
+    on the computer too"."""
+    from . import weather
+    wx = weather.for_days(bs, [d for d, _ in days])
+    for d, rows in days:
+        rows.wx = wx.get(d)
+    return days
 
 
 def money_state(t, request, bs, start, end, show_money, tab, spends=None):

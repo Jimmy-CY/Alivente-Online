@@ -39,6 +39,7 @@ from . import barcodes, boarding, budget, dayorder, fx, ideas, inbox, planner
 from .models import (BoardingPass, Booking, CheckItem, InboundEmail,
                      trips_for)
 from .views import (coming_up, eur, included, money_state, requests_for,
+                    with_weather,
                     shape, span,
                     totals, travel_view)
 
@@ -63,8 +64,9 @@ ASSET_TYPES = {
 # RA01, 18 Nov 2026 - their drop-downs.
 # RA03, 19 Nov 2026 - greyed out suggestions; Select to delete.
 # RA05, 19 Nov 2026 - the daily spending budget, + Spending.
-SW_VERSION = 'tv19-1'
-SW_ASSETS = '95a8d6229257'
+# RA06, 19 Nov 2026 - the weather; days with nothing recorded.
+SW_VERSION = 'tv20-1'
+SW_ASSETS = '030cdeda93c3'
 
 
 def page(request, template, ctx):
@@ -221,6 +223,15 @@ def today(request):
             ctx['bud'] = budget.summary(trip, spends, start, end, day)
             ctx['can_spend'] = budget.can_spend(trip, me)
         ctx['coming'] = coming_up(shaped, day)
+        # RA06, 19 Nov 2026 - the weather where you are (Demetri: "a small
+        # box with the Weather for that city for the day").
+        from . import weather
+        if now:
+            ctx['wx'] = weather.for_day(shaped, day, day)
+            ctx['wx_next'] = weather.for_day(shaped, day + dt.timedelta(1),
+                                             day)
+        elif trip.start and (trip.start - day).days <= weather.AHEAD:
+            ctx['wx'] = weather.for_day(shaped, trip.start, day)
         ctx['passes_today'] = BoardingPass.objects.filter(
             booking__trip=trip, booking__start_date__in=(
                 day, day + dt.timedelta(days=1))).count()
@@ -294,7 +305,8 @@ def trip(request, trip_id):
         p.is_place = True
     return page(request, 'travel/m/trip.html', {
         'sub': sub, 'wish': [p for p in pl if not p.day],
-        'itinerary': itinerary(t, bs, pl) if sub == 'itinerary' else [],
+        'itinerary': with_weather(itinerary(t, bs, pl), bs)
+        if sub == 'itinerary' else [],
         # TR-11 - the trip's own days (its bookings decide them), so Plan
         # my days shows on Things to do.
         'trip_days': _days_of(t) if sub == 'wish' else [],

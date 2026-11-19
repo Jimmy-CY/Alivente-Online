@@ -337,3 +337,25 @@ html.tv-turn-90 body.tv-holding .tv-nav, html.tv-turn-270 body.tv-holding .tv-na
 .tv-amount { font-size: 26px !important; min-height: 56px !important; }
 .tv-two { display: grid; grid-template-columns: 1fr 1.3fr; gap: 8px; }
 .tv-spend-day { padding-top: 6px; scroll-margin-top: 70px; }
+/* RA06, 19 Nov 2026 - days with nothing recorded; the weather on Today and the itinerary. */
+.tv-bud-note { margin: 10px 0 0; padding: 7px 10px; border-radius: 8px; background: #FCEFD9; color: #6B3A00; font-size: .85rem; }
+.tv-bud-days .is-empty { color: #B4B2A9; }
+.tv-dayhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.tv-wx-ico { flex: none; color: #5F6B70; }
+.tv-wx-ico.is-sun, .tv-wx-ico.is-part { color: #BA7517; }
+.tv-wx-ico.is-rain, .tv-wx-ico.is-storm, .tv-wx-ico.is-snow { color: #185FA5; }
+.tv-wx.is-compact { display: inline-flex; align-items: center; gap: 5px; padding: 2px 10px 2px 7px; border-radius: 999px; border: 1px solid #D5DDE0; background: #FFFFFF; font-size: .82rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: #1D2B31; vertical-align: middle; }
+.tv-wx-lo { color: #6B777C; font-weight: 500; }
+.tv-wx-r { color: #185FA5; }
+.tv-wx:not(.is-compact) { display: flex; gap: 12px; align-items: center; padding: 12px 14px; margin-bottom: 10px; border-radius: 14px; background: #EAF4FB; border: 1px solid #CFE3F2; color: #1D2B31; }
+.tv-wx-main { min-width: 0; flex: 1; }
+.tv-wx-head b { font-weight: 700; } .tv-wx-head span { color: #5B6B72; }
+.tv-wx-row { display: flex; gap: 14px; flex-wrap: wrap; font-size: .9rem; margin-top: 2px; }
+.tv-wx:not(.is-compact) .tv-wx-t { font-size: 1.15rem; font-weight: 700; }
+.tv-wx-next { font-size: .82rem; color: #5B6B72; margin-top: 3px; }
+@media (prefers-color-scheme: dark) {
+  .tv-wx:not(.is-compact) { background: #1A2A33; border-color: #2B3F4A; color: #E6ECEE; }
+  .tv-wx.is-compact { background: #1A2428; border-color: #2B383D; color: #E6ECEE; }
+  .tv-wx-head span, .tv-wx-next, .tv-wx-lo { color: #A9B6BB; }
+  .tv-bud-note { background: #3A2A10; color: #F2CF95; }
+}

@@ -5,5 +5,5 @@
         {% if bud.line_pct %}<div class="tv-bud-line" style="bottom: {{ bud.line_pct }}%" aria-hidden="true"></div>{% endif %}
         {% for c in bud.chart %}<a class="tv-bud-col{% if c.over %} is-over{% endif %}{% if c.today %} is-today{% endif %}{% if c.future %} is-future{% endif %}" href="#sp{{ c.day|date:'Ymd' }}" title="{{ c.day|date:'D j M' }}: {{ c.label|default:'nothing' }}{% if c.over %} - {{ c.over_by }} over{% endif %}" data-chart-day="{{ c.day|date:'Y-m-d' }}"><small>{{ c.label }}</small><i style="height: {{ c.pct }}%"></i></a>{% endfor %}
     </div>
-    <div class="tv-bud-days" style="--n: {{ bud.chart|length }}">{% for c in bud.chart %}<span{% if c.today %} class="is-today"{% endif %}>{% if c.today %}<i class="w">Today</i><i class="n">{{ c.day|date:"j" }}</i>{% else %}<i class="w">{{ c.day|date:"D" }} </i>{{ c.day|date:"j" }}{% endif %}</span>{% endfor %}</div>
+    <div class="tv-bud-days" style="--n: {{ bud.chart|length }}">{% for c in bud.chart %}<span class="{% if c.today %}is-today{% endif %}{% if c.empty %} is-empty{% endif %}"{% if c.empty %} title="Nothing recorded"{% endif %}>{% if c.today %}<i class="w">Today</i><i class="n">{{ c.day|date:"j" }}</i>{% else %}<i class="w">{{ c.day|date:"D" }} </i>{{ c.day|date:"j" }}{% endif %}</span>{% endfor %}</div>
 </div>

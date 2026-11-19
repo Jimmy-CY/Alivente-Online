@@ -336,8 +336,11 @@ ok('data-help-budget' in adm and 'data-help-share-money' in adm and
 ok('data-help-budget' in read(J(TT, 'm', 'help.html')),
    'HELP (phone): Budget and spending')
 ph = read(J(TV, 'phone.py'))
-ok("SW_VERSION = 'tv19-1'" in ph and '?v=tv19-1' in read(
-    J(TT, 'm', 'base.html')), 'THE PHONE APP moves to tv19-1')
+# RA06 moved it on again: tv19-1 or later.
+import re as _re                                            # noqa: E402
+_v = _re.search(r"SW_VERSION = 'tv(\d+)-\d+'", ph)
+ok(_v and int(_v.group(1)) >= 19 and '?v=tv%s-' % _v.group(1) in read(
+    J(TT, 'm', 'base.html')), 'THE PHONE APP moves to tv19-1 (or later)')
 import alv_rounds as RR                                     # noqa: E402
 ok(SUFFIX in RR.ROUNDS, '%s is in alv_rounds.ROUNDS' % SUFFIX)
 ok("'%s'" % ME in read(J(ROOT, PS1)), 'on the push gate suite list')

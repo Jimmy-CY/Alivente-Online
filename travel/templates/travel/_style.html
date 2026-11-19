@@ -57,7 +57,9 @@ a.tv-bk:hover b { color: var(--alv-accent); }
 .tv-kv dd { margin: 0; }
 .tv-ref { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.05rem; letter-spacing: .02em; }
 .tv-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 16px; }
-.tv-kindbar { display: grid; grid-template-columns: 110px minmax(0, 1fr) 90px; gap: 10px; align-items: center; font-size: 0.9rem; }
+/* RA06, 19 Nov 2026 - Daily spending on one line, like the others. */
+.tv-kindbar { display: grid; grid-template-columns: 150px minmax(0, 1fr) 90px; gap: 10px; align-items: center; font-size: 0.9rem; }
+.tv-kindbar > span:first-child { white-space: nowrap; }
 .tv-kindbar .tv-bar span { background: var(--alv-accent); }
 .tv-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; max-width: 820px; }
 .tv-form-grid .tv-wide { grid-column: 1 / -1; }
@@ -377,4 +379,20 @@ a.tv-bk:hover b { color: var(--alv-accent); }
   .tv-bud-days { font-size: 9px; }
   .tv-bud-days .w { display: none; } .tv-bud-days .is-today .n { display: inline; }
 }
+/* RA06, 19 Nov 2026 - finished-trip budget wording; days with nothing recorded; the weather on the itinerary. */
+.tv-bud-note { margin: 10px 0 0; padding: 7px 10px; border-radius: 8px; background: #FCEFD9; color: #6B3A00; font-size: .85rem; }
+.tv-bud-days .is-empty { color: #B4B2A9; }
+.tv-dayhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.tv-wx-ico { flex: none; color: #5F6B70; }
+.tv-wx-ico.is-sun, .tv-wx-ico.is-part { color: #BA7517; }
+.tv-wx-ico.is-rain, .tv-wx-ico.is-storm, .tv-wx-ico.is-snow { color: #185FA5; }
+.tv-wx.is-compact { display: inline-flex; align-items: center; gap: 5px; padding: 2px 10px 2px 7px; border-radius: 999px; border: 1px solid #D5DDE0; background: #FFFFFF; font-size: .82rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: #1D2B31; vertical-align: middle; }
+.tv-wx-lo { color: #6B777C; font-weight: 500; }
+.tv-wx-r { color: #185FA5; }
+.tv-wx:not(.is-compact) { display: flex; gap: 12px; align-items: center; padding: 12px 14px; margin-bottom: 10px; border-radius: 14px; background: #EAF4FB; border: 1px solid #CFE3F2; color: #1D2B31; }
+.tv-wx-main { min-width: 0; flex: 1; }
+.tv-wx-head b { font-weight: 700; } .tv-wx-head span { color: #5B6B72; }
+.tv-wx-row { display: flex; gap: 14px; flex-wrap: wrap; font-size: .9rem; margin-top: 2px; }
+.tv-wx:not(.is-compact) .tv-wx-t { font-size: 1.15rem; font-weight: 700; }
+.tv-wx-next { font-size: .82rem; color: #5B6B72; margin-top: 3px; }
 </style>

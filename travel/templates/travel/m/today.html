@@ -21,6 +21,7 @@
 <section class="tv-card" data-no-trip><p class="tv-h2">No trip coming up</p><p class="tv-muted" style="margin: 0">Forward a booking email to <b>{{ address|default:"the trips address" }}</b>, or share a ticket to Travel, and it will be waiting under To check.</p></section>
 {% elif on_now %}
 {% if passes_today %}<a href="{% url 'travel:m_passes' %}" class="tv-btn wide" data-passes-today><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M16 12h2M3 9h15"/></svg> Boarding passes</a>{% endif %}
+{% include 'travel/_weather.html' with w=wx nxt=wx_next %}
 {% if bud and bud.set %}{% comment %} RA05, 19 Nov 2026 - the Today line: spent today against the day's budget, ahead or behind plan. {% endcomment %}<section class="tv-card tv-bud-today" data-today-budget>
   <div class="tv-row"><a href="{% url 'travel:m_trip' trip.pk %}?tab=costs" style="color: inherit; text-decoration: none">Today <b{% if bud.today_over %} class="tv-over"{% endif %}>{{ bud.today_label }}</b> of {{ bud.per_day_label }}</a>{% if can_spend %}<a href="{% url 'travel:m_spend' trip.pk %}" class="tv-small" style="font-weight: 700" data-spend-new>+ Spending</a>{% endif %}</div>
   <div class="tv-small {% if bud.ahead %}tv-good{% else %}tv-over{% endif %}" data-bud-pace="{% if bud.ahead %}ahead{% else %}behind{% endif %}">{{ bud.gap_label }} {% if bud.ahead %}ahead of{% else %}behind{% endif %} plan</div>
@@ -34,6 +35,7 @@
   <div class="tv-row"><p class="tv-h2">{{ trip.name }}</p><span class="tv-tag sh">{% if in_days == 1 %}Tomorrow{% else %}In {{ in_days }} days{% endif %}</span></div>
   <div class="tv-muted">{{ trip.start|date:"D j M" }}{% if trip.end and trip.end != trip.start %} – {{ trip.end|date:"D j M Y" }}{% endif %}{% if trip.where %} · {{ trip.where }}{% endif %}</div>
 </a>
+{% include 'travel/_weather.html' with w=wx nxt_label="" %}
 <p class="tv-h3">The first day · {{ trip.start|date:"D j M" }}</p>
 <section class="tv-card">{% for b in first_rows %}{% include 'travel/m/_row.html' %}{% empty %}<p class="tv-muted" style="margin: 0">Nothing booked for it yet.</p>{% endfor %}</section>
 {% endif %}

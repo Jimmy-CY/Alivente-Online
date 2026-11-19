@@ -10,14 +10,16 @@
         <div class="tv-bud-k {% if bud.ahead %}is-good{% else %}is-bad{% endif %}" data-bud-pace="{% if bud.ahead %}ahead{% else %}behind{% endif %}"><span>{% if bud.ahead %}Ahead of plan{% else %}Behind plan{% endif %}</span><b>{{ bud.gap_label }} {% if bud.ahead %}under{% else %}over{% endif %}</b><small>{% if bud.ahead %}on track{% else %}spent more than planned{% endif %}</small></div>
         <div class="tv-bud-k"><span>{% if bud.over %}Over the holiday&rsquo;s budget{% else %}Left for {{ bud.to_go }} day{{ bud.to_go|pluralize }}{% endif %}</span><b>{{ bud.left_label }}</b><small>{% if bud.keep_label %}{{ bud.keep_label }} a day keeps you on budget{% elif bud.over %}keep adding spending &ndash; it all counts{% else %}the last day{% endif %}</small></div>
     {% elif bud.when == 'after' %}
-        <div class="tv-bud-k"><span>Spent</span><b data-bud-spent>{{ bud.spent_label }}</b><small>{% if bud.avg_label %}{{ bud.avg_label }} a day{% endif %}</small></div>
+        {% comment %} RA06, 19 Nov 2026 - the trip is over: what was spent, the budget, and the result in plain words (Demetri: "What is it actually telling us?"). {% endcomment %}
+        <div class="tv-bud-k"><span>Spent</span><b data-bud-spent>{{ bud.spent_label }}</b><small>{% if bud.avg_label %}{{ bud.avg_label }} a day on average{% else %}nothing recorded{% endif %}</small></div>
         <div class="tv-bud-k"><span>Budget</span><b>{{ bud.total_label }}</b><small>{{ bud.per_day_label }} a day</small></div>
-        <div class="tv-bud-k {% if bud.over %}is-bad{% else %}is-good{% endif %}" data-bud-pace="{% if bud.over %}behind{% else %}ahead{% endif %}"><span>{% if bud.over %}Over budget{% else %}Under budget{% endif %}</span><b>{{ bud.left_label }}</b><small>the trip is over</small></div>
+        <div class="tv-bud-k {% if bud.over %}is-bad{% else %}is-good{% endif %}" data-bud-pace="{% if bud.over %}behind{% else %}ahead{% endif %}" data-bud-result><span>Result</span><b>{{ bud.left_label }} {% if bud.over %}more{% else %}less{% endif %}</b><small>than budgeted</small></div>
     {% else %}
         <div class="tv-bud-k"><span>For the holiday</span><b>{{ bud.total_label|default:"–" }}</b><small>{% if bud.days %}{{ bud.days }} days &times; {{ bud.per_day_label }}{% else %}the trip needs its dates{% endif %}</small></div>
         <div class="tv-bud-k"><span>Spent so far</span><b data-bud-spent>{{ bud.spent_label }}</b><small>the trip has not started</small></div>
     {% endif %}
     </div>
+    {% if bud.empty_days and bud.when != 'before' %}<p class="tv-bud-note" data-bud-empty>{% if bud.when == 'after' %}{{ bud.empty_days }} of the {{ bud.days_so_far }} days ha{{ bud.empty_days|pluralize:"s,ve" }} no spending recorded, so this may not be the full picture.{% else %}{{ bud.empty_days }} of the {{ bud.days_so_far }} day{{ bud.days_so_far|pluralize }} so far ha{{ bud.empty_days|pluralize:"s,ve" }} no spending recorded.{% endif %}</p>{% endif %}
     {% if bud.total %}<div class="tv-bar tv-bud-bar is-{% if bud.over %}red{% elif bud.pct >= 90 %}amber{% else %}ok{% endif %}" aria-hidden="true" style="margin-top: 12px"><span style="width: {{ bud.pct }}%"></span></div>
     <div class="tv-sub small" style="margin-top: 4px">{{ bud.spent_label }} of {{ bud.total_label }} used &middot; {{ bud.pct }}%{% if bud.pending %} &middot; {{ bud.pending }} waiting for an exchange rate{% endif %}</div>{% endif %}
     {% if bud.show_chart %}{% include 'travel/_budget_chart.html' %}{% endif %}

@@ -152,10 +152,20 @@ def summary(trip, spends, start, end, today=None):
             'day': d, 'eur': v, 'label': whole(v) if v else '',
             'pct': int(v / top * 100), 'today': d == today,
             'future': d > today,
+            # RA06 - a day of the trip so far with nothing recorded.
+            'empty': not v and d <= today and start is not None and
+            start <= d <= (end or start),
             'over': per_day is not None and v > per_day,
             'over_by': whole(v - per_day) if per_day is not None and
             v > per_day else ''})
+    # RA06, 19 Nov 2026 - days so far with no spending recorded (Demetri,
+    # on "Under budget, €780" for a trip with one day filled in: "What is
+    # it actually telling us?").
+    so_far = [c for c in chart if not c['future'] and start and
+              start <= c['day'] <= (end or start)]
+    empty = [c for c in so_far if c['empty']]
     return {
+        'empty_days': len(empty), 'days_so_far': len(so_far),
         'set': trip.budget is not None, 'by': trip.budget_by,
         'per_day': per_day, 'per_day_label': whole(per_day),
         'total': total, 'total_label': whole(total), 'days': days,
