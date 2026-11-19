@@ -1,0 +1,10 @@
+{% comment %} RA05 - set the daily spending budget: a day's or the holiday's, the other worked out (Demetri: "Let's have both options - Add Total and calculate daily or vice versa"). {% endcomment %}
+<form method="post" action="{% url 'travel:budget_save' trip.pk %}" class="tv-bud-form" data-budget-form data-days="{{ bud.days }}"{% if hidden %} hidden{% endif %}>{% csrf_token %}
+    <div class="tv-bud-opts">
+        <label class="tv-bud-opt"><input type="radio" name="by" value="day"{% if bud.by != 'total' %} checked{% endif %}> <span>A day (&euro;)</span><input type="text" name="budget_day" class="form-control tv-money" inputmode="decimal" value="{% if bud.per_day %}{{ bud.per_day|floatformat:'0' }}{% endif %}" placeholder="150" aria-label="Budget a day in euros"></label>
+        <span class="tv-sub" aria-hidden="true">{% if bud.days %}&times; {{ bud.days }} days ={% else %}or{% endif %}</span>
+        <label class="tv-bud-opt"><input type="radio" name="by" value="total"{% if bud.by == 'total' %} checked{% endif %}> <span>The holiday (&euro;)</span><input type="text" name="budget_total" class="form-control tv-money" inputmode="decimal" value="{% if bud.total %}{{ bud.total|floatformat:'0' }}{% endif %}" placeholder="1800" aria-label="Budget for the holiday in euros"></label>
+    </div>
+    <p class="tv-sub small" style="margin: 6px 0 10px">Type either one &ndash; the other is worked out from the trip&rsquo;s {% if bud.days %}{{ bud.days }} days{% else %}days, once it has dates{% endif %}. The one ticked is kept if the trip&rsquo;s dates change.</p>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap"><button type="submit" class="btn action-primary btn-sm" data-budget-save>Save budget</button>{% if bud.set %}<button type="submit" name="clear" value="1" class="btn action-secondary action-danger btn-sm" style="margin-left: auto" onclick="return confirm('Remove the budget? Your spending stays.')" data-budget-clear>Remove budget</button>{% endif %}</div>
+</form>

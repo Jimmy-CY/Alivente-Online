@@ -59,7 +59,7 @@
     </div>
 </section>
 
-<section class="form-card">
+{% if show_money %}{# RA05 - no Cost section for someone the costs are not shared with: theirs stay as they are #}<section class="form-card">
     <h3 class="form-section-title">Cost</h3>
     <div class="tv-form-grid">
         <div><label for="am">Amount</label><input id="am" name="amount" class="form-control tv-money" inputmode="decimal" value="{{ b.amount|default_if_none:'' }}"></div>
@@ -70,7 +70,7 @@
         <div><label for="pb">Pay the balance by</label><input id="pb" type="date" name="pay_by" class="form-control" value="{{ b.pay_by|date:'Y-m-d' }}"></div>
         <div><label for="cn">Free cancellation until</label><input id="cn" type="date" name="cancel_until" class="form-control" value="{{ b.cancel_until|date:'Y-m-d' }}"></div>
     </div>
-</section>
+</section>{% endif %}
 
 <section class="form-card">
     <h3 class="form-section-title">Tickets &amp; documents</h3>

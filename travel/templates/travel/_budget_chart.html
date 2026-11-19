@@ -1,0 +1,9 @@
+{% comment %} RA05 - spending per day against the day's budget (Demetri: "I can see where I have spent more on a day"). Red: over the day's budget. Click a day for what was spent. Shared by the computer and the phone. {% endcomment %}
+<div class="tv-bud-chart" data-budget-chart>
+    <div class="tv-sub tv-muted small tv-small" style="margin: 14px 0 4px"><b class="tv-ink">Spending per day</b>{% if bud.per_day_label %} &middot; the dashed line is {{ bud.per_day_label }} a day{% endif %}</div>
+    <div class="tv-bud-bars" style="--n: {{ bud.chart|length }}">
+        {% if bud.line_pct %}<div class="tv-bud-line" style="bottom: {{ bud.line_pct }}%" aria-hidden="true"></div>{% endif %}
+        {% for c in bud.chart %}<a class="tv-bud-col{% if c.over %} is-over{% endif %}{% if c.today %} is-today{% endif %}{% if c.future %} is-future{% endif %}" href="#sp{{ c.day|date:'Ymd' }}" title="{{ c.day|date:'D j M' }}: {{ c.label|default:'nothing' }}{% if c.over %} - {{ c.over_by }} over{% endif %}" data-chart-day="{{ c.day|date:'Y-m-d' }}"><small>{{ c.label }}</small><i style="height: {{ c.pct }}%"></i></a>{% endfor %}
+    </div>
+    <div class="tv-bud-days" style="--n: {{ bud.chart|length }}">{% for c in bud.chart %}<span{% if c.today %} class="is-today"{% endif %}>{% if c.today %}<i class="w">Today</i><i class="n">{{ c.day|date:"j" }}</i>{% else %}<i class="w">{{ c.day|date:"D" }} </i>{{ c.day|date:"j" }}{% endif %}</span>{% endfor %}</div>
+</div>

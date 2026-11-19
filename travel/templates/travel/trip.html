@@ -21,6 +21,19 @@
     </details>
     {% if is_owner %}<a href="{% url 'travel:trip_merge' trip.pk %}" class="btn action-secondary"><i class="fas fa-object-group"></i> Merge</a>{% endif %}
     <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
+    {% comment %} RA02, 19 Nov 2026 (Demetri: "The buttons on top of the travel section of the desktop version viewed on a mobile are not as per our standards"). The house standard (base 3.4): below 768px Add booking takes the row, the rest move into the More menu, Back is a square. {% endcomment %}
+    <div class="action-more-wrapper" data-menu data-travel-more>
+        <button type="button" class="btn action-more-btn" data-menu-toggle aria-label="More actions" aria-expanded="false" aria-haspopup="true"><i class="fas fa-ellipsis-v"></i></button>
+        <div class="action-more-menu" data-menu-panel role="menu" hidden>
+            <a class="action-more-item" role="menuitem" href="{% url 'travel:place_new' trip.pk %}"><i class="fas fa-plus"></i> Things to do</a>
+            {% if is_owner %}<a class="action-more-item" role="menuitem" href="{% url 'travel:trip_share' trip.pk %}"><i class="fas fa-share-alt"></i> Share</a>{% endif %}
+            <a class="action-more-item" role="menuitem" href="{% url 'travel:trip_edit' trip.pk %}"><i class="fas fa-pen"></i> Edit trip</a>
+            <button type="button" class="action-more-item" role="menuitem" onclick="openPdfViewer('{% url 'travel:trip_pdf' trip.pk %}?kind=summary', '{{ trip.name|escapejs }} - summary', 'trip_{{ trip.name|slugify }}_summary.pdf')"><i class="fas fa-file-pdf"></i> PDF - summary</button>
+            <button type="button" class="action-more-item" role="menuitem" onclick="openPdfViewer('{% url 'travel:trip_pdf' trip.pk %}?kind=detailed', '{{ trip.name|escapejs }} - detailed', 'trip_{{ trip.name|slugify }}_detailed.pdf')"><i class="fas fa-file-pdf"></i> PDF - detailed</button>
+            {% if is_owner %}<a class="action-more-item" role="menuitem" href="{% url 'travel:trip_merge' trip.pk %}"><i class="fas fa-object-group"></i> Merge</a>{% endif %}
+            <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#travelHelpModal"><i class="fas fa-question-circle"></i> Help</button>
+        </div>
+    </div>
     <a href="{% url 'travel:trips' %}" class="btn action-back" aria-label="Back to Travel">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
@@ -53,7 +66,7 @@
     <a class="tv-chip{% if tab == 'bookings' %} is-on{% endif %}" href="{% url 'travel:trip' trip.pk %}"{% if tab == 'bookings' %} aria-current="page"{% endif %}>Bookings <span class="tv-sub">{{ bookings|length }}</span></a>
     <a class="tv-chip{% if tab == 'itinerary' %} is-on{% endif %}" href="{% url 'travel:trip_itinerary' trip.pk %}"{% if tab == 'itinerary' %} aria-current="page"{% endif %}>Itinerary</a>
     <a class="tv-chip{% if tab == 'wish' %} is-on{% endif %}" href="{% url 'travel:trip_wishlist' trip.pk %}"{% if tab == 'wish' %} aria-current="page"{% endif %}>Things to do{% if wish %} <span class="tv-sub">{{ wish|length }}</span>{% endif %}</a>
-    <a class="tv-chip{% if tab == 'costs' %} is-on{% endif %}" href="{% url 'travel:trip_costs' trip.pk %}"{% if tab == 'costs' %} aria-current="page"{% endif %}>Costs</a>
+    {% if show_money %}<a class="tv-chip{% if tab == 'costs' %} is-on{% endif %}" href="{% url 'travel:trip_costs' trip.pk %}"{% if tab == 'costs' %} aria-current="page"{% endif %}>Costs</a>{% endif %}
 </nav>
 
 <div class="tv-cols">
@@ -108,22 +121,27 @@
     {% if wish and trip_days and not plan_open and not plan_new %}<section class="tv-pl-cta" data-plan-cta><div><b>{{ wish|length }} thing{{ wish|length|pluralize }} to do ha{{ wish|length|pluralize:"s,ve" }} no day yet</b><br><span style="opacity: .92; font-size: .9rem">Let Alivente spread {{ wish|length|pluralize:"it,them" }} over your trip &ndash; by opening hours, busy times and what is near what.</span></div><a class="go" href="{% url 'travel:plan_setup' trip.pk %}" style="max-width: 260px">Plan my days</a></section>{% endif %}</div>
     <section class="form-card" data-wishlist>
         {% comment %} TR-12, 17 Nov 2026 - Suggest things to do, beside + Things to do (Demetri: "Can we add another button to Things to Do"). {% endcomment %}
-        <div class="tv-row"><h3 class="form-section-title" style="margin: 0">Things to do</h3><span style="display: flex; gap: 8px; flex-wrap: wrap"><a href="{% url 'travel:ideas' trip.pk %}" class="btn action-secondary btn-sm tv-id-sugg" data-idea-suggest><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg> {% if ideas_open %}Finding ideas&hellip;{% elif ideas_left %}Your suggestions &middot; {{ ideas_left }} left to look at{% else %}Suggest things to do{% endif %}</a><a href="{% url 'travel:place_new' trip.pk %}" class="btn action-primary btn-sm"><i class="fas fa-plus"></i> Things to do</a></span></div>
+        <div class="tv-row"><h3 class="form-section-title" style="margin: 0">Things to do</h3><span style="display: flex; gap: 8px; flex-wrap: wrap"><a href="{% url 'travel:ideas' trip.pk %}" class="btn action-secondary btn-sm tv-id-sugg" data-idea-suggest><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg> {% if ideas_open %}Finding ideas&hellip;{% elif ideas_left %}Your suggestions &middot; {{ ideas_left }} left to look at{% else %}Suggest things to do{% endif %}</a>{% if wish %}<button type="button" class="btn action-secondary btn-sm" aria-pressed="false" data-select-start title="Tick several to delete them together"><i class="far fa-check-square" aria-hidden="true"></i> Select</button>{% endif %}<a href="{% url 'travel:place_new' trip.pk %}" class="btn action-primary btn-sm"><i class="fas fa-plus"></i> Things to do</a></span></div>
         {% for p in wish %}
         <div data-wish-item>
+            <label class="tv-sel" title="Select {{ p.name }}"><input type="checkbox" name="p" value="{{ p.pk }}" form="tv-del-places" aria-label="Select {{ p.name }}"></label><div class="tv-sel-body">
             {% include 'travel/_place_row.html' %}
             {% if trip_days %}{% comment %} TR-5 (Demetri, 16 Nov: "To Move, you should at least need as a minimum to have a date"): no day is chosen for you. {% endcomment %}<form method="post" action="{% url 'travel:place_move' p.pk %}" class="tv-acts" style="margin: 0 0 8px 52px" data-move-form>{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><input type="hidden" name="need_day" value="1">
                 <label for="mv{{ p.pk }}" class="small" style="margin: 0">Put on</label>
                 <select id="mv{{ p.pk }}" name="day" class="form-control form-control-sm" style="max-width: 170px" required><option value="" selected>Choose a day&hellip;</option>{% for d in trip_days %}<option value="{{ d|date:'Y-m-d' }}">{{ d|date:"D j M" }}</option>{% endfor %}</select>
                 <input type="time" name="time" class="form-control form-control-sm" style="max-width: 120px" aria-label="Time (optional)" title="Time (optional)">
                 <button type="submit" class="btn action-secondary btn-sm" title="Put it on the day chosen">Move</button></form>{% endif %}
-        </div>
+        </div></div>
         {% empty %}<p class="tv-sub" style="margin: 8px 0 0">Nothing yet. Add a museum, a garden, a restaurant &mdash; type its name or paste a link, and its address, hours and price are looked up for you. On the phone, share a place from Google Maps to Travel.</p>{% endfor %}
+        {% if wish %}{% url 'travel:places_delete' trip.pk as del_url %}{% include 'travel/_wish_select.html' with url=del_url %}{% endif %}
     </section>
 {% else %}
+    {% comment %} RA05, 19 Nov 2026 - the daily spending budget and the spending, first; then the trip's whole costs, its daily spending included. {% endcomment %}
+    {% include 'travel/_budget.html' %}
     <section class="form-card" data-costs>
+        {% if money.has_spend %}<div class="tv-row tv-sub small" style="margin-bottom: 8px" data-costs-split><span>Bookings <b class="tv-ink">{{ money.booked|default:"€0" }}</b></span><span>+ Daily spending <b class="tv-ink">{{ money.spent|default:"€0" }}</b></span><span>= the whole trip</span></div>{% endif %}
         <div class="tv-row">
-            <div><div class="tv-sub">Total</div><b style="font-size: 1.5rem">{{ money.total|default:"€0" }}</b></div>
+            <div><div class="tv-sub">Trip total</div><b style="font-size: 1.5rem">{{ money.total|default:"€0" }}</b></div>
             <div><div class="tv-sub">Paid</div><b style="font-size: 1.5rem" class="tv-paid">{{ money.paid|default:"€0" }}</b></div>
             <div><div class="tv-sub">Still to pay</div><b style="font-size: 1.5rem" class="tv-due">{{ money.due|default:"€0" }}</b></div>
         </div>
@@ -146,6 +164,15 @@
 </div>
 
 <aside class="tv-side">
+    {% if tab == 'bookings' and show_money and bud.set and bud.when != 'none' %}
+    {% comment %} RA05 - the budget at a glance, beside the bookings. {% endcomment %}
+    <section class="form-card" data-budget-side>
+        <h3 class="form-section-title">Daily spending</h3>
+        {% if bud.when == 'on' %}<div class="tv-row"><span class="tv-sub">Today</span><b>{{ bud.today_label }} <span class="tv-sub">of {{ bud.per_day_label }}</span></b></div>
+        <div class="{% if bud.ahead %}tv-paid{% else %}tv-over{% endif %} small" style="font-weight: 700">{{ bud.gap_label }} {% if bud.ahead %}ahead of{% else %}behind{% endif %} plan</div>{% elif bud.when == 'after' %}<div class="{% if bud.over %}tv-over{% else %}tv-paid{% endif %} small" style="font-weight: 700">{{ bud.left_label }} {% if bud.over %}over{% else %}under{% endif %} budget</div>{% else %}<div class="tv-row"><span class="tv-sub">Budget</span><b>{{ bud.per_day_label }} a day</b></div>{% endif %}
+        {% if can_spend %}<a href="{% url 'travel:trip_costs' trip.pk %}#spend" class="small"><i class="fas fa-plus" aria-hidden="true"></i> Spending</a>{% else %}<a href="{% url 'travel:trip_costs' trip.pk %}" class="small">See the budget</a>{% endif %}
+    </section>
+    {% endif %}
     {% if tab == 'bookings' and money.any %}
     <section class="form-card">
         <h3 class="form-section-title">Costs</h3>

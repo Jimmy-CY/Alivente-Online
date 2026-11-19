@@ -1658,6 +1658,14 @@ ROUNDS = [
     '.bak_travel16',
     # RA01, 18 Nov 2026 - Compare in the trip card, proper drop-downs.
     '.bak_ra01',
+    # RA02, 19 Nov 2026 - the Travel action bar on a phone.
+    '.bak_ra02',
+    # RA03, 19 Nov 2026 - restaurants and cafes, checked on Google.
+    '.bak_ra03',
+    # RA04, 19 Nov 2026 - an email when a key stops working.
+    '.bak_ra04',
+    # RA05, 19 Nov 2026 - the daily spending budget; sharing the costs.
+    '.bak_ra05',
 ]
 
 

@@ -29,6 +29,21 @@ class Trip(models.Model):
     # for Ask me again in a week.
     settle_off = models.BooleanField(default=False)
     settle_after = models.DateField(null=True, blank=True)
+    # RA05, 19 Nov 2026 - THE DAILY SPENDING BUDGET (travel/budget.py).
+    # Demetri: "What if our budget didn't include budgeting for Hotel, Car
+    # Rental and Flights. These were just actuals that came in from the
+    # Booking ... Then we only had the ability to set a budget for total
+    # holiday spend (which would be a calculation based on average daily
+    # spend)"; "Let's have both options - Add Total and calculate daily or
+    # vice versa." budget is in euros - a day's when budget_by is 'day',
+    # the holiday's when 'total'; the other is worked out from the days.
+    # share_money - "I must have the option to either share or not share
+    # costs and budget information with other travellers". On: they see
+    # the budget and the costs, never add spending. Off: no money at all.
+    budget = models.DecimalField(max_digits=10, decimal_places=2, null=True,
+                                 blank=True)
+    budget_by = models.CharField(max_length=5, default='day')
+    share_money = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -156,6 +171,13 @@ class Booking(models.Model):
 
     def __str__(self):
         return self.title
+
+    def save(self, *a, **kw):
+        # RA05 - a booking whose costs were blanked for someone who may not
+        # see them (travel/budget.py) is for showing only, never saving.
+        if getattr(self, '_money_hidden', False):
+            raise RuntimeError('A booking with its costs hidden is not saved.')
+        return super().save(*a, **kw)
 
     def eur_of(self, value):
         """A sum in this booking's currency, in euros (None if no rate)."""
@@ -621,9 +643,58 @@ class Idea(models.Model):
                               blank=True, related_name='+')
     position = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    # RA03, 19 Nov 2026 - checked on Google before it is shown (Demetri:
+    # "Yes. Check on Google"): where it is, how far from the centre, its
+    # rating and price level, and why it is greyed out - closed on every
+    # day you are in the city, or further than the km you asked for.
+    # Google lets its place ID be kept; the rest is refreshed by the next
+    # search.
+    checked = models.BooleanField(default=False)
+    gid = models.CharField(max_length=300, blank=True, default='')
+    lat = models.FloatField(null=True, blank=True)
+    lng = models.FloatField(null=True, blank=True)
+    dist_km = models.FloatField(null=True, blank=True)
+    rating = models.FloatField(null=True, blank=True)
+    ratings = models.PositiveIntegerField(null=True, blank=True)
+    price_level = models.CharField(max_length=8, blank=True, default='')
+    FLAGS = [('', 'Fine'), ('closed', 'Closed on your days'),
+             ('far', 'Too far'), ('temp', 'Temporarily closed')]
+    flag = models.CharField(max_length=8, choices=FLAGS, blank=True,
+                            default='')
+    flag_text = models.CharField(max_length=160, blank=True, default='')
 
     class Meta:
         ordering = ['position', 'id']
 
     def __str__(self):
         return '%s (%s)' % (self.name, self.city)
+
+
+# RA05, 19 Nov 2026 - DAILY SPENDING: what is not a booking. Demetri:
+# "it keeps track of my actual daily spend vs. the budgeted one and shows me
+# if I am ahead or behind the schedule. Obviously these daily spends get
+# added to the trip costs"; restaurant meals are added here by hand, booked
+# activity tickets stay with the bookings.
+class Spend(models.Model):
+    """Money spent on the trip that is not a booking: a meal, a taxi,
+    tickets at the door. Added by the trip's owner only."""
+    trip = models.ForeignKey(Trip, on_delete=models.CASCADE,
+                             related_name='spends')
+    day = models.DateField()
+    what = models.CharField(max_length=120, blank=True, default='')
+    currency = models.CharField(max_length=3, default='EUR')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount_eur = models.DecimalField(max_digits=10, decimal_places=2,
+                                     null=True, blank=True)
+    fx_rate = models.DecimalField(max_digits=14, decimal_places=6, null=True,
+                                  blank=True)
+    added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
+                                 blank=True, related_name='+')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'travel_spends'
+        ordering = ['-day', '-id']
+
+    def __str__(self):
+        return '%s %s %s' % (self.day, self.amount, self.currency)

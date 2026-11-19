@@ -24,6 +24,8 @@
 .tv-pop a:hover, .tv-pop a:focus-visible { background: rgba(14, 124, 139, .08); color: var(--alv-accent); text-decoration: none; outline: none; }
 .tv-picked { border: 1.5px solid var(--alv-accent); background: rgba(14, 124, 139, .08); color: var(--alv-accent); font-weight: 700; }
 .tv-picked .tv-x { font-size: 0.8rem; }
+/* RA02, 19 Nov 2026 - on a phone the PDF chooser lives in the More menu; its desktop wrapper steps aside with its button. */
+@media screen and (max-width: 768px) { .page-action-buttons:has(.action-more-btn) > .tv-menu { display: none; } }
 .tv-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .tv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
 .tv-card { display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: var(--alv-radius); border: 1px solid var(--alv-line); color: var(--alv-ink); text-decoration: none; }
@@ -261,6 +263,28 @@ a.tv-bk:hover b { color: var(--alv-accent); }
 [data-idea-step][hidden], [data-idea-next][hidden], [data-idea-back][hidden], [data-idea-go][hidden] { display: none !important; }
 /* TR-14, 17 Nov 2026 - what the latest Show me more brought. */
 .tv-id-new { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #FFFFFF; background: #B85C00; border-radius: 999px; padding: 1px 8px; vertical-align: 2px; }
+/* RA03, 19 Nov 2026 - greyed out suggestions (still tickable), why, and Google's rating, price and distance; the km field. */
+.tv-id-card.is-dim { background: #F3F5F6; }
+.tv-id-card.is-dim .tv-id-pick b, .tv-id-card.is-dim .tv-id-blurb, .tv-id-card.is-dim .tv-id-tags { opacity: .62; }
+.tv-id-flag { align-self: flex-start; font-size: .78rem; font-weight: 600; color: #6B3A00; background: #FCEFD9; border-radius: 999px; padding: 3px 10px; }
+.tv-id-flag.far { color: #0C447C; background: #E6F1FB; }
+.tv-id-meta { font-size: .8rem; color: #0B5A63; font-weight: 600; }
+.tv-id-meta span { color: #5B6B72; font-weight: 400; }
+.tv-id-km { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .95rem; }
+.tv-id-km input { width: 84px; }
+.tv-id-kmpick { min-width: 44px; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid #C9D3D6; background: #FFFFFF; color: #1F2D33; font: inherit; font-size: .9rem; cursor: pointer; }
+.tv-id-kmpick[aria-pressed="true"] { border: 2px solid #0F7480; color: #0B5A63; font-weight: 700; background: #EAF5F6; }
+/* RA03 - Things to do: Select, then Delete the ticked ones. */
+.tv-sel { display: none; align-items: center; justify-content: center; width: 44px; min-height: 44px; flex: none; cursor: pointer; }
+.tv-sel input { width: 20px; height: 20px; accent-color: #0F7480; }
+[data-selecting] .tv-sel { display: flex; }
+[data-selecting] [data-wish-item] { display: flex; flex-direction: row; align-items: center; gap: 4px; }
+[data-selecting] [data-wish-item] > .tv-sel-body { flex: 1; min-width: 0; }
+[data-selecting] [data-move-form] { display: none !important; }
+[data-selecting] [data-wish-item]:has(.tv-sel input:checked) { background: #EAF5F6; border-radius: 10px; }
+.tv-selbar { display: none; position: sticky; bottom: 0; z-index: 6; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding: 10px 12px; background: #FFFFFF; border: 1px solid #D5DDE0; border-radius: 12px; box-shadow: 0 -6px 18px rgba(0, 0, 0, .08); }
+[data-selecting] .tv-selbar { display: flex; }
+.tv-selbar .go { display: flex; gap: 8px; }
 .tv-id-card.is-new { background: #FFFBF6; }
 .tv-id-card[id] { scroll-margin-top: 80px; }
 /* TR-14, 17 Nov 2026 - the trips on a calendar; List | Calendar. */
@@ -306,5 +330,51 @@ a.tv-bk:hover b { color: var(--alv-accent); }
   .tv-cal-day { min-height: 60px; padding: 2px 2px 4px; gap: 1px; }
   .tv-cal-day .n { font-size: 12px; }
   .tv-cal-bar { font-size: 10px; line-height: 20px; padding: 0 4px; margin: 0 1px; border-radius: 4px; }
+}
+/* RA05, 19 Nov 2026 - the daily spending budget: ahead or behind plan, spending per day against the day's budget, + Spending. */
+.tv-ink { color: var(--alv-ink); }
+.tv-over { color: #A32D2D; font-weight: 600; }
+.tv-bud { border-top: 3px solid var(--alv-accent); }
+.tv-bud-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.tv-bud-k { background: #F3F5F6; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.tv-bud-k span { font-size: .8rem; color: var(--alv-ink-soft); }
+.tv-bud-k b { font-size: 1.3rem; line-height: 1.2; }
+.tv-bud-k small { font-size: .78rem; color: var(--alv-ink-soft); }
+.tv-bud-k.is-good { background: #E6F4EC; } .tv-bud-k.is-good span, .tv-bud-k.is-good b, .tv-bud-k.is-good small { color: #1E6B3E; }
+.tv-bud-k.is-bad { background: #FCEBEB; } .tv-bud-k.is-bad span, .tv-bud-k.is-bad b, .tv-bud-k.is-bad small { color: #8E2626; }
+.tv-bud-bar.is-amber span { background: #BA7517; } .tv-bud-bar.is-red span { background: #C0392B; }
+.tv-bud-bars { position: relative; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 6px; height: 150px; border-bottom: 1px solid #C9D3D6; }
+.tv-bud-col { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; color: inherit; text-decoration: none; min-width: 0; }
+.tv-bud-col:hover { text-decoration: none; }
+.tv-bud-col i { display: block; width: 100%; min-height: 0; border-radius: 4px 4px 0 0; background: #2E9A6B; }
+.tv-bud-col.is-over i { background: #D64545; }
+.tv-bud-col.is-today i { outline: 2px solid var(--alv-ink); outline-offset: 1px; }
+.tv-bud-col small { font-size: 11px; color: var(--alv-ink-soft); white-space: nowrap; }
+.tv-bud-col.is-over small { color: #A32D2D; font-weight: 600; }
+.tv-bud-line { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--alv-accent); pointer-events: none; z-index: 1; }
+.tv-bud-days { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 6px; margin-top: 4px; font-size: 11px; color: var(--alv-ink-soft); text-align: center; }
+.tv-bud-days span { white-space: nowrap; overflow: hidden; text-overflow: clip; }
+.tv-bud-days .is-today { color: var(--alv-ink); font-weight: 700; }
+.tv-bud-days i { font-style: normal; } .tv-bud-days .is-today .n { display: none; }
+.tv-bud-form { margin-top: 14px; padding: 12px; background: #F3F5F6; border-radius: 10px; }
+.tv-bud-opts { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tv-bud-opt { display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 600; }
+.tv-bud-opt .form-control { width: 120px; }
+.tv-spend-add { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; padding: 10px; background: #F3F5F6; border-radius: 10px; margin-bottom: 12px; }
+.tv-spend-add > div { flex: 0 0 auto; min-width: 0; }
+.tv-spend-add > div:nth-child(2) { width: 130px; } .tv-spend-add > div:nth-child(3) { width: 100px; } .tv-spend-add > div:nth-child(4) { width: 170px; }
+.tv-spend-add .tv-spend-note { flex: 1 1 180px; }
+.tv-spend-add .form-control { width: 100%; min-width: 0; height: 38px; box-sizing: border-box; }
+.tv-spend-add button { height: 38px; white-space: nowrap; }
+.tv-spend-add label { font-size: .8rem; color: var(--alv-ink-soft); margin: 0 0 2px; }
+.tv-spend-day { padding: 8px 0 4px; border-top: 1px solid var(--alv-line-soft); scroll-margin-top: 80px; }
+.tv-spend-row { padding: 4px 0 4px 10px; font-size: .92rem; }
+.tv-spend-row .tv-linkbtn { margin-left: 12px; color: var(--alv-ink-soft); text-decoration: none; }
+@media screen and (max-width: 768px) {
+  .tv-spend-add > div:nth-child(n) { flex: 1 1 40%; width: auto; }
+  .tv-spend-add .tv-spend-note, .tv-spend-add button { flex: 1 1 100%; }
+  .tv-bud-col small { font-size: 9px; }
+  .tv-bud-days { font-size: 9px; }
+  .tv-bud-days .w { display: none; } .tv-bud-days .is-today .n { display: inline; }
 }
 </style>

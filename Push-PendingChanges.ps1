@@ -3358,7 +3358,16 @@ $suites = @(
     # TR-16, 18 Nov 2026 - Release 100: tidier trip filters.
     'test_travel_sixteen.py',
     # RA01, 18 Nov 2026 - Compare in the trip card, proper drop-downs.
-    'test_ra01_trip_cards.py'
+    'test_ra01_trip_cards.py',
+    # RA02, 19 Nov 2026 - the Travel action bar on a phone.
+    'test_ra02_travel_more.py',
+    # RA03, 19 Nov 2026 - restaurants and cafes, checked on Google;
+    # Select and Delete.
+    'test_ra03_suggestions.py',
+    # RA04, 19 Nov 2026 - an email when a key stops working.
+    'test_ra04_key_email.py',
+    # RA05, 19 Nov 2026 - the daily spending budget; sharing the costs.
+    'test_ra05_budget.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

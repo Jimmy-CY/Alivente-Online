@@ -41,4 +41,14 @@
   form.classList.add('tv-pl-js');
   show();
 })();
+(function () {
+  /* RA03 - the km quick picks fill the box. */
+  document.querySelectorAll('[data-idea-km]').forEach(function (w) {
+    var box = w.querySelector('input[name=km]');
+    var picks = w.querySelectorAll('[data-km]');
+    function mark() { picks.forEach(function (p) { p.setAttribute('aria-pressed', String((p.getAttribute('data-km') || '') === (box.value || ''))); }); }
+    picks.forEach(function (p) { p.addEventListener('click', function () { box.value = p.getAttribute('data-km'); mark(); }); });
+    box.addEventListener('input', mark);
+  });
+})();
 </script>

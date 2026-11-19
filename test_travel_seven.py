@@ -339,7 +339,8 @@ if have_db:
                .status_code == 404, '  nor settle them')
             h = M.get('/travel/m/compare/?t=%d&t=%d' % (g.pk, sw.pk)) \
                 .content.decode()
-            ok(h.count('data-compare-row') == 7, 'PHONE: the figures, row by row')
+            # RA05, 19 Nov 2026 - and Daily spending, per day: eight rows.
+            ok(h.count('data-compare-row') == 8, 'PHONE: the figures, row by row')
             h = A.get('/travel/?show=all').content.decode()
             ok('data-compare-form' in h and h.count('name="t"') == 3,
                'TRAVEL: a Compare tick under every trip')

@@ -363,7 +363,9 @@ if have_db:
                '  the same stay says Check in, Staying at, Check out on its '
                'own days')
             h = A.get('/travel/%d/wish-list/' % t.pk).content.decode()
-            ok(h.count('data-wish-item') == 1 and 'Jardim da Estrela' in h,
+            # RA05, 19 Nov 2026 - RA03's Select styles name data-wish-item
+            # too: count the items themselves.
+            ok(h.count('<div data-wish-item>') == 1 and 'Jardim da Estrela' in h,
                'WISH LIST: the place with no day')
             A.post('/travel/place/%d/move/' % j.pk, {
                 'day': (day + dt.timedelta(days=12)).isoformat()})

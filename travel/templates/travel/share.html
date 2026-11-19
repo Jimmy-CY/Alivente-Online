@@ -13,7 +13,7 @@
 <div class="tv-wrap">
 <form method="post" class="form-card" style="max-width: 620px" data-share>
     {% csrf_token %}
-    <p class="small">Everyone you tick sees the whole trip &mdash; bookings, costs, documents &mdash; and can add and change bookings. Only you can delete the trip or change who it is shared with.</p>
+    <p class="small">Everyone you tick sees the whole trip &mdash; bookings, documents and, if you share them, the costs &mdash; and can add and change bookings. Only you can delete the trip or change who it is shared with.</p>
     {% for p in people %}
     <label style="display: flex; align-items: center; gap: 10px; min-height: 44px; border-top: 1px solid var(--alv-line-soft); margin: 0">
         <input type="checkbox" name="people" value="{{ p.pk }}"{% if p.on %} checked{% endif %} style="width: 20px; height: 20px">
@@ -22,7 +22,13 @@
     {% empty %}
     <p class="tv-sub">Nobody else has Travel yet. Give someone the Travel permission in User Administration first.</p>
     {% endfor %}
-    {% if people %}<button type="submit" class="btn action-primary" style="margin-top: 12px">Save sharing</button>{% endif %}
+    {% if people %}
+    {% comment %} RA05, 19 Nov 2026 - Demetri: "I must have the option to either share or not share costs and budget information with other travellers". {% endcomment %}
+    <label style="display: flex; align-items: flex-start; gap: 10px; border-top: 2px solid var(--alv-line-soft); margin: 8px 0 0; padding-top: 12px" data-share-money>
+        <input type="checkbox" name="share_money" value="1"{% if trip.share_money %} checked{% endif %} style="width: 20px; height: 20px; margin-top: 2px">
+        <span><b>Share costs and budget</b><br><span class="tv-sub small">Ticked: they see the budget and every cost, but cannot add spending or change the budget. Not ticked: they see no money at all &ndash; no Costs tab, no amounts on bookings, trips, PDFs or Compare; and your amounts stay as they are when they edit a booking.</span></span>
+    </label>
+    <button type="submit" class="btn action-primary" style="margin-top: 12px">Save sharing</button>{% endif %}
 </form>
 </div>
 {% render_help_modal "travel" %}

@@ -1,0 +1,29 @@
+{% comment %} RA03, 19 Nov 2026 (Demetri: "if I wanted to do a multi-select and delete of the things to do, how would I do this?"). Select puts a tick on every row; the bar says how many and deletes them, after asking. Used by the computer and the phone (url = where Delete posts). {% endcomment %}
+<div class="tv-selbar" data-select-bar><span><b data-select-n>0</b> selected</span><span class="go"><button type="button" class="{% if phone %}tv-btn sec{% else %}btn action-secondary btn-sm{% endif %}" data-select-cancel>Cancel</button><button type="submit" form="tv-del-places" class="{% if phone %}tv-btn{% else %}btn action-danger btn-sm{% endif %}" data-select-delete><i class="fas fa-trash-alt" aria-hidden="true"></i> Delete</button></span></div>
+<form id="tv-del-places" method="post" action="{{ url }}" hidden>{% csrf_token %}</form>
+<script>
+(function () {
+  var bar = document.querySelector('[data-select-bar]');
+  if (!bar) return;
+  var box = bar.closest('[data-wishlist]');
+  var form = document.getElementById('tv-del-places');
+  var n = bar.querySelector('[data-select-n]');
+  function ticks() { return Array.prototype.slice.call(document.querySelectorAll('input[form="tv-del-places"]')); }
+  function count() { var k = ticks().filter(function (t) { return t.checked; }).length; n.textContent = k; return k; }
+  document.querySelectorAll('[data-select-start]').forEach(function (b) {
+    b.addEventListener('click', function () { box.setAttribute('data-selecting', ''); b.setAttribute('aria-pressed', 'true'); count(); });
+  });
+  bar.querySelector('[data-select-cancel]').addEventListener('click', function () {
+    box.removeAttribute('data-selecting');
+    ticks().forEach(function (t) { t.checked = false; });
+    document.querySelectorAll('[data-select-start]').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+    count();
+  });
+  document.addEventListener('change', function (e) { if (e.target.matches && e.target.matches('input[form="tv-del-places"]')) count(); });
+  form.addEventListener('submit', function (e) {
+    var k = count();
+    if (!k) { e.preventDefault(); return; }
+    if (!window.confirm('Delete ' + k + ' thing' + (k === 1 ? '' : 's') + ' to do? This cannot be undone.')) e.preventDefault();
+  });
+})();
+</script>

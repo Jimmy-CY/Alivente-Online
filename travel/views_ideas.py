@@ -68,6 +68,15 @@ def _city_rows(t, answers):
     return rows, extra, start, end
 
 
+def _km(v):
+    v = (v or '').strip().lower().replace('km', '').strip()
+    try:
+        n = int(float(v))
+    except ValueError:
+        return None
+    return n if 1 <= n <= 500 else None
+
+
 @travel_view
 def setup(request, trip_id):
     t = _trip(request, trip_id)
@@ -86,6 +95,8 @@ def setup(request, trip_id):
             'style': P.get('style') if P.get('style') in dict(
                 (k, n) for k, n, _s in ID.STYLES) else 'mix',
             'extra': ' '.join((P.get('extra') or '').split())[:200],
+            # RA03 - how far from the centre; blank is any distance.
+            'km': _km(P.get('km')),
         }
         if not answers['cities']:
             messages.error(request, 'Tick a city, or type one under '
@@ -103,6 +114,7 @@ def setup(request, trip_id):
                       for k, n, _w in ID.INTERESTS],
         'styles': ID.STYLES, 'style': last.get('style') or 'mix',
         'extra': last.get('extra') or '',
+        'km': last.get('km') or '', 'km_picks': ID.KM_PICKS,
         'again': bool(last),
         'trip_start': start, 'trip_end': end})
     return _show(request, 'ideas_setup.html', ctx)
@@ -155,6 +167,8 @@ def ideas(request, trip_id):
                 k == '' and i.interest not in ID.LABEL)]
             for i in these:
                 i.ticked = str(i.pk) in ticked
+            # RA03 - the greyed out ones last in their group.
+            these.sort(key=lambda i: bool(i.flag))
             if these:
                 by.append({'name': n, 'ideas': these})
         groups.append({'city': c, 'by': by,
@@ -173,6 +187,11 @@ def ideas(request, trip_id):
         'saved': last.created_at if last else None,
         'ticked_n': len(ticked),
         'n_new': sum(1 for i in shown if i.new), 'first_new': first_new,
+        # RA03 - said when the opening days and distances were not
+        # checked on Google (no key yet).
+        'unchecked': bool(last) and (last.answers or {}).get(
+            'checked') is False,
+        'km': (ID.last_answers(t) or {}).get('km'),
         'new_city': (latest.answers or {}).get('more') or
         next(iter(latest.progress or {}), '') if fresh else ''})
     return _show(request, 'ideas.html', ctx)

@@ -248,6 +248,28 @@ html.tv-turn-90 body.tv-holding .tv-nav, html.tv-turn-270 body.tv-holding .tv-na
 [data-idea-step][hidden], [data-idea-next][hidden], [data-idea-back][hidden], [data-idea-go][hidden] { display: none !important; }
 /* TR-14, 17 Nov 2026 - what the latest Show me more brought. */
 .tv-id-new { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #FFFFFF; background: #B85C00; border-radius: 999px; padding: 1px 8px; vertical-align: 2px; }
+/* RA03, 19 Nov 2026 - greyed out suggestions (still tickable), why, and Google's rating, price and distance; the km field. */
+.tv-id-card.is-dim { background: #F3F5F6; }
+.tv-id-card.is-dim .tv-id-pick b, .tv-id-card.is-dim .tv-id-blurb, .tv-id-card.is-dim .tv-id-tags { opacity: .62; }
+.tv-id-flag { align-self: flex-start; font-size: .78rem; font-weight: 600; color: #6B3A00; background: #FCEFD9; border-radius: 999px; padding: 3px 10px; }
+.tv-id-flag.far { color: #0C447C; background: #E6F1FB; }
+.tv-id-meta { font-size: .8rem; color: #0B5A63; font-weight: 600; }
+.tv-id-meta span { color: #5B6B72; font-weight: 400; }
+.tv-id-km { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .95rem; }
+.tv-id-km input { width: 84px; }
+.tv-id-kmpick { min-width: 44px; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid #C9D3D6; background: #FFFFFF; color: #1F2D33; font: inherit; font-size: .9rem; cursor: pointer; }
+.tv-id-kmpick[aria-pressed="true"] { border: 2px solid #0F7480; color: #0B5A63; font-weight: 700; background: #EAF5F6; }
+/* RA03 - Things to do: Select, then Delete the ticked ones. */
+.tv-sel { display: none; align-items: center; justify-content: center; width: 44px; min-height: 44px; flex: none; cursor: pointer; }
+.tv-sel input { width: 20px; height: 20px; accent-color: #0F7480; }
+[data-selecting] .tv-sel { display: flex; }
+[data-selecting] [data-wish-item] { display: flex; flex-direction: row; align-items: center; gap: 4px; }
+[data-selecting] [data-wish-item] > .tv-sel-body { flex: 1; min-width: 0; }
+[data-selecting] [data-move-form] { display: none !important; }
+[data-selecting] [data-wish-item]:has(.tv-sel input:checked) { background: #EAF5F6; border-radius: 10px; }
+.tv-selbar { display: none; position: sticky; bottom: 0; z-index: 6; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding: 10px 12px; background: #FFFFFF; border: 1px solid #D5DDE0; border-radius: 12px; box-shadow: 0 -6px 18px rgba(0, 0, 0, .08); }
+[data-selecting] .tv-selbar { display: flex; }
+.tv-selbar .go { display: flex; gap: 8px; }
 .tv-id-card.is-new { background: #FFFBF6; }
 .tv-id-card[id] { scroll-margin-top: 80px; }
 /* TR-14, 17 Nov 2026 - the trips on a calendar; List | Calendar. */
@@ -294,3 +316,24 @@ html.tv-turn-90 body.tv-holding .tv-nav, html.tv-turn-270 body.tv-holding .tv-na
   .tv-cal-day .n { font-size: 12px; }
   .tv-cal-bar { font-size: 10px; line-height: 20px; padding: 0 4px; margin: 0 1px; border-radius: 4px; }
 }
+/* RA05, 19 Nov 2026 - the daily spending budget on the phone: the Today line, the Costs card and its day chart, + Spending. */
+.tv-ink { color: var(--tv-ink); }
+.tv-over { color: #A32D2D; font-weight: 600; }
+.tv-good { color: var(--tv-good); font-weight: 600; }
+.tv-bud-today { border: 1.5px solid var(--tv-teal); }
+.tv-bud-big { font-size: 20px; font-weight: 700; }
+.tv-meter.is-amber span { background: #BA7517; } .tv-meter.is-red span { background: #C0392B; }
+.tv-bud-bars { position: relative; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 3px; height: 90px; border-bottom: 1px solid #C9D3D6; }
+.tv-bud-col { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; color: inherit; text-decoration: none; min-width: 0; }
+.tv-bud-col i { display: block; width: 100%; border-radius: 3px 3px 0 0; background: #2E9A6B; }
+.tv-bud-col.is-over i { background: #D64545; }
+.tv-bud-col.is-today i { outline: 2px solid var(--tv-ink); outline-offset: 1px; }
+.tv-bud-col small { display: none; }
+.tv-bud-line { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--tv-teal); pointer-events: none; }
+.tv-bud-days { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 3px; margin-top: 3px; font-size: 9px; color: var(--tv-soft); text-align: center; overflow: hidden; }
+.tv-bud-days span { white-space: nowrap; overflow: hidden; }
+.tv-bud-days .is-today { color: var(--tv-ink); font-weight: 700; }
+.tv-bud-days i { font-style: normal; } .tv-bud-days .w { display: none; }
+.tv-amount { font-size: 26px !important; min-height: 56px !important; }
+.tv-two { display: grid; grid-template-columns: 1fr 1.3fr; gap: 8px; }
+.tv-spend-day { padding-top: 6px; scroll-margin-top: 70px; }

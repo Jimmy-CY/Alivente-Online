@@ -323,10 +323,12 @@ if have_db:
                'name="other"' in h,
                'STEP 1: Lisbon (4 nights) and Porto (2 nights) from the '
                'hotels, + Another city')
-            ok(h.count('data-idea-interest') == 9 and 'name="style"' in h
-               and 'name="extra"' in h and 'Restaurants are left out' in h,
-               'STEP 2: nine interests, famous or local, anything else; '
-               'restaurants left out')
+            # RA03, 19 Nov 2026 - eleven: Restaurants and Cafes, each
+            # the city's top ten, asked for on their own.
+            ok(h.count('data-idea-interest') == 11 and 'name="style"' in h
+               and 'name="extra"' in h and 'top ten of each' in h,
+               'STEP 2: eleven interests, famous or local, anything else; '
+               'restaurants and cafes their own top ten')
             hm = M.get('/travel/m/trip/%d/ideas/new/' % t.pk
                        ).content.decode()
             ok('data-idea-steps' in hm and hm.count('data-idea-step=') == 2,

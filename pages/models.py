@@ -5848,3 +5848,28 @@ class GeneratedLease(models.Model):
     class Meta:
         db_table = 'generated_lease'
         ordering = ['-created_at']
+
+
+class KeyStatus(models.Model):
+    """RA04, 19 Nov 2026 - how each outside service's key is doing
+    (pages/key_health.py). Demetri: "If there is a problem with the key in
+    the future, also with the Anthropic key, can the system send me an
+    email letting me know.... instead of just to stop working?" - to him
+    only, after 60 minutes of failing, one email a day at most covering
+    every key, and only when there is a problem. The key itself is never
+    stored here."""
+    service = models.CharField(max_length=30, unique=True)
+    ok = models.BooleanField(default=True)
+    problem = models.CharField(max_length=20, blank=True, default='')
+    detail = models.CharField(max_length=255, blank=True, default='')
+    failing_since = models.DateTimeField(null=True, blank=True)
+    last_ok = models.DateTimeField(null=True, blank=True)
+    last_checked = models.DateTimeField(null=True, blank=True)
+    emailed_on = models.DateField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'key_status'
+        ordering = ['service']
+
+    def __str__(self):
+        return '%s: %s' % (self.service, 'ok' if self.ok else self.problem)

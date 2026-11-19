@@ -262,6 +262,30 @@ def place_delete(request, place_id):
 
 @travel_view
 @require_POST
+def places_delete(request, trip_id):
+    """RA03, 19 Nov 2026 - several Things to do at once (Demetri: "if I
+    wanted to do a multi-select and delete of the things to do, how would
+    I do this?"): Select, tick, Delete. Only this trip's own; one that came
+    from a suggestion may be suggested again."""
+    from .models import Idea
+    t = _trip(request, trip_id)
+    ids = [int(x) for x in request.POST.getlist('p') if x.isdigit()]
+    gone = list(t.places.filter(pk__in=ids))
+    if gone:
+        Idea.objects.filter(trip=t, place__in=gone).delete()
+        for p in gone:
+            p.delete()
+        messages.success(request, '%d thing%s to do deleted.' % (
+            len(gone), '' if len(gone) == 1 else 's'))
+    else:
+        messages.error(request, 'Tick the ones to delete first.')
+    phone = request.resolver_match.url_name.startswith('m_')
+    return redirect('/travel/m/trip/%d/?tab=wish' % t.pk if phone else
+                    '/travel/%d/wish-list/' % t.pk)
+
+
+@travel_view
+@require_POST
 def day_order(request, trip_id):
     """TR-9, 16 Nov 2026 - the order of one day of the itinerary (Demetri:
     "should i have the ability to drag and drop items (within a day)").

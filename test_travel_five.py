@@ -124,8 +124,12 @@ ok('Never reject a well-known place because it is somewhere else.' in pl
    'THE LOOKUP: generous with names; the destination only breaks ties; '
    'two or three options when unsure')
 tr = read(J(TT, 'trip.html'))
+# RA02, 19 Nov 2026 - the phone's More menu repeats PDF - summary and PDF -
+# detailed; the one PDF BUTTON is counted outside it.
+_desk = tr.split('<div class="action-more-wrapper"')[0] + \
+    tr.split('<div class="action-more-wrapper"')[-1].split('</div>', 2)[-1]
 ok(tr.count('data-trip-pdf=') == 2 and 'data-pdf-menu' in tr and
-   tr.count('fa-file-pdf') == 1 and '> PDF summary<' not in tr,
+   _desk.count('fa-file-pdf') == 1 and '> PDF summary<' not in tr,
    'ONE PDF BUTTON on the trip, with Summary and Detailed under it')
 ok('Itinerary{% if planned %}' not in tr and 'Itinerary</a>' in tr,
    '  the Itinerary tab carries no misleading count')

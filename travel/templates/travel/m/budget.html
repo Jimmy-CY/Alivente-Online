@@ -1,0 +1,17 @@
+{% extends 'travel/m/base.html' %}
+{% comment %} RA05, 19 Nov 2026 - the daily spending budget on the phone: a day's or the holiday's, the other worked out. {% endcomment %}
+{% block title %}Budget - Travel{% endblock %}
+{% block top %}<div style="min-width: 0"><a class="tv-back" href="{% url 'travel:m_trip' trip.pk %}?tab=costs"><span aria-hidden="true">‹</span> {{ trip.name }}</a><h1>Daily spending budget</h1></div>{% endblock %}
+{% block sub %}<div class="sub">Anything that is not a booking</div>{% endblock %}
+{% block content %}
+<form method="post" action="{% url 'travel:m_budget_save' trip.pk %}" class="tv-card tv-form" data-budget-form data-days="{{ days }}">{% csrf_token %}
+  <label class="tv-muted tv-small" style="display: flex; gap: 8px; align-items: center"><input type="radio" name="by" value="day"{% if bud.by != 'total' %} checked{% endif %}> A day (&euro;)</label>
+  <input name="budget_day" class="tv-input tv-amount" inputmode="decimal" value="{% if bud.per_day %}{{ bud.per_day|floatformat:'0' }}{% endif %}" placeholder="150" aria-label="Budget a day in euros">
+  <label class="tv-muted tv-small" style="display: flex; gap: 8px; align-items: center"><input type="radio" name="by" value="total"{% if bud.by == 'total' %} checked{% endif %}> The holiday (&euro;){% if days %} &middot; {{ days }} days{% endif %}</label>
+  <input name="budget_total" class="tv-input tv-amount" inputmode="decimal" value="{% if bud.total %}{{ bud.total|floatformat:'0' }}{% endif %}" placeholder="1800" aria-label="Budget for the holiday in euros">
+  <p class="tv-muted tv-small" style="margin: 0">Type either one &ndash; the other is worked out{% if not days %} once the trip has dates{% endif %}.</p>
+  <button type="submit" class="tv-btn wide" data-budget-save>Save</button>
+  {% if bud.set %}<button type="submit" name="clear" value="1" class="tv-btn sec wide" onclick="return confirm('Remove the budget? Your spending stays.')" data-budget-clear>Remove budget</button>{% endif %}
+</form>
+{% include 'travel/_budget_js.html' %}
+{% endblock %}

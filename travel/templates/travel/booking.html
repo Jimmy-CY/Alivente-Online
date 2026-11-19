@@ -45,7 +45,7 @@
     </section>
 </div>
 <aside class="tv-side">
-    <section class="form-card" data-booking-cost>
+    {% if show_money %}{# RA05 - not for someone the costs are not shared with #}<section class="form-card" data-booking-cost>
         <div class="tv-row"><h3 class="form-section-title" style="margin: 0">Cost</h3>{% if b.amount is not None %}<span class="tv-tag {% if b.paid == 'paid' %}tv-paid{% else %}tv-due{% endif %}">{{ b.status_label }}</span>{% endif %}</div>
         {% if b.amount is not None %}
         <div class="tv-row"><span class="tv-sub">Total</span><b>{{ b.eur_label|default:"rate pending" }}</b></div>
@@ -56,7 +56,7 @@
         {% if b.pay_by and b.paid != 'paid' %}<div class="tv-sub small">Pay by {{ b.pay_by|date:"D j M Y" }}</div>{% endif %}
         {% elif b.included %}<p class="tv-sub" style="margin: 0" data-included>Included in the price of <a href="{% url 'travel:booking' b.included.pk %}">{{ b.included.segment|default:b.included.title }}</a> &mdash; one booking, one price.</p>
         {% else %}<p class="tv-sub" style="margin: 0">No cost entered.</p>{% endif %}
-    </section>
+    </section>{% endif %}
     {% if passes %}
     <section class="form-card" data-boarding-pass>
         <h3 class="form-section-title"><i class="fas fa-qrcode" aria-hidden="true"></i> Boarding pass{{ passes|length|pluralize }}</h3>

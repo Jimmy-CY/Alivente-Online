@@ -1,0 +1,22 @@
+{% comment %} RA05 - Change opens the budget form; a day's or the holiday's figure fills the other. Computer and phone. {% endcomment %}
+<script>
+(function () {
+    var b = document.querySelector('[data-budget-edit]');
+    if (b) b.addEventListener('click', function () {
+        var f = document.querySelector('[data-budget-form]');
+        f.hidden = !f.hidden; b.setAttribute('aria-expanded', String(!f.hidden));
+        if (!f.hidden) { var i = f.querySelector('input[type=text]:not([disabled])'); if (i) i.focus(); }
+    });
+    document.querySelectorAll('[data-budget-form]').forEach(function (f) {
+        var days = parseInt(f.getAttribute('data-days'), 10) || 0;
+        var d = f.querySelector('[name=budget_day]'), t = f.querySelector('[name=budget_total]');
+        function num(v) { v = parseFloat(String(v).replace(/[,€\s]/g, '')); return isNaN(v) ? null : v; }
+        function show(v) { return v === null ? '' : String(Math.round(v)); }
+        function by(v) { var r = f.querySelector('[name=by][value=' + v + ']'); if (r) r.checked = true; }
+        d.addEventListener('input', function () { by('day'); if (days && num(d.value) !== null) t.value = show(num(d.value) * days); });
+        t.addEventListener('input', function () { by('total'); if (days && num(t.value) !== null) d.value = show(num(t.value) / days); });
+    });
+    var a = document.getElementById('sp-a');
+    if (a && location.hash === '#spend') a.focus();
+})();
+</script>

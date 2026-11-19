@@ -1,6 +1,7 @@
 from django.urls import path
 
-from . import (compare, phone, report, views, views_ideas, views_inbox,
+from . import (compare, phone, report, views, views_budget, views_ideas,
+               views_inbox,
                views_places, views_plan)
 
 app_name = 'travel'
@@ -79,6 +80,9 @@ urlpatterns = [
          name='place_pick'),
     path('place/<int:place_id>/delete/', views_places.place_delete,
          name='place_delete'),
+    # RA03, 19 Nov 2026 - Select, then Delete several Things to do.
+    path('<int:trip_id>/places/delete/', views_places.places_delete,
+         name='places_delete'),
     path('m/trip/<int:trip_id>/place/new/', views_places.place_new,
          name='m_place_new'),
     path('m/place/<int:place_id>/', views_places.place, name='m_place'),
@@ -93,9 +97,27 @@ urlpatterns = [
          name='m_place_pick'),
     path('m/place/<int:place_id>/delete/', views_places.place_delete,
          name='m_place_delete'),
+    path('m/<int:trip_id>/places/delete/', views_places.places_delete,
+         name='m_places_delete'),
     path('<int:trip_id>/edit/', views.trip_edit, name='trip_edit'),
     path('<int:trip_id>/delete/', views.trip_delete, name='trip_delete'),
     path('<int:trip_id>/share/', views.trip_share, name='trip_share'),
+    # RA05, 19 Nov 2026 - the daily spending budget and + Spending.
+    path('<int:trip_id>/budget/', views_budget.budget_save,
+         name='budget_save'),
+    path('<int:trip_id>/spend/', views_budget.spend_add, name='spend_add'),
+    path('spend/<int:spend_id>/delete/', views_budget.spend_delete,
+         name='spend_delete'),
+    path('m/<int:trip_id>/budget/', views_budget.budget_save,
+         name='m_budget_save'),
+    path('m/<int:trip_id>/budget/edit/', views_budget.m_budget_form,
+         name='m_budget'),
+    path('m/<int:trip_id>/spend/', views_budget.spend_add,
+         name='m_spend_add'),
+    path('m/<int:trip_id>/spend/new/', views_budget.m_spend_form,
+         name='m_spend'),
+    path('m/spend/<int:spend_id>/delete/', views_budget.spend_delete,
+         name='m_spend_delete'),
     path('<int:trip_id>/booking/new/', views.booking_form,
          name='booking_new'),
     path('booking/<int:booking_id>/', views.booking, name='booking'),

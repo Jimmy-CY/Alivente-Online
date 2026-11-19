@@ -1,0 +1,17 @@
+{% extends 'travel/m/base.html' %}
+{% comment %} RA05, 19 Nov 2026 - + Spending on the phone. Demetri: "+Spending should default to Euros, today's date, and optional note blank - for quick entry": the number pad opens on the amount; Add. {% endcomment %}
+{% block title %}+ Spending - Travel{% endblock %}
+{% block top %}<div style="min-width: 0"><a class="tv-back" href="{% url 'travel:m_trip' trip.pk %}?tab=costs"><span aria-hidden="true">‹</span> {{ trip.name }}</a><h1>Add spending</h1></div>{% endblock %}
+{% block sub %}<div class="sub">Meals, taxis, tickets at the door, shopping</div>{% endblock %}
+{% block content %}
+<form method="post" action="{% url 'travel:m_spend_add' trip.pk %}" class="tv-card tv-form" data-spend-form>{% csrf_token %}
+  <label for="a" class="tv-muted tv-small">Amount</label>
+  <input id="a" name="amount" class="tv-input tv-amount" inputmode="decimal" placeholder="0.00" autocomplete="off" required autofocus>
+  <div class="tv-two">
+    <div><label for="c" class="tv-muted tv-small">Currency</label><select id="c" name="currency" class="tv-select" style="width: 100%">{% for c in currencies %}<option value="{{ c }}"{% if c == 'EUR' %} selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+    <div><label for="d" class="tv-muted tv-small">Day</label><input id="d" type="date" name="day" class="tv-input" value="{{ today|date:'Y-m-d' }}"></div>
+  </div>
+  <label for="n" class="tv-muted tv-small">Note (optional)</label><input id="n" name="what" class="tv-input" maxlength="120">
+  <button type="submit" class="tv-btn wide" data-spend-add>Add</button>
+</form>
+{% endblock %}

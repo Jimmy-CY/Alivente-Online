@@ -131,9 +131,11 @@ ok('.tv-pickcard .tv-pick input { position: absolute; opacity: 0;' in st and
    '  the hidden box is only inside a card - the Compare page keeps its '
    'own visible boxes')
 ph = read(J(TA, 'phone.py'))
-ok("SW_VERSION = 'tv17-1'" in ph and
-   read(J(TT, 'm', 'base.html')).count('?v=tv17-1') == 2,
-   'THE PHONE APP fetches the new look (tv17-1)')
+# RA03, 19 Nov 2026 - tv17-1 or later (it moves with every new look).
+_v = re.search(r"SW_VERSION = 'tv(\d+)-(\d+)'", ph)
+ok(_v and int(_v.group(1)) >= 17 and
+   read(J(TT, 'm', 'base.html')).count('?v=tv%s-%s' % _v.groups()) == 2,
+   'THE PHONE APP fetches the new look (tv17-1 or later)')
 try:
     ok('<select name="year"' in was(J(TT, '_trip_filters.html')),
        "CONTROL: before this round the menus were the browser's list")

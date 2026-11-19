@@ -44,7 +44,7 @@ COLOURS = ['#0F7480', '#C2410C', '#6D28D9', '#1E7A46', '#9A5B00', '#1D4ED8']
 KIND_COLOURS = {'stay': '#0F7480', 'flight': '#5BA8B1', 'car': '#A9CFD4',
                 'train': '#1D2B31', 'ferry': '#3F6F78', 'transfer': '#8A9BA2',
                 'activity': '#B7C4C9', 'restaurant': '#D5A55A',
-                'other': '#DDE3E5'}
+                'other': '#DDE3E5', 'spend': '#9A5B00'}
 MAX = 6
 
 
@@ -66,6 +66,9 @@ def unsettled(t, bookings, today=None):
 @require_POST
 def trip_settle(request, trip_id):
     t = get_object_or_404(trips_for(request.user), pk=trip_id)
+    from .budget import money_ok
+    if not money_ok(t, request.user):       # RA05 - nor settle them up
+        raise Http404
     what = request.POST.get('what')
     if what == 'leave':
         t.settle_off = True
@@ -154,9 +157,11 @@ def figures(t):
     cars = priced('car')
     car_days = sum(max((b.end_date - b.start_date).days, 1)
                    for b in cars if b.start_date and b.end_date)
-    money = totals(bs)
+    # RA05, 19 Nov 2026 - daily spending is part of the trip's costs.
+    spends = [s for s in t.spends.all() if s.amount_eur is not None]
+    money = totals(bs, spends)
     total = sum((b.amount_eur for b in bs if b.amount_eur is not None),
-                Decimal('0'))
+                Decimal('0')) + _sum(spends)
     kinds = []
     for k, label in Booking.KINDS:
         v = _sum(by.get(k, []))
@@ -164,6 +169,11 @@ def figures(t):
             kinds.append({'kind': k, 'label': label, 'eur': v,
                           'colour': KIND_COLOURS.get(k, '#DDE3E5'),
                           'icon': ICONS.get(k, ICONS['other'])})
+    if spends:
+        kinds.append({'kind': 'spend', 'label': 'Daily spending',
+                      'eur': _sum(spends),
+                      'colour': KIND_COLOURS['spend'],
+                      'icon': ICONS['spend']})
     for k in kinds:
         k['pct'] = int(k['eur'] / total * 100) if total else 0
     hotels = []
@@ -186,6 +196,9 @@ def figures(t):
         'meal': _div(_sum(priced('restaurant')),
                      len(priced('restaurant'))),
         'activities': _sum(by.get('activity', [])) or None,
+        # RA05 - what was spent a day, besides the bookings.
+        'spend_day': _div(_sum(spends), max(nights + 1, 1))
+        if spends else None,
         'kinds': kinds, 'hotels': hotels,
         'pending': money['pending'],
     }
@@ -198,6 +211,8 @@ ROWS = [('hotel_night', 'Hotel, per night', 'all stays / their nights'),
         ('train', 'Trains, per journey', ''),
         ('meal', 'Restaurants booked, per meal', ''),
         ('activities', 'Activities & tickets', 'the total'),
+        ('spend_day', 'Daily spending, per day', 'meals, taxis, tickets '
+         'at the door'),
         ('per_day', 'Whole trip, per day', 'the total / its nights')]
 
 
@@ -270,7 +285,9 @@ def chosen(request):
     for x in request.GET.getlist('t'):
         if x.isdigit() and int(x) not in ids:
             ids.append(int(x))
-    trips = {t.pk: t for t in trips_for(request.user).filter(pk__in=ids)}
+    from .budget import money_ok
+    trips = {t.pk: t for t in trips_for(request.user).filter(pk__in=ids)
+             if money_ok(t, request.user)}
     return [trips[i] for i in ids if i in trips][:MAX]
 
 
@@ -278,7 +295,10 @@ def chosen(request):
 def compare(request):
     phone = (request.resolver_match.url_name or '').startswith('m_')
     picked = chosen(request)
-    every = list(trips_for(request.user))
+    # RA05, 19 Nov 2026 - comparing is all costs: only the trips whose
+    # costs this person may see.
+    from .budget import money_ok
+    every = [t for t in trips_for(request.user) if money_ok(t, request.user)]
     for t in every:
         t.start, t.end = span(t, list(t.bookings.all()))
     every.sort(key=lambda t: t.start or dt.date.min, reverse=True)
@@ -297,7 +317,8 @@ def compare(request):
                          for f in figs for h in f['hotels']],
                         key=lambda h: h['night'] or 0),
                     'legend': [{'label': l, 'colour': KIND_COLOURS[k]}
-                               for k, l in Booking.KINDS
+                               for k, l in Booking.KINDS +
+                               [('spend', 'Daily spending')]
                                if any(x['kind'] == k for f in figs
                                       for x in f['kinds'])]})
     elif request.GET.getlist('t'):

@@ -14,6 +14,17 @@
     <a href="{% url 'travel:passes' %}" class="btn action-secondary" data-passes-button><i class="fas fa-qrcode"></i> Boarding passes</a>
     <a href="?show={{ show }}&amp;phone=1" class="btn action-secondary" data-phone-button><i class="fas fa-mobile-alt"></i> Phone app</a>
     <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
+    {% comment %} RA02, 19 Nov 2026 - the house standard on a phone: New trip takes the row, the rest in the More menu, Back a square. {% endcomment %}
+    <div class="action-more-wrapper" data-menu data-travel-more>
+        <button type="button" class="btn action-more-btn" data-menu-toggle aria-label="More actions" aria-expanded="false" aria-haspopup="true"><i class="fas fa-ellipsis-v"></i></button>
+        <div class="action-more-menu" data-menu-panel role="menu" hidden>
+            <a class="action-more-item" role="menuitem" href="{% url 'travel:check' %}"><i class="fas fa-inbox"></i> To check{% if checks %} <span class="tv-count">{{ checks }}</span>{% endif %}</a>
+            <a class="action-more-item" role="menuitem" href="{% url 'travel:forwarding' %}"><i class="fas fa-envelope"></i> Forwarding</a>
+            <a class="action-more-item" role="menuitem" href="{% url 'travel:passes' %}"><i class="fas fa-qrcode"></i> Boarding passes</a>
+            <a class="action-more-item" role="menuitem" href="?show={{ show }}&amp;phone=1"><i class="fas fa-mobile-alt"></i> Phone app</a>
+            <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#travelHelpModal"><i class="fas fa-question-circle"></i> Help</button>
+        </div>
+    </div>
     <a href="{% url 'personal_page' %}" class="btn action-back" aria-label="Back to Personal">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>

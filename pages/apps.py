@@ -14,6 +14,15 @@ class PagesConfig(AppConfig):
         from django.db.models.signals import post_migrate
         post_migrate.connect(_ensure_permissions, sender=self,
                              dispatch_uid='pages.ensure_permissions')
+        # RA04, 19 Nov 2026 - an email when a key stops working
+        # (pages/key_health.py): every Anthropic call reports how it went,
+        # and on Railway a watcher checks the keys every 15 minutes.
+        try:
+            from pages import key_health
+            key_health.wrap_anthropic()
+            key_health.start_watcher()
+        except Exception:  # never stops the app starting
+            pass
 
 
 def _ensure_permissions(sender, using='default', verbosity=1, **kwargs):

@@ -16,6 +16,19 @@ the trip, Not interested hides one; no photos. And: "It must also not
 repeat suggestions, if these are already in the Things to Do" - they are
 named to the AI as what to leave out, and every answer is checked again
 here by name before it is shown.
+
+RA03, 19 Nov 2026 - Demetri: "I need two new categories - 1. Cafes and 2.
+Restaurants ... (from a list of top 10 restaurants or top 10 cafes)
+within the city"; "any things to do that are closed or unavailable on a
+Tuesday should display, but should be greyed out"; "how many km from the
+city centre ... Any things to do which fall out of this parameter must be
+greyed out ... All greyed out things to do should still be selectable".
+Decided the same morning: check every suggestion on Google
+(travel/gplaces.py); measure from the city centre; day trips are never
+held to the km but are greyed out past it; greyed out only when EVERY
+day you are in the city is closed; ten restaurants and ten cafes a city,
+with the Google rating and price level; Show me more counts the greyed
+ones too.
 """
 import datetime as dt
 import difflib
@@ -25,12 +38,16 @@ import threading
 from django.db import close_old_connections
 from django.db.models import Max
 
+from . import gplaces as G
 from . import places as P
 
 logger = logging.getLogger(__name__)
 
 SYNC = False
 PER_CITY = 12
+PER_FOOD = 10
+FOOD = ('restaurants', 'cafes')
+KM_PICKS = (2, 5, 10, 25)
 INTERESTS = [
     ('musts', 'Must-sees', 'the famous sights and landmarks'),
     ('museums', 'Museums & galleries', 'museums and art galleries'),
@@ -46,6 +63,9 @@ INTERESTS = [
     ('history', 'Churches & historic sites',
      'churches, monasteries, castles, ruins and historic sites'),
     ('daytrips', 'Day trips', 'day trips from the city'),
+    # RA03, 19 Nov 2026 - each asked for on its own: the city's top ten.
+    ('restaurants', 'Restaurants', 'the best restaurants in the city'),
+    ('cafes', 'Cafés', 'the best cafes and coffee places in the city'),
 ]
 LABEL = {k: n for k, n, _w in INTERESTS}
 DEFAULT = ['musts', 'museums', 'streets', 'views']
@@ -184,6 +204,90 @@ def taken(trip):
 
 
 # ------------------------------------------------------------ running it
+# ------------------------------------------------------------ RA03 checks
+DAYNAMES = ['Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays',
+            'Saturdays', 'Sundays']
+
+
+def days_in(trip, bookings, c):
+    """The dates you are in the city: every stay there, check-in to
+    check-out; or the city's own dates; [] when not known."""
+    out = set()
+    for b in bookings:
+        if b.kind == 'stay' and b.status != 'cancelled' and b.start_date \
+                and city_of(b).lower() == c['name'].lower():
+            d, end = b.start_date, b.end_date or b.start_date
+            while d <= end:
+                out.add(d)
+                d += dt.timedelta(days=1)
+    if not out and c.get('start'):
+        d, end = c['start'], c.get('end') or c['start']
+        while d <= end and len(out) < 60:
+            out.add(d)
+            d += dt.timedelta(days=1)
+    return sorted(out)
+
+
+def _and(words):
+    return words[0] if len(words) == 1 else '%s and %s' % (
+        ', '.join(words[:-1]), words[-1])
+
+
+def closed_words(days, city):
+    """"Closed on Tuesdays - you're in Athens only on Tue 10 Nov"."""
+    names = []
+    for d in days:
+        n = DAYNAMES[d.weekday()]
+        if n not in names:
+            names.append(n)
+    if len(days) == 1:
+        d = days[0]
+        return 'Closed on %s - you\'re in %s only on %s %d %s' % (
+            names[0], city, d.strftime('%a'), d.day, d.strftime('%b'))
+    return 'Closed on %s - the only days you\'re in %s' % (
+        _and(names), city)
+
+
+def check(i, centre, days, km):
+    """Look the suggestion up on Google and mark it. False: closed for
+    good - not shown. Unchecked (no key, nothing found, Google down) is
+    shown as it came."""
+    if not G.enabled():
+        return True
+    try:
+        f = G.search('%s, %s' % (i.name, i.city), near=centre)
+    except G.GoogleError as e:
+        logger.warning('travel ideas check %s: %s', i.name, e)
+        return True
+    if not f:
+        return True
+    if f['status'] == 'CLOSED_PERMANENTLY':
+        return False
+    i.checked = True
+    i.gid, i.lat, i.lng = f['gid'], f['lat'], f['lng']
+    i.rating, i.ratings = f['rating'], f['ratings']
+    i.price_level = f['price'] or ''
+    if centre and f['lat'] is not None:
+        i.dist_km = round(G.km(centre, (f['lat'], f['lng'])), 1)
+    gdays = set((d.weekday() + 1) % 7 for d in days)
+    if f['status'] == 'CLOSED_TEMPORARILY':
+        i.flag, i.flag_text = 'temp', 'Temporarily closed, Google says'
+    elif days and f['open_days'] is not None and \
+            not (f['open_days'] & gdays):
+        i.flag, i.flag_text = 'closed', closed_words(days, i.city)[:160]
+    elif km and i.dist_km is not None and i.dist_km > km:
+        i.flag = 'far'
+        i.flag_text = ('Day trip - %s km from the centre' % _num(i.dist_km)
+                       if i.interest == 'daytrips' else
+                       '%s km from the centre - outside your %d km'
+                       % (_num(i.dist_km), km))
+    return True
+
+
+def _num(x):
+    return ('%.1f' % x).rstrip('0').rstrip('.') if x < 10 else '%d' % round(x)
+
+
 def run(job, client=None):
     """Ask for each city still waiting; keep the new ones."""
     from .models import Idea
@@ -197,6 +301,11 @@ def run(job, client=None):
     interests = [(k, dict((x, w) for x, _n, w in INTERESTS)[k])
                  for k in keys]
     style = STYLE_SAYS.get(a.get('style'), STYLE_SAYS['mix'])
+    km = a.get('km') if isinstance(a.get('km'), int) else None
+    if a.get('checked') is None:
+        a['checked'] = G.enabled()
+        job.answers = a
+        job.save(update_fields=['answers', 'updated_at'])
     prog = dict(job.progress or {})
     ok_any = False
     for city in list(prog):
@@ -209,36 +318,66 @@ def run(job, client=None):
         cw = P.name_words(city)
         try:
             names = taken(trip)
-            got = P.call_ideas(c['name'], c.get('country') or trip.where,
-                               _dates(c, t_start, t_end), interests, style,
-                               a.get('extra') or '', names,
-                               count=PER_CITY, client=client)
             pos = (Idea.objects.filter(trip=trip).aggregate(
                 m=Max('position'))['m'] or 0)
+            # RA03 - the centre, and the days you are in the city, for
+            # the Google check.
+            centre, days = None, days_in(trip, bookings, c)
+            if G.enabled():
+                try:
+                    f = G.search('%s%s' % (c['name'], ', %s' % (
+                        c.get('country') or trip.where or '')
+                        if (c.get('country') or trip.where) else ''))
+                    if f and f['lat'] is not None:
+                        centre = (f['lat'], f['lng'])
+                except G.GoogleError as e:
+                    logger.warning('travel ideas centre %s: %s', city, e)
+            sights = [kv for kv in interests if kv[0] not in FOOD]
+            asks = []
+            if sights:
+                asks.append((sights, PER_CITY, ''))
+            for k, w in interests:
+                if k in FOOD:
+                    asks.append(([(k, w)], PER_FOOD, k))
             kept = 0
-            for g in got:
-                s = lambda k, n: str(g.get(k) or '').strip()[:n]  # noqa
-                name = s('name', 160)
-                if not name or any(same(name, n, cw) for n in names):
-                    continue
-                if g.get('kind') == 'food' and g.get('interest') != \
-                        'markets':
-                    continue
-                pos += 1
-                kept += 1
-                names.append(name)
-                Idea.objects.create(
-                    trip=trip, run=job, city=c['name'][:80],
-                    interest=g.get('interest') if g.get('interest') in
-                    LABEL else keys[0],
-                    name=name, area=s('area', 120), blurb=s('blurb', 400),
-                    kind=g.get('kind') if g.get('kind') in P.KINDS
-                    else 'sight',
-                    visit=s('visit', 40), price=s('price', 60),
-                    book=bool(g.get('book')), note=s('note', 160),
-                    position=pos)
-                if kept >= PER_CITY:
-                    break
+            for these, count, food in asks:
+                got = P.call_ideas(
+                    c['name'], c.get('country') or trip.where,
+                    _dates(c, t_start, t_end), these, style,
+                    a.get('extra') or '', names, count=count,
+                    client=client, km=km, food=food)
+                these_keys = [k for k, _w in these]
+                n = 0
+                for g in got:
+                    s = lambda k, n: str(g.get(k) or '').strip()[:n]  # noqa
+                    name = s('name', 160)
+                    if not name or any(same(name, x, cw) for x in names):
+                        continue
+                    interest = food or (g.get('interest') if
+                                        g.get('interest') in these_keys
+                                        else these_keys[0])
+                    if g.get('kind') == 'food' and interest not in \
+                            ('markets',) + FOOD:
+                        continue
+                    i = Idea(
+                        trip=trip, run=job, city=c['name'][:80],
+                        interest=interest, name=name, area=s('area', 120),
+                        blurb=s('blurb', 400),
+                        kind='food' if food else (
+                            g.get('kind') if g.get('kind') in P.KINDS
+                            else 'sight'),
+                        visit=s('visit', 40), price=s('price', 60),
+                        book=bool(g.get('book')), note=s('note', 160))
+                    if not check(i, centre, days, km):
+                        continue
+                    pos += 1
+                    i.position = pos
+                    i.save()
+                    names.append(name)
+                    n += 1
+                    if n >= count:
+                        break
+                kept += n
             if kept:
                 prog[city] = 'done'
                 ok_any = True

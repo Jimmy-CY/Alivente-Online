@@ -35,10 +35,11 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from . import barcodes, boarding, dayorder, fx, ideas, inbox, planner
+from . import barcodes, boarding, budget, dayorder, fx, ideas, inbox, planner
 from .models import (BoardingPass, Booking, CheckItem, InboundEmail,
                      trips_for)
-from .views import (coming_up, eur, included, requests_for, shape, span,
+from .views import (coming_up, eur, included, money_state, requests_for,
+                    shape, span,
                     totals, travel_view)
 
 ASSETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
@@ -60,8 +61,10 @@ ASSET_TYPES = {
 # they change and it does not.
 # TR-16, 18 Nov 2026 - the trip filters' badges and menus.
 # RA01, 18 Nov 2026 - their drop-downs.
-SW_VERSION = 'tv17-1'
-SW_ASSETS = '07328398c1b2'
+# RA03, 19 Nov 2026 - greyed out suggestions; Select to delete.
+# RA05, 19 Nov 2026 - the daily spending budget, + Spending.
+SW_VERSION = 'tv19-1'
+SW_ASSETS = '95a8d6229257'
 
 
 def page(request, template, ctx):
@@ -82,11 +85,14 @@ def _bookings(user):
 
 def _trip_list(user):
     out = []
-    for t in trips_for(user).prefetch_related('bookings', 'shared_with'):
+    for t in trips_for(user).prefetch_related('bookings', 'spends',
+                                              'shared_with'):
         bs = list(t.bookings.all())
         t.start, t.end = span(t, bs)
         t.n = len(bs)
-        t.money = totals(bs)
+        t.show_money = budget.money_ok(t, user)               # RA05
+        t.money = totals(bs, list(t.spends.all())) if t.show_money \
+            else totals([])
         t.people = [t.owner] + list(t.shared_with.all())
         out.append(t)
     return out
@@ -206,7 +212,15 @@ def today(request):
         else:
             ctx['in_days'] = (trip.start - day).days
             ctx['first_rows'] = day_rows(bs, pl, trip.start, saved)
-        ctx['coming'] = coming_up(bs, day)
+        # RA05, 19 Nov 2026 - the Today line: spent today, a day left.
+        shaped = [shape(b) for b in bs]
+        start, end = span(trip, shaped)
+        if budget.hide(trip, me, shaped):
+            spends = list(trip.spends.all())
+            budget.convert_pending(spends, limit=2)
+            ctx['bud'] = budget.summary(trip, spends, start, end, day)
+            ctx['can_spend'] = budget.can_spend(trip, me)
+        ctx['coming'] = coming_up(shaped, day)
         ctx['passes_today'] = BoardingPass.objects.filter(
             booking__trip=trip, booking__start_date__in=(
                 day, day + dt.timedelta(days=1))).count()
@@ -219,7 +233,8 @@ def today(request):
         if past:
             from .compare import unsettled
             last = past[0]
-            due = unsettled(last, list(last.bookings.all()), day)
+            due = unsettled(last, list(last.bookings.all()), day) \
+                if last.show_money else []
             last.owing = eur(sum((b.due_eur or 0) for b in due)) \
                 if due else ''
             ctx['last'], ctx['earlier'] = last, past[1:6]
@@ -260,6 +275,10 @@ def trip(request, trip_id):
     fx.convert_pending(bs, limit=3)
     bs = included([shape(b) for b in bs])
     t.start, t.end = span(t, bs)
+    # RA05, 19 Nov 2026 - the budget, and who sees the money.
+    show_money = budget.hide(t, request.user, bs)
+    if request.GET.get('tab') == 'costs' and not show_money:
+        return redirect('travel:m_trip', trip_id=t.pk)
     days = OrderedDict()
     undated = []
     for b in bs:
@@ -280,7 +299,10 @@ def trip(request, trip_id):
         # my days shows on Things to do.
         'trip_days': _days_of(t) if sub == 'wish' else [],
         'trip': t, 'days': list(days.items()), 'undated': undated,
-        'bookings': bs, 'money': totals(bs), 'costs': costs,
+        'bookings': bs, 'costs': costs,
+        'money': totals(bs, list(t.spends.all()) if show_money else ()),
+        **money_state(t, request, bs, t.start, t.end, show_money,
+                      'costs' if costs else sub),
         'people': [t.owner] + list(t.shared_with.all()), 'tab': 'trips',
         'coming': coming_up(bs, _today()),
         # TR-11 - Plan my days: Undo plan, Fit them in, a plan to review.
@@ -328,6 +350,7 @@ def booking(request, booking_id):
         included([x for x in b.trip.bookings.all() if x.pk != b.pk] + [b])
     else:
         b.included = None
+    budget.hide(b.trip, request.user, [b])                  # RA05
     passes = [pass_card(p) for p in b.passes.all()]
     nights = ((b.end_date - b.start_date).days
               if b.kind == 'stay' and b.start_date and b.end_date else None)

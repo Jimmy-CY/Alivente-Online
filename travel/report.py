@@ -38,10 +38,19 @@ def plain(s):
         '“', '"').replace('”', '"').replace('…', '...')
 
 
-def context(t, kind):
+def budget_for(t, start, end):
+    from .budget import summary
+    b = summary(t, list(t.spends.all()), start, end)
+    return b if b['set'] else None
+
+
+def context(t, kind, user=None):
     bs = list(t.bookings.prefetch_related('travellers', 'files', 'passes'))
     fx.convert_pending(bs, limit=5)
     bs = included([shape(b) for b in bs])
+    # RA05, 19 Nov 2026 - no costs for someone they are not shared with.
+    from .budget import hide
+    show_money = hide(t, user, bs) if user is not None else True
     for b in bs:
         b.route = plain(b.route)
     start, end = span(t, bs)
@@ -61,7 +70,10 @@ def context(t, kind):
         'bookings': sorted(bs, key=lambda b: (b.start_date or dt.date.max,
                                               b.start_time or dt.time(0))),
         'wish': [p for p in pl if not p.day],
-        'money': totals(bs),
+        # RA05 - the daily spending is part of the trip's costs.
+        'money': totals(bs, list(t.spends.all())) if show_money
+        else totals([]),
+        'bud': budget_for(t, start, end) if show_money else None,
         'people': [t.owner] + list(t.shared_with.all()),
         'made': timezone.localtime(),
     }
@@ -74,7 +86,7 @@ def trip_pdf(request, trip_id):
     kind = request.GET.get('kind')
     if kind not in KINDS:
         kind = 'summary'
-    html = get_template('travel/trip_pdf.html').render(context(t, kind))
+    html = get_template('travel/trip_pdf.html').render(context(t, kind, request.user))
     name = 'trip_%s_%s.pdf' % (slugify(t.name) or t.pk, kind)
     resp = HttpResponse(content_type='application/pdf')
     resp['Content-Disposition'] = 'inline; filename="%s"' % name

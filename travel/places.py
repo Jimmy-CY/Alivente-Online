@@ -749,6 +749,29 @@ an event on during the stay, a closing day ("Closed Mon"), or the best \
 time to go. Otherwise "".
 - famous: the classics; mix: some of each; local: fewer of the obvious \
 sights, more that locals love."""
+# RA03, 19 Nov 2026 - Demetri: "two new categories - 1. Cafes and 2.
+# Restaurants ... from a list of top 10 restaurants or top 10 cafes within
+# the city". Asked for on their own, with their own rules; the sights
+# above still never include a place to eat.
+FOOD_SYSTEM = """You suggest the best %s in one city for a family \
+trip, as a well-travelled local friend would. Call record_ideas once.
+
+- The city's top ones: real, well-established places you are sure still \
+exist and are open. Never invent one. Every idea's interest is "%s" and \
+its kind is "food".
+- Never suggest anything in the list of what to leave out, nor the same \
+place under another name.
+- blurb: two plain sentences - what it is known for and what to have. No \
+exclamation marks, no emoji.
+- area: its neighbourhood.
+- price: typical spend, e.g. "mains EUR 15 - 25" or "coffee EUR 3"; "" if \
+you do not know. visit: "" . book: true only if a table usually needs \
+booking ahead.
+- note: at most one short line, only when useful - a closing day, or \
+"cash only". Otherwise "".
+- famous: the best known; mix: some of each; local: more that locals \
+love, fewer that guidebooks list."""
+FOOD_SAYS = {'restaurants': 'restaurants', 'cafes': 'cafes and coffee places'}
 SUGGEST_TOOL = {
     'name': 'record_ideas',
     'description': 'Record the things to do suggested for the city.',
@@ -773,9 +796,11 @@ SUGGEST_TOOL = {
 
 
 def call_ideas(city, country, dates, interests, style, extra, leave_out,
-               count=12, client=None):
+               count=12, client=None, km=None, food=''):
     """record_ideas for one city: a list of dicts (see SUGGEST_TOOL).
-    interests: [(key, label)]; leave_out: names not to suggest."""
+    interests: [(key, label)]; leave_out: names not to suggest. RA03: km,
+    keep within that of the centre (day trips excepted); food, ask for
+    the city's top restaurants or cafes instead (FOOD_SYSTEM)."""
     client = _client(client)
     ask = ['City: %s%s' % (city, ', %s' % country if country else ''),
            'Dates: %s' % dates if dates else 'Dates: not known',
@@ -783,6 +808,10 @@ def call_ideas(city, country, dates, interests, style, extra, leave_out,
                '%s: %s' % kv for kv in interests),
            'Famous or local: %s' % style,
            'How many: about %d' % count]
+    if km:
+        ask.append('Distance: keep to places within about %d km of the '
+                   'city centre%s.' % (km, '' if food else
+                                       ' (day trips excepted)'))
     if extra:
         ask.append('They also said: %s' % extra[:200])
     if leave_out:
@@ -790,7 +819,9 @@ def call_ideas(city, country, dates, interests, style, extra, leave_out,
                    '%s' % '; '.join(leave_out[:120]))
     try:
         msg = client.messages.create(
-            model=SUGGEST_MODEL, max_tokens=4000, system=SUGGEST_SYSTEM,
+            model=SUGGEST_MODEL, max_tokens=4000,
+            system=(FOOD_SYSTEM % (FOOD_SAYS.get(food, food), food)
+                    if food else SUGGEST_SYSTEM),
             tools=[SUGGEST_TOOL],
             tool_choice={'type': 'tool', 'name': 'record_ideas'},
             messages=[{'role': 'user', 'content': '\n'.join(ask)}])

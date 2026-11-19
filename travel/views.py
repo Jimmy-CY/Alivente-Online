@@ -20,7 +20,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-from . import fx
+from . import budget, fx
 from .models import (Booking, BookingChange, BookingFile, InboundFile,
                      JoinRequest, Trip, trips_for)
 
@@ -29,7 +29,9 @@ MAX_FILE = 15 * 1024 * 1024
 ICONS = {'flight': 'fa-plane', 'stay': 'fa-bed', 'car': 'fa-car',
          'train': 'fa-train', 'ferry': 'fa-ship', 'transfer': 'fa-taxi',
          'activity': 'fa-ticket-alt', 'restaurant': 'fa-utensils',
-         'other': 'fa-map-marker-alt'}
+         'other': 'fa-map-marker-alt',
+         # RA05 - daily spending, beside the bookings in the costs.
+         'spend': 'fa-wallet'}
 
 
 def travel_view(fn):
@@ -140,7 +142,10 @@ def span(trip, bookings):
     return start, end
 
 
-def totals(bookings):
+def totals(bookings, spends=()):
+    """The trip's costs. RA05, 19 Nov 2026 - its daily spending too
+    (Demetri: "these daily spends get added to the trip costs so that I
+    can analyse my complete trip costs"): spent, so paid."""
     total = paid = Decimal('0')
     pending = 0
     kinds = OrderedDict()
@@ -153,13 +158,24 @@ def totals(bookings):
         total += b.amount_eur
         paid += b.paid_eur or Decimal('0')
         kinds[b.kind] = kinds.get(b.kind, Decimal('0')) + b.amount_eur
+    booked = total
+    for s in spends:
+        if s.amount_eur is None:
+            pending += 1
+            continue
+        total += s.amount_eur
+        paid += s.amount_eur
+        kinds['spend'] = kinds.get('spend', Decimal('0')) + s.amount_eur
     top = max(kinds.values()) if kinds else None
-    by_kind = [{'kind': dict(Booking.KINDS)[k], 'icon': ICONS[k],
+    label = dict(Booking.KINDS, spend='Daily spending')
+    by_kind = [{'kind': label[k], 'icon': ICONS.get(k, 'fa-wallet'),
                 'eur': eur(v), 'pct': int(v / top * 100) if top else 0}
                for k, v in sorted(kinds.items(), key=lambda kv: -kv[1])]
     return {'total': eur(total), 'paid': eur(paid),
             'due': eur(total - paid), 'pending': pending,
             'pct': int(paid / total * 100) if total else 0,
+            'booked': eur(booked), 'spent': eur(total - booked),
+            'has_spend': bool(spends),
             'by_kind': by_kind, 'any': bool(kinds or pending)}
 
 
@@ -271,13 +287,16 @@ def trips(request):
     inbox.kick()
     today = dt.date.today()
     rows = []
-    for t in trips_for(request.user).prefetch_related('bookings',
+    for t in trips_for(request.user).prefetch_related('bookings', 'spends',
                                                       'shared_with'):
         bs = list(t.bookings.all())
         start, end = span(t, bs)
         t.start, t.end = start, end
         t.n = len(bs)
-        t.money = totals(bs)
+        # RA05 - no money for someone the costs are not shared with.
+        t.show_money = budget.money_ok(t, request.user)
+        t.money = totals(bs, list(t.spends.all())) if t.show_money \
+            else totals([])
         t.people = [t.owner] + list(t.shared_with.all())
         t.mine = t.owner_id == request.user.id
         rows.append(t)
@@ -291,7 +310,8 @@ def trips(request):
     # TR-7 - a finished trip with something still To pay says so.
     from .compare import unsettled
     for t in sel:
-        due = unsettled(t, list(t.bookings.all()), today) if t.past else []
+        due = unsettled(t, list(t.bookings.all()), today) \
+            if t.past and t.show_money else []
         t.owing = eur(sum((b.due_eur or Decimal('0')) for b in due)) \
             if due else ''
     # TR-14, 17 Nov 2026 - List | Calendar; the calendar is every trip,
@@ -342,6 +362,10 @@ def trip(request, trip_id):
     start_details(bs)
     bs = included([shape(b) for b in bs])
     start, end = span(t, bs)
+    # RA05, 19 Nov 2026 - the budget, and who sees the money.
+    show_money = budget.hide(t, request.user, bs)
+    if tab == 'costs' and not show_money:
+        return redirect('travel:trip', trip_id=t.pk)
     pl = list(t.places.all())
     from .phone import itinerary
     days = OrderedDict()
@@ -367,7 +391,8 @@ def trip(request, trip_id):
         'kinds': [{'key': k, 'label': dict(Booking.KINDS)[k], 'n': n,
                    'icon': ICONS[k]} for k, n in kinds.items()],
         'want': want if want in kinds else '',
-        'money': totals(bs), 'coming': coming_up(bs, dt.date.today()),
+        'money': totals(bs, list(t.spends.all()) if show_money else ()),
+        'coming': coming_up(bs, dt.date.today()),
         'people': [t.owner] + list(t.shared_with.all()),
         'is_owner': t.owner_id == request.user.id,
         'requests': requests_for(request.user, t),
@@ -377,11 +402,28 @@ def trip(request, trip_id):
         'wish': [p for p in pl if not p.day],
         'trip_days': days_of(start, end),
         # TR-7 - after the trip: still To pay? (asked, never done alone)
-        'settle': settle_rows(t, bs),
+        'settle': settle_rows(t, bs) if show_money else [],
+        **money_state(t, request, bs, start, end, show_money, tab),
         # TR-11 - Plan my days: Undo plan, Fit them in, a plan to review.
         **plan_state(t, request, tab),
         # TR-12 - Suggest things to do.
         **idea_state(t, request, tab)})
+
+
+def money_state(t, request, bs, start, end, show_money, tab, spends=None):
+    """RA05 - the daily spending budget, the spending, and what this person
+    may do."""
+    if not show_money:
+        return {'show_money': False}
+    spends = list(t.spends.all()) if spends is None else spends
+    budget.convert_pending(spends)
+    bud = budget.summary(t, spends, start, end)
+    out = {'show_money': True, 'can_spend': budget.can_spend(t, request.user),
+           'bud': bud, 'today': dt.date.today()}
+    if tab == 'costs':
+        out.update({'spend_days': budget.spend_days(spends, bud['per_day']),
+                    'currencies': fx.CURRENCIES})
+    return out
 
 
 def plan_state(t, request, tab):
@@ -458,6 +500,9 @@ def trip_share(request, trip_id):
         picked = {int(x) for x in request.POST.getlist('people')
                   if x.isdigit()}
         t.shared_with.set([u for u in people if u.pk in picked])
+        # RA05 - share the costs and budget, or not.
+        t.share_money = bool(request.POST.get('share_money'))
+        t.save(update_fields=['share_money'])
         messages.success(request, 'Sharing saved.')
         return redirect('travel:trip', trip_id=t.pk)
     on = set(t.shared_with.values_list('pk', flat=True))
@@ -540,6 +585,15 @@ def save_booking(request, b):
     b.start_time = _time(P.get('start_time'))
     b.end_date = _date(P.get('end_date'))
     b.end_time = _time(P.get('end_time'))
+    b.status = 'cancelled' if P.get('cancelled') else 'ok'
+    if not getattr(request, 'travel_money', True):
+        # RA05 - the form had no Cost section for this person: the costs
+        # stay exactly as they were.
+        if not b.title:
+            problems.append('Say what the booking is.')
+        if b.end_date and b.start_date and b.end_date < b.start_date:
+            problems.append('The end is before the start.')
+        return problems
     cur = (P.get('currency') or 'EUR').upper()
     b.currency = cur if cur in fx.CURRENCIES else 'EUR'
     old = (b.amount, b.currency, b.amount_eur)
@@ -593,6 +647,9 @@ def booking_form(request, trip_id=None, booking_id=None):
     problems = []
     dupe = None
     people = [t.owner] + list(t.shared_with.all())
+    # RA05 - no Cost section, and the costs left as they are, for someone
+    # the costs are not shared with.
+    request.travel_money = show_money = budget.money_ok(t, request.user)
     on = set(b.travellers.values_list('pk', flat=True)) if b.pk else set()
     for u in people:
         u.on = u.pk in on
@@ -631,9 +688,27 @@ def booking_form(request, trip_id=None, booking_id=None):
             return redirect('travel:booking', booking_id=b.pk)
     return render(request, 'travel/booking_form.html', {
         'trip': t, 'b': b, 'problems': problems, 'dupe': dupe,
-        'kinds': Booking.KINDS,
+        'kinds': Booking.KINDS, 'show_money': show_money,
         'paids': Booking.PAID, 'currencies': fx.CURRENCIES,
         'files': list(b.files.all()) if b.pk else [], 'people': people})
+
+
+MONEY_LABELS = {l for f, l in TRACKED if f in (
+    'currency', 'amount', 'amount_eur', 'paid', 'paid_amount', 'pay_by')}
+
+
+def money_free(changes, show_money):
+    """RA05 - a booking's change trail, without the costs for someone they
+    are not shared with."""
+    if show_money:
+        return changes
+    out = []
+    for c in changes:
+        c.changes = [x for x in (c.changes or [])
+                     if x.get('label') not in MONEY_LABELS]
+        if c.changes:
+            out.append(c)
+    return out
 
 
 @travel_view
@@ -650,12 +725,15 @@ def booking(request, booking_id):
         included(others + [b])
     else:
         b.included = None
+    show_money = budget.hide(b.trip, request.user, [b])        # RA05
     return render(request, 'travel/booking.html', {
+        'show_money': show_money,
         'b': b, 'trip': b.trip, 'files': list(b.files.all()),
         'passes': [pass_card(p) for p in b.passes.all()],
         'nights': nights, 'paid_label': eur(b.paid_eur),
         'due_label': eur(b.due_eur),
-        'changes': list(b.changes.select_related('by')),
+        'changes': money_free(list(b.changes.select_related('by')),
+                              show_money),
         'today': dt.date.today()})
 
 

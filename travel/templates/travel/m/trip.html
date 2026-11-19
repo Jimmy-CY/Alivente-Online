@@ -3,7 +3,7 @@
 {% block title %}{{ trip.name }} - Travel{% endblock %}
 {% block top %}<div style="min-width: 0"><a class="tv-back" href="{% url 'travel:m_trips' %}"><span aria-hidden="true">‹</span> Trips</a><h1>{{ trip.name }}</h1></div>{% endblock %}
 {% block sub %}<div class="sub">{% if trip.start %}{{ trip.start|date:"D j M" }}{% if trip.end and trip.end != trip.start %} – {{ trip.end|date:"D j M Y" }}{% endif %}{% endif %}{% if trip.where %} · {{ trip.where }}{% endif %}</div>{% endblock %}
-{% block tabs %}<nav class="tv-tabs" aria-label="Trip" style="overflow-x: auto"><a class="tv-tab{% if sub == 'bookings' %} on{% endif %}" href="{% url 'travel:m_trip' trip.pk %}">Bookings</a><a class="tv-tab{% if sub == 'itinerary' %} on{% endif %}" href="?tab=itinerary">Itinerary</a><a class="tv-tab{% if sub == 'wish' %} on{% endif %}" href="?tab=wish">Things to do</a><a class="tv-tab{% if sub == 'costs' %} on{% endif %}" href="?tab=costs">Costs</a></nav>{% endblock %}
+{% block tabs %}<nav class="tv-tabs" aria-label="Trip" style="overflow-x: auto"><a class="tv-tab{% if sub == 'bookings' %} on{% endif %}" href="{% url 'travel:m_trip' trip.pk %}">Bookings</a><a class="tv-tab{% if sub == 'itinerary' %} on{% endif %}" href="?tab=itinerary">Itinerary</a><a class="tv-tab{% if sub == 'wish' %} on{% endif %}" href="?tab=wish">Things to do</a>{% if show_money %}<a class="tv-tab{% if sub == 'costs' %} on{% endif %}" href="?tab=costs">Costs</a>{% endif %}</nav>{% endblock %}
 {% block content %}
 {% if sub == 'itinerary' %}
 {% comment %} TR-4 - the itinerary: every day, bookings and places in time order. {% endcomment %}
@@ -25,22 +25,42 @@
 {% comment %} TR-4 - Things to do: places with no day yet. TR-11 - Plan my days, to spread them over the trip. {% endcomment %}
 <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px">{% include 'travel/_ideas_added.html' with phone=True %}{% include 'travel/_plan_banner.html' with phone=True %}
 {% if wish and trip_days and not plan_open and not plan_new %}<section class="tv-pl-cta" data-plan-cta><div><b>{{ wish|length }} thing{{ wish|length|pluralize }} to do ha{{ wish|length|pluralize:"s,ve" }} no day yet</b><br><span style="opacity: .92; font-size: 13px">Let Alivente spread {{ wish|length|pluralize:"it,them" }} over your trip &ndash; by opening hours, busy times and what is near what.</span></div><a class="go" href="{% url 'travel:m_plan_setup' trip.pk %}">Plan my days</a></section>{% endif %}</div>
+<div data-wishlist>
 <a href="{% url 'travel:m_place_new' trip.pk %}" class="tv-btn wide" data-add-place>+ Things to do</a>
 {% comment %} TR-12, 17 Nov 2026 - Suggest things to do, under + Things to do. {% endcomment %}
 <a href="{% url 'travel:m_ideas' trip.pk %}" class="tv-btn sec wide tv-id-sugg" style="margin: 8px 0 10px; border-width: 2px" data-idea-suggest><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg> {% if ideas_open %}Finding ideas&hellip;{% elif ideas_left %}Your suggestions &middot; {{ ideas_left }} left to look at{% else %}Suggest things to do{% endif %}</a>
+{% if wish %}<button type="button" class="tv-btn sec wide" style="margin: 0 0 10px" aria-pressed="false" data-select-start>Select to delete</button>{% endif %}
 {% for p in wish %}
 <section class="tv-card" data-wish-item>
+  <label class="tv-sel"><input type="checkbox" name="p" value="{{ p.pk }}" form="tv-del-places" aria-label="Select {{ p.name }}"></label><div class="tv-sel-body">
   {% include 'travel/m/_row.html' with b=p %}
   {% if trip_days %}<form method="post" action="{% url 'travel:m_place_move' p.pk %}" class="tv-inline" data-move-form>{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><input type="hidden" name="need_day" value="1">
     <select name="day" class="tv-select" style="flex: 1" aria-label="Put {{ p.name }} on a day" required><option value="" selected>Choose a day&hellip;</option>{% for d in trip_days %}<option value="{{ d|date:'Y-m-d' }}">{{ d|date:"D j M" }}</option>{% endfor %}</select>
     <button type="submit" class="tv-btn sec">Put on the day</button></form>{% endif %}
-</section>
+</div></section>
 {% empty %}
 <section class="tv-card"><p class="tv-muted" style="margin: 0">Nothing yet. Add a museum, a garden or a restaurant &mdash; or in Google Maps tap <b>Share &rarr; Travel</b>.</p></section>
 {% endfor %}
+{% if wish %}{% url 'travel:m_places_delete' trip.pk as del_url %}{% include 'travel/_wish_select.html' with url=del_url phone=True %}{% endif %}
+</div>
 {% elif costs %}
+{% comment %} RA05, 19 Nov 2026 - the daily spending budget: ahead or behind plan, spending per day, + Spending; then the whole trip's costs, daily spending included. {% endcomment %}
+{% if bud.set %}<section class="tv-card" data-budget>
+  <div class="tv-row"><span class="tv-muted">Daily spending &middot; {{ bud.per_day_label }} a day</span>{% if can_spend %}<a href="{% url 'travel:m_budget' trip.pk %}" class="tv-small" data-budget-edit>Change</a>{% endif %}</div>
+  {% if bud.when == 'on' %}<div class="tv-row"><span class="tv-bud-big {% if bud.ahead %}tv-good{% else %}tv-over{% endif %}" data-bud-pace="{% if bud.ahead %}ahead{% else %}behind{% endif %}">{{ bud.gap_label }} {% if bud.ahead %}ahead{% else %}behind{% endif %}</span><span class="tv-muted tv-small">{{ bud.spent_label }} of {{ bud.planned_label }} so far</span></div>
+  {% elif bud.when == 'after' %}<div class="tv-row"><span class="tv-bud-big {% if bud.over %}tv-over{% else %}tv-good{% endif %}" data-bud-pace="{% if bud.over %}behind{% else %}ahead{% endif %}">{{ bud.left_label }} {% if bud.over %}over{% else %}under{% endif %}</span><span class="tv-muted tv-small">{{ bud.spent_label }} of {{ bud.total_label }}</span></div>
+  {% else %}<div class="tv-row"><span class="tv-bud-big">{{ bud.total_label|default:"–" }}</span><span class="tv-muted tv-small">for the holiday{% if bud.days %} &middot; {{ bud.days }} days{% endif %}</span></div>{% endif %}
+  {% if bud.total %}<div class="tv-meter{% if bud.over %} is-red{% elif bud.pct >= 90 %} is-amber{% endif %}" aria-hidden="true"><span style="width: {{ bud.pct }}%"></span></div>{% endif %}
+  {% if bud.show_chart %}{% include 'travel/_budget_chart.html' %}{% endif %}
+  {% if bud.when == 'on' %}<p class="tv-muted tv-small" style="margin: 6px 0 0">{% if bud.keep_label %}{{ bud.keep_label }} a day for the last {{ bud.to_go }} day{{ bud.to_go|pluralize }} keeps you on {{ bud.total_label }}{% elif bud.over %}{{ bud.left_label }} over the holiday&rsquo;s {{ bud.total_label }}{% else %}The last day{% endif %}</p>{% endif %}
+</section>
+{% elif can_spend %}<a href="{% url 'travel:m_budget' trip.pk %}" class="tv-card" data-budget-none style="display: block; color: inherit; text-decoration: none"><b>Set a daily spending budget</b><span class="tv-muted tv-small" style="display: block">A day&rsquo;s or the holiday&rsquo;s &ndash; then see each day whether you are ahead or behind.</span></a>{% endif %}
+{% if can_spend %}<a href="{% url 'travel:m_spend' trip.pk %}" class="tv-btn wide" data-spend-new style="margin-bottom: 10px">+ Spending</a>{% endif %}
+{% if not bud.set and bud.show_chart %}<section class="tv-card">{% include 'travel/_budget_chart.html' %}</section>{% endif %}
+{% if spend_days %}<section class="tv-card" data-spending>{% for d in spend_days %}<div class="tv-spend-day" id="sp{{ d.day|date:'Ymd' }}" data-spend-day="{{ d.day|date:'Y-m-d' }}"><div class="tv-row tv-small"><b>{% if d.day == today %}Today · {% endif %}{{ d.day|date:"D j M" }}</b><span class="{% if d.over %}tv-over{% else %}tv-muted{% endif %}">{{ d.label }}{% if d.over %} · {{ d.over_by }} over{% endif %}</span></div>{% for s in d.rows %}<div class="tv-row" data-spend="{{ s.pk }}"><span>{{ s.what|default:"Spending" }}{% if s.orig_label %} <span class="tv-muted tv-small">· {{ s.orig_label }}</span>{% endif %}</span><span>{{ s.eur_label }}{% if can_spend %}<form method="post" action="{% url 'travel:m_spend_delete' s.pk %}" style="display: inline">{% csrf_token %}<button type="submit" class="tv-linkbtn" aria-label="Delete {{ s.what|default:'this spending' }}" onclick="return confirm('Delete this spending?')" style="margin-left: 8px">✕</button></form>{% endif %}</span></div>{% endfor %}</div>{% endfor %}</section>{% endif %}
 <section class="tv-card" data-costs>
-  <div class="tv-row"><span class="tv-muted">Total</span><b style="font-size: 20px">{{ money.total|default:"€0" }}</b></div>
+  {% if money.has_spend %}<div class="tv-row tv-small" data-costs-split><span class="tv-muted">Bookings</span><b>{{ money.booked|default:"€0" }}</b></div><div class="tv-row tv-small"><span class="tv-muted">Daily spending</span><b>{{ money.spent|default:"€0" }}</b></div>{% endif %}
+  <div class="tv-row"><span class="tv-muted">Trip total</span><b style="font-size: 20px">{{ money.total|default:"€0" }}</b></div>
   <div class="tv-row"><span class="tv-muted">Paid</span><b style="color: var(--tv-good)">{{ money.paid|default:"€0" }}</b></div>
   <div class="tv-row"><span class="tv-muted">Still to pay</span><b style="color: var(--tv-warn)">{{ money.due|default:"€0" }}</b></div>
   <div class="tv-meter" aria-hidden="true"><span style="width: {{ money.pct }}%"></span></div>
