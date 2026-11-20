@@ -126,7 +126,8 @@ ok('key_health.wrap_anthropic()' in ap and 'key_health.start_watcher()' in
 ok(os.path.isfile(J(PG, 'migrations', '0120_key_status.py')) and
    os.path.isfile(J(PG, 'management', 'commands', 'check_keys.py')),
    'MIGRATION 0120 (the key_status table) and manage.py check_keys')
-ok("_health(False, e.code)" in read(J(ROOT, 'travel', 'gplaces.py')),
+# RA08 passes Google's reason too: "_health(False, e.code, body)".
+ok("_health(False, e.code" in read(J(ROOT, 'travel', 'gplaces.py')),
    'GOOGLE PLACES reports how each call went')
 try:
     ok('key_health' not in was(J(PG, 'apps.py')),

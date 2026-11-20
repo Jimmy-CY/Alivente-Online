@@ -17,6 +17,12 @@ How it knows
   2. On Railway, a watcher in the web process checks both keys every 15
      minutes with calls that cost nothing: Anthropic's list of models,
      and Google's IDs-only place search (no charge at any volume).
+     RA08, 20 Nov 2026 - but Google counts even free searches against its
+     daily limit (100 a day on this project), and the watcher used it up:
+     Google is now tried only while it is failing, once an hour, and the
+     web workers share one watch (one check per 15 minutes in all, kept
+     in the database). Real Suggest-things-to-do calls say how Google is
+     the rest of the time. Google's own reason is kept and shown.
   Only problems someone has to fix count: a key refused, missing or
   switched off, out of credit, over a limit - or a service not answering
   at all. A request we got wrong (400 for any other reason) is ours, not
@@ -99,14 +105,42 @@ def classify_anthropic(e):
     return None
 
 
-def classify_google(status):
+def google_reason(body):
+    """RA08 - Google's own words for a refusal, from its error body: the
+    limit by name ("SearchTextRequest per day, limit 100") or its message.
+    Never the key (Google does not send it back; anything key-like is cut
+    out anyway)."""
+    import json
+    import re
+    try:
+        err = json.loads(body or '{}').get('error') or {}
+    except (ValueError, AttributeError):
+        return ''
+    for d in err.get('details') or []:
+        m = d.get('metadata') or {}
+        if m.get('quota_limit'):
+            name = re.sub(r'PerProject$', '', m['quota_limit'])
+            name = re.sub(r'Per(Day|Minute)', r' per \1', name).replace(
+                ' per Day', ' per day').replace(' per Minute', ' per minute')
+            lim = m.get('quota_limit_value')
+            return 'Google says: quota exceeded - %s%s.' % (
+                name, ' (limit %s)' % lim if lim else '')
+    msg = re.sub(r'AIza[0-9A-Za-z_\-]{10,}', '[key]',
+                 str(err.get('message') or ''))
+    return ('Google says: %s' % msg.strip())[:160] if msg.strip() else ''
+
+
+def classify_google(status, body=''):
+    why = google_reason(body)
     if status in (400, 401, 403):
-        return 'refused', ('The key was refused, or billing or the Places '
+        p, d = 'refused', ('The key was refused, or billing or the Places '
                            'API (New) is switched off - check Google Cloud '
                            'and GOOGLE_PLACES_KEY on Railway.')
-    if status == 429:
-        return 'limit', WORDS['limit']
-    return 'down', WORDS['down']
+    elif status == 429:
+        p, d = 'limit', WORDS['limit']
+    else:
+        p, d = 'down', WORDS['down']
+    return p, ('%s %s' % (d, why)).strip()[:255]
 
 
 # ------------------------------------------------------------- recording
@@ -272,19 +306,61 @@ def probe_google(opener=None):
         with (opener or urllib.request.urlopen)(req, timeout=10) as r:
             r.read()
     except urllib.error.HTTPError as e:
-        p, d = classify_google(e.code)
+        p, d = classify_google(e.code, _body(e))
         return False, p, d
     except Exception:                                   # noqa: BLE001
         return False, 'down', WORDS['down']
     return True, '', ''
 
 
-def check_all(now=None):
-    """Both keys, then the email if one is due."""
-    for service, probe in (('anthropic', probe_anthropic),
-                           ('google_places', probe_google)):
-        ok, p, d = probe()
-        save(service, ok, p, d, now=now)
+def _body(e):
+    try:
+        return e.read().decode('utf-8', 'replace')[:4000]
+    except Exception:                                   # noqa: BLE001
+        return ''
+
+
+GOOGLE_RETRY = dt.timedelta(minutes=60)
+WATCH = '_watch'
+
+
+def _my_turn(now):
+    """RA08 - one check per 15 minutes for the whole app, however many web
+    workers run a watcher: the first to move the shared mark wins."""
+    from django.db.models import Q
+    from .models import KeyStatus
+    KeyStatus.objects.get_or_create(service=WATCH)
+    return bool(KeyStatus.objects.filter(service=WATCH).filter(
+        Q(last_checked__isnull=True) |
+        Q(last_checked__lte=now - dt.timedelta(seconds=EVERY - 60))
+    ).update(last_checked=now))
+
+
+def google_due(now):
+    """RA08 - Google is tried only while it is failing (or its key is
+    missing), at most once an hour; when it works, real calls say so."""
+    from .models import KeyStatus
+    if not (os.environ.get('GOOGLE_PLACES_KEY') or '').strip():
+        return True                     # missing: said without any call
+    row = KeyStatus.objects.filter(service='google_places').first()
+    if row is None or row.ok:
+        return False
+    return row.last_checked is None or \
+        row.last_checked <= now - GOOGLE_RETRY
+
+
+def check_all(now=None, force=False):
+    """Anthropic (free, no daily limit); Google only when due (or forced,
+    by hand); then the email if one is due. A watcher whose turn it is not
+    does nothing."""
+    now = now or _now()
+    if not force and not _my_turn(now):
+        return False
+    ok, p, d = probe_anthropic()
+    save('anthropic', ok, p, d, now=now)
+    if force or google_due(now):
+        ok, p, d = probe_google()
+        save('google_places', ok, p, d, now=now)
     return maybe_email(now)
 
 

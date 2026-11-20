@@ -106,7 +106,11 @@ def search(text, near=None, opener=None):
     except urllib.error.HTTPError as e:
         # The key never goes into a log - only what went wrong. RA04 -
         # and the key's health hears of it (pages/key_health.py).
-        _health(False, e.code)
+        try:                            # RA08 - Google's own reason
+            body = e.read().decode('utf-8', 'replace')[:4000]
+        except Exception:                               # noqa: BLE001
+            body = ''
+        _health(False, e.code, body)
         raise GoogleError('Google said %s.' % e.code)
     except Exception as e:                              # noqa: BLE001
         _health(False, None)
@@ -117,13 +121,13 @@ def search(text, near=None, opener=None):
     return shape(found[0]) if found else None
 
 
-def _health(ok, status=None):
+def _health(ok, status=None, body=''):
     try:
         from pages import key_health as KH
         if ok:
             KH.record('google_places', True)
         else:
-            p, d = KH.classify_google(status)
+            p, d = KH.classify_google(status, body)
             KH.record('google_places', False, p, d)
     except Exception:                                   # noqa: BLE001
         pass

@@ -1670,6 +1670,8 @@ ROUNDS = [
     '.bak_ra06',
     # RA07, 19 Nov 2026 - weather from Things to do; spending on trip days.
     '.bak_ra07',
+    # RA08, 20 Nov 2026 - the key watch spares Google's daily limit.
+    '.bak_ra08',
 ]
 
 
