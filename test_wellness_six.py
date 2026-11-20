@@ -190,6 +190,10 @@ import django                                               # noqa: E402
 django.setup()
 from wellness import daily_line as DL                       # noqa: E402
 from wellness import quotes as Q                            # noqa: E402
+# RA07, 19 Nov 2026 - the page shows a quote HTML-escaped: 13 of the 240
+# have an apostrophe, a quotation mark or an ampersand, and which one a
+# person gets depends on their id - so a pool run sometimes failed.
+from django.utils.html import escape as _esc                # noqa: E402
 ok(DL.parse('{"quote": 3, "line": "A gentle start is still a start."}') ==
    {'quote': 3, 'line': 'A gentle start is still a start.'},
    "a fair answer: a library number and one short line")
@@ -298,7 +302,7 @@ if have_db:
                                  started_on=today - dt.timedelta(days=9))
             t = ca.get('/wellness/').content.decode()
             ok('data-claude-line' not in t and
-               Q.for_day(a.pk, today)['text'] in t,
+               _esc(Q.for_day(a.pk, today)['text']) in t,
                'no line yet: the date\'s own quote and no line - Today '
                'did not wait')
             pa = WellnessProfile.objects.get(user=a)
@@ -320,7 +324,7 @@ if have_db:
                sent.lower(), '  Claude was told her name and habits - '
                'nothing private')
             t = ca.get('/wellness/').content.decode()
-            ok(Q.BY_ID[fid]['text'] in t and 'A short walk counts, Alex.'
+            ok(_esc(Q.BY_ID[fid]['text']) in t and 'A short walk counts, Alex.'
                in t and 'A line from Claude' in t,
                "Today: Claude's pick from the library, and its line, "
                'labelled')
@@ -340,7 +344,7 @@ if have_db:
                len(bad.calls))
             t = ca.get('/wellness/').content.decode()
             ok('data-claude-line' not in t and
-               Q.for_day(a.pk, today)['text'] in t,
+               _esc(Q.for_day(a.pk, today)['text']) in t,
                '  and Today simply shows the date\'s quote')
             ca.post('/wellness/settings/', {})
             pa.refresh_from_db()

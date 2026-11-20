@@ -119,9 +119,18 @@ def summary(trip, spends, start, end, today=None):
     per_day, total = amounts(trip, days)
     by_day = {}
     pending = 0
+    # RA07, 19 Nov 2026 - spending on a day outside the trip (added before
+    # RA07, or left there when bookings moved the trip) is shown apart and
+    # kept out of the plan; it still counts in the trip's costs.
+    outside = ZERO
+    n_out = 0
     for s in spends:
         if s.amount_eur is None:
             pending += 1
+            continue
+        if not inside(s.day, start, end):
+            outside += s.amount_eur
+            n_out += 1
             continue
         by_day[s.day] = by_day.get(s.day, ZERO) + s.amount_eur
     spent = sum(by_day.values(), ZERO)
@@ -165,6 +174,7 @@ def summary(trip, spends, start, end, today=None):
               start <= c['day'] <= (end or start)]
     empty = [c for c in so_far if c['empty']]
     return {
+        'outside': n_out, 'outside_label': whole(outside) if n_out else '',
         'empty_days': len(empty), 'days_so_far': len(so_far),
         'set': trip.budget is not None, 'by': trip.budget_by,
         'per_day': per_day, 'per_day_label': whole(per_day),
@@ -188,8 +198,26 @@ def summary(trip, spends, start, end, today=None):
         'show_chart': bool(per_day is not None or by_day)}
 
 
-def spend_days(spends, per_day=None):
-    """Spending by day, the latest first: [{day, rows, label, over}]."""
+def inside(day, start, end):
+    """RA07 - is `day` one of the trip's days? (A trip with no dates yet
+    has none.)"""
+    return bool(start) and start <= day <= (end or start)
+
+
+def default_day(start, end, today=None):
+    """RA07 - + Spending's day: today while you are away, the first day
+    before the trip, the last after it (Demetri: "Should I be able to add
+    Spending to days outside of my trip dates? I don't think so...")."""
+    today = today or dt.date.today()
+    if not start:
+        return None
+    end = end or start
+    return min(max(today, start), end)
+
+
+def spend_days(spends, per_day=None, start=None, end=None):
+    """Spending by day, the latest first: [{day, rows, label, over,
+    outside}] - RA07: the trip's days first, then any outside them."""
     out = {}
     for s in spends:
         out.setdefault(s.day, []).append(s)
@@ -202,7 +230,10 @@ def spend_days(spends, per_day=None):
             s.orig_label = '' if s.currency == 'EUR' else \
                 '%s %s' % ('{:,.2f}'.format(s.amount), s.currency)
         rows.append({'day': d, 'rows': out[d], 'label': eur(tot) or '€0',
+                     'outside': start is not None and
+                     not inside(d, start, end),
                      'over': per_day is not None and tot > per_day,
                      'over_by': whole(tot - per_day)
                      if per_day is not None and tot > per_day else ''})
-    return rows
+    return [r for r in rows if not r['outside']] + \
+        [r for r in rows if r['outside']]

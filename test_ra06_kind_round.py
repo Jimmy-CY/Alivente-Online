@@ -233,10 +233,11 @@ ok(WX.for_day(bs, d0, today=d0) is None,
 ok(WX.for_day(bs, d0 + dt.timedelta(20), today=d0) is None,
    '  further than the forecast reaches: none')
 WX.off, WX.fetch = _off, _fetch
-ok("with_weather(itinerary(t, bs, pl), bs)" in read(J(ROOT, 'travel',
-                                                      'views.py')) and
-   "weather.for_day(shaped, day, day)" in read(J(ROOT, 'travel',
-                                                 'phone.py')),
+# RA07 passes the Things to do as well: ", pl)" may follow.
+ok("with_weather(itinerary(t, bs, pl), bs" in read(J(ROOT, 'travel',
+                                                     'views.py')) and
+   "weather.for_day(shaped, day, day" in read(J(ROOT, 'travel',
+                                                'phone.py')),
    'ON THE COMPUTER\'S ITINERARY and the phone\'s Today')
 ok("{% include 'travel/_weather.html' with w=wx nxt=wx_next %}" in read(
     J(TT, 'm', 'today.html')) and "w=rows.wx compact=True" in read(

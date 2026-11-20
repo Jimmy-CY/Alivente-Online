@@ -131,10 +131,13 @@ ok(os.path.isfile(J(TV, 'migrations', '0012_budget.py')),
 ok("raise RuntimeError('A booking with its costs hidden is not saved.')"
    in md, 'A BOOKING WITH ITS COSTS BLANKED CAN NEVER BE SAVED')
 vb = read(J(TV, 'views_budget.py'))
-ok('def _owned' in vb and vb.count('= _owned(request') == 5,
+# RA07 added a sixth door (changing a spending) - the owner's too.
+ok('def _owned' in vb and vb.count('= _owned(request') >= 5,
    'ONLY THE OWNER sets the budget, adds or deletes spending (5 doors)')
-ok("dt.date.today()" in vb and
-   "{% if c == 'EUR' %} selected" in read(J(TT, 'm', 'spend.html')),
+# RA07: today while you are away; only a day of the trip.
+ok(("dt.date.today()" in vb or "B.default_day(start, end)" in vb) and
+   ("{% if c == 'EUR' %} selected" in read(J(TT, 'm', 'spend.html')) or
+    "not s and c == 'EUR' %} selected" in read(J(TT, 'm', 'spend.html'))),
    '+ SPENDING: euros and today by default; the note blank')
 try:
     ok('budget' not in was(J(TV, 'models.py')),

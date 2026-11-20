@@ -402,7 +402,7 @@ def trip(request, trip_id):
         'requests': requests_for(request.user, t),
         # TR-4 - the itinerary (every day, bookings and places) and the
         # wish list (places with no day yet).
-        'itinerary': with_weather(itinerary(t, bs, pl), bs)
+        'itinerary': with_weather(itinerary(t, bs, pl), bs, pl)
         if tab == 'itinerary' else [],
         'wish': [p for p in pl if not p.day],
         'trip_days': days_of(start, end),
@@ -415,12 +415,13 @@ def trip(request, trip_id):
         **idea_state(t, request, tab)})
 
 
-def with_weather(days, bs):
+def with_weather(days, bs, places=None):
     """RA06, 19 Nov 2026 - each day of the itinerary the forecast reaches
     gets the weather where you are (travel/weather.py). Demetri: "show it
     on the computer too"."""
     from . import weather
-    wx = weather.for_days(bs, [d for d, _ in days])
+    # RA07 - and the Things to do, before anything is booked.
+    wx = weather.for_days(bs, [d for d, _ in days], places=places)
     for d, rows in days:
         rows.wx = wx.get(d)
     return days
@@ -437,7 +438,11 @@ def money_state(t, request, bs, start, end, show_money, tab, spends=None):
     out = {'show_money': True, 'can_spend': budget.can_spend(t, request.user),
            'bud': bud, 'today': dt.date.today()}
     if tab == 'costs':
-        out.update({'spend_days': budget.spend_days(spends, bud['per_day']),
+        # RA07 - only the trip's days; those outside listed apart.
+        out.update({'spend_days': budget.spend_days(spends, bud['per_day'],
+                                                    start, end),
+                    'spend_day': budget.default_day(start, end),
+                    'trip_start': start, 'trip_end': end or start,
                     'currencies': fx.CURRENCIES})
     return out
 

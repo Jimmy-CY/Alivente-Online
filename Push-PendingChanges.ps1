@@ -3369,7 +3369,9 @@ $suites = @(
     # RA05, 19 Nov 2026 - the daily spending budget; sharing the costs.
     'test_ra05_budget.py',
     # RA06, 19 Nov 2026 - By kind on one line each, in whole euros.
-    'test_ra06_kind_round.py'
+    'test_ra06_kind_round.py',
+    # RA07, 19 Nov 2026 - weather from Things to do; spending on trip days.
+    'test_ra07_trip_days.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

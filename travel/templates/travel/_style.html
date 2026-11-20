@@ -395,4 +395,12 @@ a.tv-bk:hover b { color: var(--alv-accent); }
 .tv-wx-row { display: flex; gap: 14px; flex-wrap: wrap; font-size: .9rem; margin-top: 2px; }
 .tv-wx:not(.is-compact) .tv-wx-t { font-size: 1.15rem; font-weight: 700; }
 .tv-wx-next { font-size: .82rem; color: #5B6B72; margin-top: 3px; }
+/* RA07, 19 Nov 2026 - spending outside the trip's dates; click a spending to change it. */
+.tv-spend-out { margin: 12px 0 2px; padding: 8px 10px; border-radius: 8px; background: #FCEFD9; color: #6B3A00; font-size: .85rem; }
+.tv-spend-day.is-outside { opacity: .85; }
+details.tv-spend-row > summary { list-style: none; cursor: pointer; }
+details.tv-spend-row > summary::-webkit-details-marker { display: none; }
+details.tv-spend-row[open] > summary { font-weight: 600; }
+.tv-spend-edit { margin: 6px 0 8px; }
+.tv-spend-link { color: inherit; text-decoration: none; padding: 4px 0; }
 </style>

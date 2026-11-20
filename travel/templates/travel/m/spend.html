@@ -1,17 +1,22 @@
 {% extends 'travel/m/base.html' %}
 {% comment %} RA05, 19 Nov 2026 - + Spending on the phone. Demetri: "+Spending should default to Euros, today's date, and optional note blank - for quick entry": the number pad opens on the amount; Add. {% endcomment %}
-{% block title %}+ Spending - Travel{% endblock %}
-{% block top %}<div style="min-width: 0"><a class="tv-back" href="{% url 'travel:m_trip' trip.pk %}?tab=costs"><span aria-hidden="true">‹</span> {{ trip.name }}</a><h1>Add spending</h1></div>{% endblock %}
+{% block title %}{% if s %}Spending{% else %}+ Spending{% endif %} - Travel{% endblock %}
+{% block top %}<div style="min-width: 0"><a class="tv-back" href="{% url 'travel:m_trip' trip.pk %}?tab=costs"><span aria-hidden="true">‹</span> {{ trip.name }}</a><h1>{% if s %}Change spending{% else %}Add spending{% endif %}</h1></div>{% endblock %}
 {% block sub %}<div class="sub">Meals, taxis, tickets at the door, shopping</div>{% endblock %}
 {% block content %}
-<form method="post" action="{% url 'travel:m_spend_add' trip.pk %}" class="tv-card tv-form" data-spend-form>{% csrf_token %}
+{% comment %} RA07, 19 Nov 2026 - only a day of the trip; the same page changes one already added (Save, Delete). {% endcomment %}
+{% if not trip_start %}<section class="tv-card" data-spend-nodates><p style="margin: 0">The trip needs its dates first &ndash; add a booking, or set From and To on the full site under Edit trip.</p></section>{% else %}
+<form method="post" action="{% if s %}{% url 'travel:m_spend_edit' s.pk %}{% else %}{% url 'travel:m_spend_add' trip.pk %}{% endif %}" class="tv-card tv-form" data-spend-form>{% csrf_token %}
   <label for="a" class="tv-muted tv-small">Amount</label>
-  <input id="a" name="amount" class="tv-input tv-amount" inputmode="decimal" placeholder="0.00" autocomplete="off" required autofocus>
+  <input id="a" name="amount" class="tv-input tv-amount" inputmode="decimal" placeholder="0.00" autocomplete="off" required{% if s %} value="{{ s.amount }}"{% else %} autofocus{% endif %}>
   <div class="tv-two">
-    <div><label for="c" class="tv-muted tv-small">Currency</label><select id="c" name="currency" class="tv-select" style="width: 100%">{% for c in currencies %}<option value="{{ c }}"{% if c == 'EUR' %} selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
-    <div><label for="d" class="tv-muted tv-small">Day</label><input id="d" type="date" name="day" class="tv-input" value="{{ today|date:'Y-m-d' }}"></div>
+    <div><label for="c" class="tv-muted tv-small">Currency</label><select id="c" name="currency" class="tv-select" style="width: 100%">{% for c in currencies %}<option value="{{ c }}"{% if s and c == s.currency or not s and c == 'EUR' %} selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+    <div><label for="d" class="tv-muted tv-small">Day</label><input id="d" type="date" name="day" class="tv-input" value="{{ today|date:'Y-m-d' }}" min="{{ trip_start|date:'Y-m-d' }}" max="{{ trip_end|date:'Y-m-d' }}" data-spend-day-pick></div>
   </div>
-  <label for="n" class="tv-muted tv-small">Note (optional)</label><input id="n" name="what" class="tv-input" maxlength="120">
-  <button type="submit" class="tv-btn wide" data-spend-add>Add</button>
+  <label for="n" class="tv-muted tv-small">Note (optional)</label><input id="n" name="what" class="tv-input" maxlength="120"{% if s %} value="{{ s.what }}"{% endif %}>
+  <p class="tv-muted tv-small" style="margin: 0">A day of the trip: {{ trip_start|date:"D j M" }} &ndash; {{ trip_end|date:"D j M" }}.</p>
+  <button type="submit" class="tv-btn wide" data-spend-add>{% if s %}Save{% else %}Add{% endif %}</button>
 </form>
+{% if s %}<form method="post" action="{% url 'travel:m_spend_delete' s.pk %}" style="margin: 0 0 12px">{% csrf_token %}<button type="submit" class="tv-btn sec wide" onclick="return confirm('Delete this spending?')" data-spend-del>Delete</button></form>{% endif %}
+{% endif %}
 {% endblock %}

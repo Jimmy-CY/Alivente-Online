@@ -118,6 +118,13 @@ urlpatterns = [
          name='m_spend'),
     path('m/spend/<int:spend_id>/delete/', views_budget.spend_delete,
          name='m_spend_delete'),
+    # RA07, 19 Nov 2026 - change a spending entry.
+    path('spend/<int:spend_id>/edit/', views_budget.spend_edit,
+         name='spend_edit'),
+    path('m/spend/<int:spend_id>/edit/', views_budget.spend_edit,
+         name='m_spend_edit'),
+    path('m/<int:trip_id>/spend/<int:spend_id>/', views_budget.m_spend_form,
+         name='m_spend_open'),
     path('<int:trip_id>/booking/new/', views.booking_form,
          name='booking_new'),
     path('booking/<int:booking_id>/', views.booking, name='booking'),

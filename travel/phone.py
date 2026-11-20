@@ -65,8 +65,9 @@ ASSET_TYPES = {
 # RA03, 19 Nov 2026 - greyed out suggestions; Select to delete.
 # RA05, 19 Nov 2026 - the daily spending budget, + Spending.
 # RA06, 19 Nov 2026 - the weather; days with nothing recorded.
-SW_VERSION = 'tv20-1'
-SW_ASSETS = '030cdeda93c3'
+# RA07, 19 Nov 2026 - spending on the trip's days only; change spending.
+SW_VERSION = 'tv21-1'
+SW_ASSETS = '362b7b2560da'
 
 
 def page(request, template, ctx):
@@ -227,11 +228,11 @@ def today(request):
         # box with the Weather for that city for the day").
         from . import weather
         if now:
-            ctx['wx'] = weather.for_day(shaped, day, day)
+            ctx['wx'] = weather.for_day(shaped, day, day, pl)
             ctx['wx_next'] = weather.for_day(shaped, day + dt.timedelta(1),
-                                             day)
+                                             day, pl)
         elif trip.start and (trip.start - day).days <= weather.AHEAD:
-            ctx['wx'] = weather.for_day(shaped, trip.start, day)
+            ctx['wx'] = weather.for_day(shaped, trip.start, day, pl)
         ctx['passes_today'] = BoardingPass.objects.filter(
             booking__trip=trip, booking__start_date__in=(
                 day, day + dt.timedelta(days=1))).count()
@@ -305,7 +306,7 @@ def trip(request, trip_id):
         p.is_place = True
     return page(request, 'travel/m/trip.html', {
         'sub': sub, 'wish': [p for p in pl if not p.day],
-        'itinerary': with_weather(itinerary(t, bs, pl), bs)
+        'itinerary': with_weather(itinerary(t, bs, pl), bs, pl)
         if sub == 'itinerary' else [],
         # TR-11 - the trip's own days (its bookings decide them), so Plan
         # my days shows on Things to do.

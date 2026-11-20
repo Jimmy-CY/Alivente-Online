@@ -7,7 +7,10 @@ temperature, etc?" - and "Yes, show it on the computer too."
 
   Where     the city you sleep in that night (its hotel); the morning of
             check-out, the hotel you leave; else the town a flight or train
-            lands in that day. Nothing typed.
+            lands in that day. Nothing typed. RA07, 19 Nov 2026 - before
+            anything is booked, the Things to do planned that day, else
+            where most of the trip's Things to do are (Demetri, on a trip
+            with no bookings: "Why can't i see any weather??").
   Source    Open-Meteo - free, no key, no account: its place search, then
             its daily forecast (16 days ahead). Kept an hour per city.
   Shows     conditions, high / low, chance of rain and how much, wind.
@@ -129,6 +132,35 @@ def _where(city, country):
     return found
 
 
+def days_at(lat, lng):
+    """RA07 - {date: day} for a map position (a Thing to do's), or {}."""
+    if off() or lat is None or lng is None:
+        return {}
+    lat, lng = round(lat, 1), round(lng, 1)
+    key = 'tv-wx-at:%s,%s' % (lat, lng)
+    c = _cache()
+    got = c.get(key)
+    if got is not None:
+        return got
+    out = _forecast(lat, lng)
+    c.set(key, out, KEEP if out else KEEP_FAIL)
+    return out
+
+
+def _forecast(lat, lng):
+    out = {}
+    try:
+        data = fetch(FORECAST % urllib.parse.urlencode({
+            'latitude': lat, 'longitude': lng, 'daily': DAILY,
+            'timezone': 'auto', 'forecast_days': 16}))
+        d = data.get('daily') or {}
+        for i, day in enumerate(d.get('time') or []):
+            out[dt.date.fromisoformat(day)] = shape(d, i)
+    except Exception:                                   # noqa: BLE001
+        out = {}
+    return out
+
+
 def days_for(city, country=''):
     """{date: day} for a city's next 16 days, or {}."""
     if off() or not city:
@@ -138,18 +170,8 @@ def days_for(city, country=''):
     got = c.get(key)
     if got is not None:
         return got
-    out = {}
     at = _where(city, country)
-    if at:
-        try:
-            data = fetch(FORECAST % urllib.parse.urlencode({
-                'latitude': at[0], 'longitude': at[1], 'daily': DAILY,
-                'timezone': 'auto', 'forecast_days': 16}))
-            d = data.get('daily') or {}
-            for i, day in enumerate(d.get('time') or []):
-                out[dt.date.fromisoformat(day)] = shape(d, i)
-        except Exception:                               # noqa: BLE001
-            out = {}
+    out = _forecast(*at) if at else {}
     c.set(key, out, KEEP if out else KEEP_FAIL)
     return out
 
@@ -179,25 +201,65 @@ def shape(d, i):
     }
 
 
-def for_day(bookings, day, today=None):
-    """The weather where you are on `day`, with the city - or None."""
+# ------------------------------------------- RA07: before any booking
+def _placed(p):
+    return getattr(p, 'lat', None) is not None and \
+        getattr(p, 'lng', None) is not None
+
+
+def place_name(p):
+    """A name for where a Thing to do is: a known city its address names,
+    else "near" the place itself."""
+    from .where import CITIES, _words
+    w = _words(getattr(p, 'address', '') or '')
+    best, at = '', -1
+    for name in CITIES:
+        i = w.rfind(' %s ' % name)
+        if i > at:
+            best, at = name, i
+    if best:
+        return ' '.join(x[:1].upper() + x[1:] for x in best.split())
+    return 'near %s' % (getattr(p, 'name', '') or 'your things to do')
+
+
+def spot_for(places, day):
+    """(lat, lng, name) from the Things to do: those planned that day,
+    else where most of the trip's are - or None."""
+    placed = [p for p in places or [] if _placed(p)]
+    if not placed:
+        return None
+    that_day = [p for p in placed if getattr(p, 'day', None) == day]
+    pool = that_day or placed
+    groups = {}
+    for p in pool:
+        groups.setdefault((round(p.lat, 1), round(p.lng, 1)), []).append(p)
+    best = max(groups.values(), key=len)
+    p = best[0]
+    return p.lat, p.lng, place_name(p)
+
+
+def for_day(bookings, day, today=None, places=None):
+    """The weather where you are on `day`, with the city - or None. The
+    bookings say where first; RA07 - else the Things to do."""
     today = today or dt.date.today()
     if day < today or day > today + dt.timedelta(days=AHEAD):
         return None
     where = place_for(bookings, day)
-    if not where:
+    if where:
+        w = days_for(*where).get(day)
+        return dict(w, city=where[0], day=day) if w else None
+    spot = spot_for(places, day)
+    if not spot:
         return None
-    w = days_for(*where).get(day)
-    if not w:
-        return None
-    return dict(w, city=where[0], day=day)
+    w = days_at(spot[0], spot[1]).get(day)
+    return dict(w, city=spot[2], day=day) if w else None
 
 
-def for_days(bookings, days, today=None):
+def for_days(bookings, days, today=None, places=None):
     """{day: weather} for those of `days` the forecast reaches."""
     out = {}
     for d in days:
-        w = for_day(bookings, d, today)
+        w = for_day(bookings, d, today, places)
         if w:
             out[d] = w
     return out
