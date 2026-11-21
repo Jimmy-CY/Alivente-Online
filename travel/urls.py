@@ -8,6 +8,8 @@ app_name = 'travel'
 
 urlpatterns = [
     path('', views.trips, name='trips'),
+    # RA09, 21 Nov 2026 - Alivente's Google allowance (superuser).
+    path('google/', views_budget.google_allowance, name='google_allowance'),
     path('new/', views.trip_new, name='trip_new'),
     path('<int:trip_id>/', views.trip, name='trip'),
     path('<int:trip_id>/costs/', views.trip, name='trip_costs'),
@@ -61,6 +63,11 @@ urlpatterns = [
     path('<int:trip_id>/ideas/', views_ideas.ideas, name='ideas'),
     path('<int:trip_id>/ideas/add/', views_ideas.add, name='ideas_add'),
     path('<int:trip_id>/ideas/hide/', views_ideas.hide, name='ideas_hide'),
+    # RA09, 21 Nov 2026 - Check them now.
+    path('<int:trip_id>/ideas/recheck/', views_ideas.recheck,
+         name='ideas_recheck'),
+    path('m/trip/<int:trip_id>/ideas/recheck/', views_ideas.recheck,
+         name='m_ideas_recheck'),
     path('<int:trip_id>/ideas/more/', views_ideas.more, name='ideas_more'),
     path('m/trip/<int:trip_id>/ideas/new/', views_ideas.setup,
          name='m_ideas_setup'),

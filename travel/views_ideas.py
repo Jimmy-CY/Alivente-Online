@@ -44,8 +44,21 @@ def _wish_url(request, t):
     return reverse('travel:trip_wishlist', args=[t.pk])
 
 
+def _gq(request):
+    """RA09 - what is left of the Google allowance (only with a key)."""
+    from . import gplaces as G
+    from . import gquota
+    if not G.key():
+        return {}
+    return {'gq': gquota.usage(), 'gq_admin': request.user.is_superuser}
+
+
 def _base(request, t):
-    return {'trip': t, 'tab': 'wish', 'sub': 'wish',
+    gq = _gq(request)
+    return {'trip': t, 'tab': 'wish', 'sub': 'wish', **gq,
+            # RA09 - suggestions waiting for a Google check.
+            'n_waiting': ID.waiting(t).count() if gq else 0,
+            'recheck_url': _url(request, 'ideas_recheck', t.pk),
             'back': _wish_url(request, t), 'per_city': ID.PER_CITY,
             'setup_url': _url(request, 'ideas_setup', t.pk),
             'add_url': _url(request, 'ideas_add', t.pk),
@@ -226,6 +239,32 @@ def add(request, trip_id):
     n = ID.add(t, ids, request.user)
     return redirect(_wish_url(request, t) + ('&' if _phone(request) else
                                              '?') + 'added=%d' % n)
+
+
+@require_POST
+@travel_view
+def recheck(request, trip_id):
+    """RA09, 21 Nov 2026 - Check them now: suggestions made while Google's
+    allowance was used up, checked on Google today if there is room."""
+    from . import gplaces as G
+    from . import gquota
+    t = _trip(request, trip_id)
+    n = ID.waiting(t).count()
+    u = gquota.usage()
+    if not n or not G.key():
+        return _back(request, t)
+    if not u['room']:
+        messages.error(request, 'Today\'s Google allowance is used up - '
+                       'they will be checked tomorrow morning.')
+        return _back(request, t)
+    cities = ID.waiting(t).values('city').distinct().count()
+    limit = min(n + cities, u['day_left'], u['month_left'], 60)
+    used, done = ID.recheck([t], limit)
+    left = ID.waiting(t).count()
+    messages.success(request, '%d suggestion%s checked on Google%s.' % (
+        done, '' if done == 1 else 's',
+        ' - %d still to check, tomorrow morning' % left if left else ''))
+    return _back(request, t)
 
 
 @require_POST

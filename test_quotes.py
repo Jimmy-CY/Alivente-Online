@@ -102,6 +102,9 @@ import django                                               # noqa: E402
 django.setup()
 from wellness import quotes as Q, daily_line as DL          # noqa: E402
 # ==========================================================================
+# RA09, 21 Nov 2026 - a page shows a quote HTML-escaped (an apostrophe
+# becomes &#x27;): compare it as shown, as test_wellness_six does (RA07).
+from django.utils.html import escape as _esc                # noqa: E402
 head('1. THE LIBRARY')
 # ==========================================================================
 ok(len(Q.QUOTES) == 240, '240 quotes', len(Q.QUOTES))
@@ -239,13 +242,13 @@ if have_db:
             h1 = c.get('/wellness/').content.decode()
             pf.refresh_from_db()
             qid = DL.today_id(pf.prefs, today)
-            ok(qid and Q.BY_ID[qid]['text'] in h1 and
+            ok(qid and _esc(Q.BY_ID[qid]['text']) in h1 and
                pf.prefs.get('quotes_seen') == [qid],
                'TODAY: the quote shown is kept on the person\'s record as '
                'seen')
             h2 = c.get('/wellness/').content.decode()
             pf.refresh_from_db()
-            ok(Q.BY_ID[qid]['text'] in h2 and
+            ok(_esc(Q.BY_ID[qid]['text']) in h2 and
                pf.prefs.get('quotes_seen') == [qid],
                '  opened again: the same quote, counted once')
             seen = [i for i in Q.IDS if i != qid][:150] + [qid]
@@ -280,7 +283,7 @@ if have_db:
                pf.prefs['quotes_seen'][-1] == listed[0],
                '  and its pick is today\'s quote, counted as seen')
             h4 = c.get('/wellness/').content.decode()
-            ok(Q.BY_ID[listed[0]]['text'] in h4 and 'Steady does it.' in h4,
+            ok(_esc(Q.BY_ID[listed[0]]['text']) in h4 and 'Steady does it.' in h4,
                '  Today shows it, with the line')
             raise Rollback
     except Rollback:

@@ -489,3 +489,65 @@ def page_state(trip, request):
     if n.isdigit():
         out['ideas_added'] = int(n)
     return out
+
+
+# ---------------------------------------------- RA09: checked later
+# Demetri, 21 Nov: "If a user does a search and the daily allowance is
+# exceeded, can the system make a note of this and then the next day, when
+# the daily allowance is reset, his things to do information is
+# automatically updated? Or he is prompted if he wants to update?" - both:
+# the morning catch-up (travel/gquota.daily_recheck) and Check them now.
+def waiting(trip):
+    """Suggestions still to look at that Google has not checked."""
+    return trip.ideas.filter(checked=False, state='')
+
+
+def recheck(trips, limit, today=None):
+    """Check waiting suggestions on Google - trips starting soonest first,
+    over at most `limit` searches (a city's centre counts as one). Closed
+    for good: removed. Stops when the allowance is used or Google refuses.
+    Returns (searches, suggestions checked)."""
+    from .views import span
+    today = today or dt.date.today()
+    rows = []
+    for t in trips:
+        bookings = list(t.bookings.all())
+        start, end = span(t, bookings)
+        if end and end < today:
+            continue
+        rows.append((start or dt.date.max, t, bookings))
+    rows.sort(key=lambda r: r[0])
+    used = done = 0
+    for _start, t, bookings in rows:
+        centres = {}
+        for i in waiting(t).select_related('run').order_by('city',
+                                                           'position'):
+            if used >= limit or not G.enabled():
+                return used, done
+            c = {'name': i.city, 'country': ''}
+            if i.city not in centres:
+                centres[i.city] = None
+                if used + 2 > limit:
+                    return used, done
+                used += 1
+                try:
+                    f = G.search('%s%s' % (i.city, ', %s' % t.where
+                                           if t.where else ''))
+                    if f and f['lat'] is not None:
+                        centres[i.city] = (f['lat'], f['lng'])
+                except G.GoogleError as e:
+                    logger.warning('travel recheck centre %s: %s', i.city, e)
+                    return used, done
+            km = ((i.run.answers or {}) if i.run else {}).get('km')
+            used += 1
+            keep = check(i, centres[i.city], days_in(t, bookings, c),
+                         km if isinstance(km, int) else None)
+            if not keep:
+                i.delete()
+                done += 1
+                continue
+            if not i.checked:           # Google said no: try another day
+                return used, done
+            i.save()
+            done += 1
+    return used, done

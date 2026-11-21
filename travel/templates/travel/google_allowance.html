@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}Google allowance - Travel{% render_help_modal "travel" %}
+{% endblock %}
+{# RA09, 21 Nov 2026 - how many Google Places searches Alivente may make (travel/gquota.py). Demetri: "In reality a monthly limit would work better for me". #}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">GOOGLE ALLOWANCE</h4>
+<div class="page-action-buttons">
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
+    <a href="{{ back }}" class="btn action-back" aria-label="Back"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+<div class="tv-wrap">
+<form method="post" class="form-card" style="max-width: 640px" data-google-allowance>{% csrf_token %}
+    <p class="small">Suggest things to do checks each suggestion on Google &ndash; opening days, distance, rating and price. Every check is one Google search. Google lets a project cap searches only <b>per day</b>; here you set Alivente&rsquo;s own <b>monthly</b> allowance too. When either is used up, suggestions still come, just not checked on Google, until the next day or the 1st. At 80% of the month you get one email.</p>
+    {% include 'travel/_gquota.html' %}
+    <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px">
+        <label style="margin: 0"><span class="small tv-sub" style="display: block">A month</span><input name="per_month" class="form-control tv-money" inputmode="numeric" value="{{ a.per_month }}" style="width: 140px"></label>
+        <label style="margin: 0"><span class="small tv-sub" style="display: block">A day</span><input name="per_day" class="form-control tv-money" inputmode="numeric" value="{{ a.per_day }}" style="width: 140px"></label>
+    </div>
+    <p class="small tv-sub" style="margin: 8px 0 12px">Google&rsquo;s free amount for these searches is about 1,000 a month; beyond it, roughly $35 per 1,000. Google&rsquo;s own cap on the key&rsquo;s project is 100 a day &ndash; a higher day here does nothing unless Google&rsquo;s is raised too.</p>
+    <button type="submit" class="btn action-primary">Save</button>
+</form>
+</div>
+{% render_help_modal "travel" %}
+{% endblock %}

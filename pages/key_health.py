@@ -295,6 +295,11 @@ def probe_google(opener=None):
     key = (os.environ.get('GOOGLE_PLACES_KEY') or '').strip()
     if not key:
         return False, 'missing', WORDS['missing'] % 'GOOGLE_PLACES_KEY'
+    try:                    # RA09 - counted in Alivente's Google allowance
+        from travel import gquota
+        gquota.note()
+    except Exception:                                   # noqa: BLE001
+        pass
     req = urllib.request.Request(
         'https://places.googleapis.com/v1/places:searchText',
         data=json.dumps({'textQuery': 'Nicosia', 'maxResultCount': 1}
@@ -406,6 +411,11 @@ def start_watcher():
                 check_all()
             except Exception:                           # noqa: BLE001
                 logger.exception('key health watcher')
+            try:            # RA09 - the morning catch-up of suggestions
+                from travel import gquota
+                gquota.daily_recheck()
+            except Exception:                           # noqa: BLE001
+                logger.exception('travel ideas catch-up')
             finally:
                 close_old_connections()
             time.sleep(EVERY)

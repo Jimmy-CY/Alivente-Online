@@ -6,6 +6,7 @@
 <form method="post" action="{% url 'travel:m_ideas_setup' trip.pk %}" data-idea-form data-idea-steps style="display: flex; flex-direction: column; gap: 12px">{% csrf_token %}
   <div class="tv-pl-stephead" data-idea-bar aria-hidden="true"><span class="on"></span><span></span></div>
   <div class="tv-muted tv-small" data-idea-steplabel>About {{ per_city }} ideas a city &middot; nothing already on your list</div>
+  {% include 'travel/_gquota.html' %}
   <section class="tv-card" style="display: flex; flex-direction: column; gap: 14px">{% include 'travel/_ideas_choices.html' %}</section>
   <div class="tv-pl-bottom">
     <button type="button" class="tv-btn sec" data-idea-back hidden>Back</button>

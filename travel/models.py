@@ -698,3 +698,33 @@ class Spend(models.Model):
 
     def __str__(self):
         return '%s %s %s' % (self.day, self.amount, self.currency)
+
+
+# RA09, 21 Nov 2026 - GOOGLE'S ALLOWANCE, kept by Alivente (travel/gquota.py).
+# Google only lets a project cap searches per day (100 on this one), and
+# Demetri: "In reality a monthly limit would work better for me" - so
+# Alivente counts every Google Places search it makes, stops checking on
+# Google once the month's (or the day's) allowance is used, shows what is
+# left on Suggest things to do, and emails him at 80% of the month. And:
+# "the next day, when the daily allowance is reset, his things to do
+# information is automatically updated? Or he is prompted" - both.
+class GoogleUse(models.Model):
+    """Google Places searches Alivente made on one day."""
+    day = models.DateField(unique=True)
+    searches = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = 'travel_google_use'
+        ordering = ['-day']
+
+
+class GoogleAllowance(models.Model):
+    """The one row: how many Google searches a month and a day."""
+    per_month = models.PositiveIntegerField(default=1000)
+    per_day = models.PositiveIntegerField(default=100)
+    warned_month = models.CharField(max_length=7, blank=True, default='')
+    # The day the morning catch-up last checked waiting suggestions.
+    rechecked_on = models.DateField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'travel_google_allowance'

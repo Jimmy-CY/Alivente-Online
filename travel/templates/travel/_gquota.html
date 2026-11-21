@@ -1,0 +1,5 @@
+{% comment %} RA09, 21 Nov 2026 - what is left of Alivente's Google allowance, before and after a Suggest run (travel/gquota.py). Demetri: "a monthly limit would work better for me". {% endcomment %}{% if gq %}<div class="tv-gq{% if not gq.room %} is-out{% elif gq.pct >= 80 %} is-low{% endif %}" data-gquota>
+  <span><b>Google checks left</b> &middot; this month {{ gq.month_left }} of {{ gq.month_limit }} &middot; today {{ gq.day_left }} of {{ gq.day_limit }}</span>
+  {% if not gq.room %}<span data-gquota-out>{% if gq.month_out %}This month&rsquo;s are used up{% else %}Today&rsquo;s are used up{% endif %} &ndash; suggestions still come, but without the Google check (closed days, distance, rating, price) until {% if gq.month_out %}the 1st{% else %}tomorrow{% endif %} &ndash; then they&rsquo;re checked automatically in the morning.</span>{% else %}<span class="tv-gq-note">One suggestion checked uses one (about 33 for a city with sights, restaurants and cafés).</span>{% endif %}
+  {% if gq_admin %}<a href="{% url 'travel:google_allowance' %}" data-gquota-change>Change the allowance</a>{% endif %}
+</div>{% endif %}

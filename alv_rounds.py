@@ -1672,6 +1672,8 @@ ROUNDS = [
     '.bak_ra07',
     # RA08, 20 Nov 2026 - the key watch spares Google's daily limit.
     '.bak_ra08',
+    # RA09, 21 Nov 2026 - a monthly Google allowance; what is left.
+    '.bak_ra09',
 ]
 
 

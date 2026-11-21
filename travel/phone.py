@@ -66,8 +66,9 @@ ASSET_TYPES = {
 # RA05, 19 Nov 2026 - the daily spending budget, + Spending.
 # RA06, 19 Nov 2026 - the weather; days with nothing recorded.
 # RA07, 19 Nov 2026 - spending on the trip's days only; change spending.
-SW_VERSION = 'tv21-1'
-SW_ASSETS = '362b7b2560da'
+# RA09, 21 Nov 2026 - Google checks left.
+SW_VERSION = 'tv22-1'
+SW_ASSETS = '14fa92f850f2'
 
 
 def page(request, template, ctx):

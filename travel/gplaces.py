@@ -50,7 +50,12 @@ def key():
 
 
 def enabled():
-    return bool(key())
+    # RA09, 21 Nov 2026 - and only while this month's and today's Google
+    # allowance lasts (travel/gquota.py).
+    if not key():
+        return False
+    from . import gquota
+    return gquota.has_room()
 
 
 def open_days(hours):
@@ -90,6 +95,11 @@ def search(text, near=None, opener=None):
     k = key()
     if not k:
         raise GoogleError('No Google key.')
+    from . import gquota                # RA09 - counted, within allowance
+    if not gquota.has_room():
+        raise GoogleError('This month\'s (or today\'s) Google allowance '
+                          'is used up.')
+    gquota.note()
     body = {'textQuery': text[:300], 'maxResultCount': 1,
             'languageCode': 'en'}
     if near and near[0] is not None:

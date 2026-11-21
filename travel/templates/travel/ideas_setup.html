@@ -12,6 +12,7 @@
 </div>
 <div class="tv-wrap">
 <p class="tv-sub" style="margin: 0 0 14px">Tell me where and what you like, and I&rsquo;ll suggest about {{ per_city }} things to do in each city. Nothing already in your Things to do is suggested, and nothing is added until you tick it.{% if again %} New suggestions replace the ones you haven&rsquo;t ticked or hidden.{% endif %}</p>
+{% include 'travel/_gquota.html' %}
 <form method="post" action="{% url 'travel:ideas_setup' trip.pk %}" data-idea-form>{% csrf_token %}
   <div class="tv-pl-cards3">{% include 'travel/_ideas_choices.html' with desk=True %}</div>
   <div style="display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 16px">

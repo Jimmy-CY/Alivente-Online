@@ -152,3 +152,36 @@ def m_budget_form(request, trip_id):
     return page(request, 'travel/m/budget.html', {
         'trip': t, 'tab': 'trips', 'days': B.trip_days(start, end),
         'bud': B.summary(t, [], start, end)})
+
+
+# ------------------------------------------------ RA09: Google allowance
+@travel_view
+def google_allowance(request):
+    """RA09, 21 Nov 2026 - a superuser sets how many Google searches
+    Alivente may make in a month and in a day (travel/gquota.py)."""
+    from django.shortcuts import render
+    from . import gquota
+    if not request.user.is_superuser:
+        raise Http404
+    a = gquota.allowance()
+    if request.method == 'POST':
+        def whole(v, lo, hi):
+            try:
+                n = int(str(v).replace(',', '').strip())
+            except (TypeError, ValueError):
+                return None
+            return n if lo <= n <= hi else None
+        m = whole(request.POST.get('per_month'), 0, 100000)
+        d = whole(request.POST.get('per_day'), 0, 10000)
+        if m is None or d is None:
+            messages.error(request, 'Type whole numbers: a month up to '
+                           '100,000, a day up to 10,000.')
+        else:
+            a.per_month, a.per_day = m, d
+            a.save(update_fields=['per_month', 'per_day'])
+            messages.success(request, 'Google allowance saved - %d a month, '
+                             '%d a day.' % (m, d))
+            return redirect('travel:google_allowance')
+    return render(request, 'travel/google_allowance.html', {
+        'a': a, 'gq': gquota.usage(),
+        'back': request.GET.get('back') or '/travel/'})
