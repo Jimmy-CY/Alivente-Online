@@ -1,7 +1,7 @@
 {% comment %} RA05, 19 Nov 2026 - the daily spending budget on the Costs tab (travel/budget.py). Demetri: "a budget for total holiday spend (which would be a calculation based on average daily spend) ... shows me if I am ahead or behind the schedule ... I can see where I have spent more on a day". Bookings are actual costs, never budgeted. Only the owner sets it or adds spending. {% endcomment %}
 {% if bud.set %}
 <section class="form-card tv-bud" data-budget>
-    <div class="tv-row"><h3 class="form-section-title" style="margin: 0"><i class="fas fa-wallet" aria-hidden="true"></i> Daily spending budget</h3>{% if can_spend %}<button type="button" class="btn action-secondary btn-sm" data-budget-edit aria-expanded="false"><i class="fas fa-pen" aria-hidden="true"></i> Change</button>{% endif %}</div>
+    <div class="tv-row"><h3 class="form-section-title" style="margin: 0"><i class="fas fa-wallet" aria-hidden="true"></i> Daily spending budget</h3>{% if can_spend %}<span class="tv-bud-tools"><button type="button" class="btn action-secondary btn-sm" data-budget-edit aria-expanded="false" title="Change the budget" aria-label="Change the budget"><i class="fas fa-pen" aria-hidden="true"></i></button>{% if bud.set %}<form method="post" action="{% url 'travel:budget_save' trip.pk %}" style="margin: 0">{% csrf_token %}<button type="submit" name="clear" value="1" class="btn action-secondary btn-sm tv-bud-trash" title="Remove the budget" aria-label="Remove the budget" onclick="return confirm('Remove the budget? Your spending stays.')" data-budget-clear><i class="fas fa-trash-alt" aria-hidden="true"></i></button></form>{% endif %}</span>{% endif %}</div>
     <p class="tv-sub" style="margin: 2px 0 12px" data-budget-sum>{% if bud.by == 'total' %}<b class="tv-ink">{{ bud.total_label }}</b> for the holiday{% if bud.days %} &divide; {{ bud.days }} day{{ bud.days|pluralize }} = {{ bud.per_day_label }} a day{% endif %}{% else %}{{ bud.per_day_label }} a day{% if bud.days %} &times; {{ bud.days }} day{{ bud.days|pluralize }} = <b class="tv-ink">{{ bud.total_label }}</b> for the holiday{% endif %}{% endif %}. Bookings are not part of it.</p>
     <div class="tv-bud-grid">
     {% if bud.when == 'on' %}
@@ -35,7 +35,8 @@
 {% endif %}
 
 <section class="form-card" data-spending>
-    {% comment %} RA07, 19 Nov 2026 - only a day of the trip; click a spending to change it; any outside the trip's dates listed apart. {% endcomment %}
+    {% comment %} RA10, 21 Nov 2026 - Demetri: "Can we not rather just put a trash can next to the pencil? Then remove the Delete button from under the amount?" {% endcomment %}
+{% comment %} RA07, 19 Nov 2026 - only a day of the trip; click a spending to change it; any outside the trip's dates listed apart. {% endcomment %}
     <h3 class="form-section-title">Daily spending</h3>
     {% if can_spend %}{% if trip_start %}<form method="post" action="{% url 'travel:spend_add' trip.pk %}" class="tv-spend-add" data-spend-form>{% csrf_token %}
         <div><label for="sp-a">Amount</label><input id="sp-a" name="amount" class="form-control tv-money" inputmode="decimal" placeholder="0.00" required></div>
@@ -49,14 +50,13 @@
     {% if d.outside %}{% ifchanged d.outside %}<div class="tv-spend-out" id="spending-outside" data-spend-outside><b>Outside the trip&rsquo;s dates</b> &ndash; {% if can_spend %}click one to move it to a day of the trip, or delete it.{% else %}not part of the trip&rsquo;s days.{% endif %} Not counted against the budget; still in the trip&rsquo;s costs.</div>{% endifchanged %}{% endif %}
     <div class="tv-spend-day{% if d.outside %} is-outside{% endif %}" data-spend-day="{{ d.day|date:'Y-m-d' }}" id="sp{{ d.day|date:'Ymd' }}">
         <div class="tv-row"><b>{% if d.day == today %}Today &middot; {% endif %}{{ d.day|date:"D j M" }}</b><span class="{% if d.over and not d.outside %}tv-over{% else %}tv-sub{% endif %}">{{ d.label }}{% if bud.per_day_label and not d.outside %}{% if d.over %} &middot; {{ d.over_by }} over{% else %} of {{ bud.per_day_label }}{% endif %}{% endif %}</span></div>
-        {% for s in d.rows %}{% if can_spend %}<details class="tv-spend-row" data-spend="{{ s.pk }}"><summary class="tv-row" title="Change or delete"><span>{{ s.what|default:"Spending" }}{% if s.orig_label %} <span class="tv-sub">&middot; {{ s.orig_label }}</span>{% endif %}</span><span class="tv-money">{{ s.eur_label }} <i class="fas fa-pen tv-sub" aria-hidden="true"></i></span></summary>
+        {% for s in d.rows %}{% if can_spend %}<details class="tv-spend-row" data-spend="{{ s.pk }}"><summary class="tv-row" title="Change or delete"><span>{{ s.what|default:"Spending" }}{% if s.orig_label %} <span class="tv-sub">&middot; {{ s.orig_label }}</span>{% endif %}</span><span class="tv-money">{{ s.eur_label }} <i class="fas fa-pen tv-sub" aria-hidden="true"></i><button type="submit" form="sd{{ s.pk }}" class="tv-spend-trash" title="Delete" aria-label="Delete this spending" onclick="return confirm('Delete this spending?')" data-spend-del><i class="fas fa-trash-alt" aria-hidden="true"></i></button></span></summary>
             <form method="post" action="{% url 'travel:spend_edit' s.pk %}" class="tv-spend-add tv-spend-edit" data-spend-edit>{% csrf_token %}
                 <div><label for="se-a{{ s.pk }}">Amount</label><input id="se-a{{ s.pk }}" name="amount" class="form-control tv-money" inputmode="decimal" value="{{ s.amount }}" required></div>
                 <div><label for="se-c{{ s.pk }}">Currency</label><select id="se-c{{ s.pk }}" name="currency" class="form-control">{% for c in currencies %}<option value="{{ c }}"{% if c == s.currency %} selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
                 <div><label for="se-d{{ s.pk }}">Day</label><input id="se-d{{ s.pk }}" type="date" name="day" class="form-control" value="{% if d.outside %}{{ spend_day|date:'Y-m-d' }}{% else %}{{ s.day|date:'Y-m-d' }}{% endif %}" min="{{ trip_start|date:'Y-m-d' }}" max="{{ trip_end|date:'Y-m-d' }}"></div>
                 <div class="tv-spend-note"><label for="se-n{{ s.pk }}">Note (optional)</label><input id="se-n{{ s.pk }}" name="what" class="form-control" maxlength="120" value="{{ s.what }}"></div>
                 <button type="submit" class="btn action-primary btn-sm">Save</button>
-                <button type="submit" form="sd{{ s.pk }}" class="btn action-secondary action-danger btn-sm" onclick="return confirm('Delete this spending?')" data-spend-del>Delete</button>
             </form><form method="post" action="{% url 'travel:spend_delete' s.pk %}" id="sd{{ s.pk }}" hidden>{% csrf_token %}</form>
         </details>{% else %}<div class="tv-row tv-spend-row" data-spend="{{ s.pk }}"><span>{{ s.what|default:"Spending" }}{% if s.orig_label %} <span class="tv-sub">&middot; {{ s.orig_label }}</span>{% endif %}</span><span class="tv-money">{{ s.eur_label }}</span></div>{% endif %}{% endfor %}
     </div>

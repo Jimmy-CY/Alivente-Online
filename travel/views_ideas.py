@@ -22,6 +22,14 @@ from .views import span, travel_view
 from .views_places import _trip
 
 
+# RA10, 21 Nov 2026 - the reasons a suggestion is outside what you asked
+# for, in the order their groups are shown. Not found on Google is not one:
+# it stays with the rest, with its note.
+OUTSIDE = {'far': 'Further from the centre than you asked',
+           'closed': 'Closed on your days',
+           'temp': 'Temporarily closed'}
+
+
 def _phone(request):
     return request.resolver_match.url_name.startswith('m_')
 
@@ -164,6 +172,11 @@ def ideas(request, trip_id):
     first_new = None
     for i in all_ideas:
         i.new = fresh is not None and i.run_id == fresh
+    # RA10, 21 Nov 2026 - outside what you asked for (too far, closed on
+    # your days, temporarily closed) goes to its own closed section at the
+    # end of the city (Demetri: "Let's put this in RA10. Let's start it
+    # closed for now."), so Go to the first goes to one that fits if any.
+    for i in sorted(all_ideas, key=lambda i: i.flag in OUTSIDE):
         if i.new and i.state == '' and first_new is None:
             first_new = i.pk
     counts = [{'city': c, 'n': sum(1 for i in shown if i.city == c)}
@@ -174,17 +187,26 @@ def ideas(request, trip_id):
             continue
         mine = [i for i in all_ideas if i.city == c and (
             i.state == '' or (show_hidden and i.state == 'hidden'))]
+        for i in mine:
+            i.ticked = str(i.pk) in ticked
+        fits = [i for i in mine if i.flag not in OUTSIDE]
         by = []
         for k, n, _w in ID.INTERESTS + [('', 'Other', '')]:
-            these = [i for i in mine if (i.interest or '') == k or (
+            these = [i for i in fits if (i.interest or '') == k or (
                 k == '' and i.interest not in ID.LABEL)]
-            for i in these:
-                i.ticked = str(i.pk) in ticked
-            # RA03 - the greyed out ones last in their group.
-            these.sort(key=lambda i: bool(i.flag))
             if these:
                 by.append({'name': n, 'ideas': these})
-        groups.append({'city': c, 'by': by,
+        out = []                        # RA10 - grouped by why
+        for f, n in OUTSIDE.items():
+            these = [i for i in mine if i.flag == f]
+            if these:
+                out.append({'name': n, 'ideas': these})
+        n_out = sum(len(b['ideas']) for b in out)
+        groups.append({'city': c, 'by': by, 'out': out, 'n_out': n_out,
+                       'out_open': any(i.ticked for b in out
+                                       for i in b['ideas']) or any(
+                           i.pk == first_new for b in out
+                           for i in b['ideas']),
                        'n': sum(1 for i in mine if i.state == ''),
                        'added': sum(1 for i in all_ideas if i.city == c
                                     and i.state == 'added')})
@@ -200,6 +222,7 @@ def ideas(request, trip_id):
         'saved': last.created_at if last else None,
         'ticked_n': len(ticked),
         'n_new': sum(1 for i in shown if i.new), 'first_new': first_new,
+        'n_new_out': sum(1 for i in shown if i.new and i.flag in OUTSIDE),
         # RA03 - said when the opening days and distances were not
         # checked on Google (no key yet).
         'unchecked': bool(last) and (last.answers or {}).get(
@@ -259,7 +282,8 @@ def recheck(request, trip_id):
         return _back(request, t)
     cities = ID.waiting(t).values('city').distinct().count()
     limit = min(n + cities, u['day_left'], u['month_left'], 60)
-    used, done = ID.recheck([t], limit)
+    with gquota.purpose('now', user=request.user.pk):  # RA10 - who
+        used, done = ID.recheck([t], limit)
     left = ID.waiting(t).count()
     messages.success(request, '%d suggestion%s checked on Google%s.' % (
         done, '' if done == 1 else 's',

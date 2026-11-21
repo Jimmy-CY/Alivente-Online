@@ -297,7 +297,8 @@ def probe_google(opener=None):
         return False, 'missing', WORDS['missing'] % 'GOOGLE_PLACES_KEY'
     try:                    # RA09 - counted in Alivente's Google allowance
         from travel import gquota
-        gquota.note()
+        with gquota.purpose('key'):                     # RA10 - why
+            gquota.note()
     except Exception:                                   # noqa: BLE001
         pass
     req = urllib.request.Request(

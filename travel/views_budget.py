@@ -182,6 +182,10 @@ def google_allowance(request):
             messages.success(request, 'Google allowance saved - %d a month, '
                              '%d a day.' % (m, d))
             return redirect('travel:google_allowance')
+    try:                                # RA10 - who used them
+        used = gquota.used_by()
+    except Exception:                                   # noqa: BLE001
+        used = {'today': [], 'month': []}
     return render(request, 'travel/google_allowance.html', {
-        'a': a, 'gq': gquota.usage(),
+        'a': a, 'gq': gquota.usage(), 'used': used,
         'back': request.GET.get('back') or '/travel/'})

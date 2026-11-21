@@ -67,8 +67,10 @@ ASSET_TYPES = {
 # RA06, 19 Nov 2026 - the weather; days with nothing recorded.
 # RA07, 19 Nov 2026 - spending on the trip's days only; change spending.
 # RA09, 21 Nov 2026 - Google checks left.
-SW_VERSION = 'tv22-1'
-SW_ASSETS = '14fa92f850f2'
+# RA10, 21 Nov 2026 - Not found on Google; the distance note's own class;
+# outside what you asked for, in its own section.
+SW_VERSION = 'tv23-1'
+SW_ASSETS = '1af680bf37b8'
 
 
 def page(request, template, ctx):

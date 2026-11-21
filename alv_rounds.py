@@ -1674,6 +1674,8 @@ ROUNDS = [
     '.bak_ra08',
     # RA09, 21 Nov 2026 - a monthly Google allowance; what is left.
     '.bak_ra09',
+    # RA10, 21 Nov 2026 - Not found on Google; who used each check.
+    '.bak_ra10',
 ]
 
 

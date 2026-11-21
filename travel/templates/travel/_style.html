@@ -269,7 +269,15 @@ a.tv-bk:hover b { color: var(--alv-accent); }
 .tv-id-card.is-dim { background: #F3F5F6; }
 .tv-id-card.is-dim .tv-id-pick b, .tv-id-card.is-dim .tv-id-blurb, .tv-id-card.is-dim .tv-id-tags { opacity: .62; }
 .tv-id-flag { align-self: flex-start; font-size: .78rem; font-weight: 600; color: #6B3A00; background: #FCEFD9; border-radius: 999px; padding: 3px 10px; }
-.tv-id-flag.far { color: #0C447C; background: #E6F1FB; }
+.tv-id-flag.is-far { color: #0C447C; background: #E6F1FB; }
+.tv-id-flag.is-nf { color: #45545A; background: #EEF1F2; }
+.tv-id-out { grid-column: 1 / -1; border: 1px solid #D9E0E3; border-radius: 12px; background: #F7F9FA; padding: 0 12px; }
+.tv-id-out > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 12px 0; cursor: pointer; list-style: none; }
+.tv-id-out > summary::-webkit-details-marker { display: none; }
+.tv-id-out > summary::before { content: "\25B8"; color: #5B6B72; }
+.tv-id-out[open] > summary::before { content: "\25BE"; }
+.tv-id-out > summary span { font-size: .85rem; color: #5B6B72; }
+.tv-id-out-body { padding: 0 0 12px; }
 .tv-id-meta { font-size: .8rem; color: #0B5A63; font-weight: 600; }
 .tv-id-meta span { color: #5B6B72; font-weight: 400; }
 .tv-id-km { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .95rem; }
@@ -368,6 +376,8 @@ a.tv-bk:hover b { color: var(--alv-accent); }
 .tv-spend-add .tv-spend-note { flex: 1 1 180px; }
 .tv-spend-add .form-control { width: 100%; min-width: 0; height: 38px; box-sizing: border-box; }
 .tv-spend-add button { height: 38px; white-space: nowrap; }
+/* RA10, 21 Nov 2026 - the Currency drop-down was taller than the rest: base.html's select.form-control:not([size]):not([multiple]) { height: auto } outranks .tv-spend-add .form-control, so match its shape. */
+.tv-spend-add select.form-control:not([size]):not([multiple]) { height: 38px; padding-top: 0; padding-bottom: 0; }
 .tv-spend-add label { font-size: .8rem; color: var(--alv-ink-soft); margin: 0 0 2px; }
 .tv-spend-day { padding: 8px 0 4px; border-top: 1px solid var(--alv-line-soft); scroll-margin-top: 80px; }
 .tv-spend-row { padding: 4px 0 4px 10px; font-size: .92rem; }
@@ -402,6 +412,11 @@ details.tv-spend-row > summary { list-style: none; cursor: pointer; }
 details.tv-spend-row > summary::-webkit-details-marker { display: none; }
 details.tv-spend-row[open] > summary { font-weight: 600; }
 .tv-spend-edit { margin: 6px 0 8px; }
+.tv-spend-trash { border: 0; background: none; padding: 0 2px 0 10px; color: #B4433A; cursor: pointer; font-size: .9em; line-height: 1; }
+.tv-spend-trash:hover, .tv-spend-trash:focus { color: #8A2A22; }
+.tv-bud-tools { display: inline-flex; gap: 6px; align-items: center; }
+.tv-bud-tools .btn { min-width: 34px; }
+.tv-bud-trash, .tv-bud-trash:hover { color: #B4433A; }
 .tv-spend-link { color: inherit; text-decoration: none; padding: 4px 0; }
 /* RA09, 21 Nov 2026 - Google checks left. */
 .tv-gq { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; margin: 0 0 12px; padding: 8px 12px; border-radius: 10px; background: #EAF4FB; border: 1px solid #CFE3F2; color: #1D2B31; font-size: .88rem; }

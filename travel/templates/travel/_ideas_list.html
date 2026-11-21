@@ -1,8 +1,13 @@
+{% comment %} RA10, 21 Nov 2026 - what is outside what you asked for goes to its own section at the end of the city, closed to start, grouped by why (Demetri: "Let's put this in RA10. Let's start it closed for now."); open when one in it is ticked or is the first new one. {% endcomment %}
 {% comment %} TR-12 - the suggestions, by city and then by what you like, inside the Add form; desk=True lays them out as a grid. {% endcomment %}
 {% for g in groups %}<div class="{% if desk %}tv-id-grid{% else %}tv-id-list{% endif %}" data-idea-cityblock>
   <div class="tv-id-cityhead"><b>{{ g.city }}</b><span style="font-size: .85rem; color: #5B6B72">{{ g.n }} idea{{ g.n|pluralize }}{% if g.added %} &middot; {{ g.added }} added{% endif %}</span></div>
   {% for b in g.by %}<div class="tv-id-group">{{ b.name }}</div>
   {% for i in b.ideas %}{% include 'travel/_ideas_card.html' %}{% endfor %}{% endfor %}
+  {% if g.out %}<details class="tv-id-out" data-idea-outside{% if g.out_open %} open{% endif %}><summary><b>Outside what you asked for ({{ g.n_out }})</b><span>Further than your km, closed on your days or temporarily closed &ndash; you can still tick them.</span></summary>
+    <div class="{% if desk %}tv-id-grid{% else %}tv-id-list{% endif %} tv-id-out-body">{% for b in g.out %}<div class="tv-id-group">{{ b.name }}</div>
+    {% for i in b.ideas %}{% include 'travel/_ideas_card.html' %}{% endfor %}{% endfor %}</div>
+  </details>{% endif %}
   {% if not g.n %}<p class="tv-id-group" style="text-transform: none; letter-spacing: 0; font-weight: 400; font-size: .9rem">Nothing left to look at for {{ g.city }}.</p>{% endif %}
   <div class="tv-id-more"><button type="submit" formaction="{{ more_url }}" formnovalidate name="more" value="{{ g.city }}" data-idea-more>Show me more for {{ g.city }}</button><span style="font-size: .8rem; color: #5B6B72; text-align: center">About {{ per_city }} more &ndash; never one already shown, hidden or on your list</span></div>
 </div>{% endfor %}

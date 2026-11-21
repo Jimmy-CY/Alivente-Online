@@ -250,8 +250,10 @@ def closed_words(days, city):
 
 def check(i, centre, days, km):
     """Look the suggestion up on Google and mark it. False: closed for
-    good - not shown. Unchecked (no key, nothing found, Google down) is
-    shown as it came."""
+    good - not shown. Unchecked (no key, Google down) is shown as it came.
+    RA10, 21 Nov 2026 - nothing found is checked too, marked Not found on
+    Google: not tried again every morning, and it no longer stops the
+    morning catch-up for everything behind it."""
     if not G.enabled():
         return True
     try:
@@ -260,6 +262,9 @@ def check(i, centre, days, km):
         logger.warning('travel ideas check %s: %s', i.name, e)
         return True
     if not f:
+        i.checked = True
+        i.flag = 'nf'
+        i.flag_text = 'Not found on Google - check the name and place yourself'
         return True
     if f['status'] == 'CLOSED_PERMANENTLY':
         return False
@@ -284,12 +289,48 @@ def check(i, centre, days, km):
     return True
 
 
+def reused(i, known, km, cw=None):
+    """RA10, 21 Nov 2026 - fill the suggestion from what Google said about
+    it before Change what you like, without asking again: True when it was
+    known. Closed on your days, temporarily closed and not found stay; the
+    distance is measured against the km asked for now."""
+    for k in known or []:
+        if (k.get('city') or '').lower() != i.city.lower() or \
+                not same(i.name, k.get('name') or '', cw or set()):
+            continue
+        i.checked = True
+        i.gid = k.get('gid') or ''
+        i.lat, i.lng = k.get('lat'), k.get('lng')
+        i.dist_km = k.get('dist_km')
+        i.rating, i.ratings = k.get('rating'), k.get('ratings')
+        i.price_level = k.get('price_level') or ''
+        i.flag, i.flag_text = '', ''
+        if k.get('flag') in ('closed', 'temp', 'nf'):
+            i.flag, i.flag_text = k['flag'], k.get('flag_text') or ''
+        elif km and i.dist_km is not None and i.dist_km > km:
+            i.flag = 'far'
+            i.flag_text = ('Day trip - %s km from the centre'
+                           % _num(i.dist_km) if i.interest == 'daytrips'
+                           else '%s km from the centre - outside your %d km'
+                           % (_num(i.dist_km), km))
+        return True
+    return False
+
+
 def _num(x):
     return ('%.1f' % x).rstrip('0').rstrip('.') if x < 10 else '%d' % round(x)
 
 
 def run(job, client=None):
-    """Ask for each city still waiting; keep the new ones."""
+    """Ask for each city still waiting; keep the new ones. RA10 - its
+    Google checks are logged as this run's (Suggest or Show me more)."""
+    from . import gquota
+    with gquota.purpose('more' if job.more else 'suggest',
+                        user=job.created_by_id, trip=job.trip_id):
+        return _run(job, client)
+
+
+def _run(job, client=None):
     from .models import Idea
     from .views import span
     trip = job.trip
@@ -368,7 +409,8 @@ def run(job, client=None):
                             else 'sight'),
                         visit=s('visit', 40), price=s('price', 60),
                         book=bool(g.get('book')), note=s('note', 160))
-                    if not check(i, centre, days, km):
+                    if not reused(i, a.get('reuse'), km, cw) and \
+                            not check(i, centre, days, km):
                         continue
                     pos += 1
                     i.position = pos
@@ -442,6 +484,16 @@ def begin(trip, user, answers, more=None):
         cities = [more]
     else:
         cities = answers.get('cities') or []
+        # RA10, 21 Nov 2026 - what Google already said about the ones that
+        # go is kept with the run: one that comes back is not checked again
+        # (Demetri: "I am happy with your suggestion for reusing Google
+        # checks").
+        answers = dict(answers, reuse=[{
+            'name': i.name, 'city': i.city, 'gid': i.gid, 'lat': i.lat,
+            'lng': i.lng, 'dist_km': i.dist_km, 'rating': i.rating,
+            'ratings': i.ratings, 'price_level': i.price_level,
+            'flag': i.flag, 'flag_text': i.flag_text}
+            for i in trip.ideas.filter(state='', checked=True)])
         trip.ideas.filter(state='').delete()
     return IdeaRun.objects.create(
         trip=trip, answers=answers, created_by=user, more=bool(more),
@@ -518,36 +570,39 @@ def recheck(trips, limit, today=None):
         rows.append((start or dt.date.max, t, bookings))
     rows.sort(key=lambda r: r[0])
     used = done = 0
+    from . import gquota
     for _start, t, bookings in rows:
-        centres = {}
-        for i in waiting(t).select_related('run').order_by('city',
-                                                           'position'):
-            if used >= limit or not G.enabled():
-                return used, done
-            c = {'name': i.city, 'country': ''}
-            if i.city not in centres:
-                centres[i.city] = None
-                if used + 2 > limit:
+        with gquota.purpose(trip=t.pk):               # RA10 - the trip
+            centres = {}
+            for i in waiting(t).select_related('run').order_by('city',
+                                                               'position'):
+                if used >= limit or not G.enabled():
                     return used, done
+                c = {'name': i.city, 'country': ''}
+                if i.city not in centres:
+                    centres[i.city] = None
+                    if used + 2 > limit:
+                        return used, done
+                    used += 1
+                    try:
+                        f = G.search('%s%s' % (i.city, ', %s' % t.where
+                                               if t.where else ''))
+                        if f and f['lat'] is not None:
+                            centres[i.city] = (f['lat'], f['lng'])
+                    except G.GoogleError as e:
+                        logger.warning('travel recheck centre %s: %s',
+                                       i.city, e)
+                        return used, done
+                km = ((i.run.answers or {}) if i.run else {}).get('km')
                 used += 1
-                try:
-                    f = G.search('%s%s' % (i.city, ', %s' % t.where
-                                           if t.where else ''))
-                    if f and f['lat'] is not None:
-                        centres[i.city] = (f['lat'], f['lng'])
-                except G.GoogleError as e:
-                    logger.warning('travel recheck centre %s: %s', i.city, e)
+                keep = check(i, centres[i.city], days_in(t, bookings, c),
+                             km if isinstance(km, int) else None)
+                if not keep:
+                    i.delete()
+                    done += 1
+                    continue
+                if not i.checked:   # Google down or refused: another day
                     return used, done
-            km = ((i.run.answers or {}) if i.run else {}).get('km')
-            used += 1
-            keep = check(i, centres[i.city], days_in(t, bookings, c),
-                         km if isinstance(km, int) else None)
-            if not keep:
-                i.delete()
+                i.save()
                 done += 1
-                continue
-            if not i.checked:           # Google said no: try another day
-                return used, done
-            i.save()
-            done += 1
     return used, done

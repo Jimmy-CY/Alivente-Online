@@ -18,11 +18,67 @@ and a count of what is left, before a Suggest run.
 
 The day and month are Cyprus time (the site's time zone). Never from a
 test unless a test asks (every suite is a test_*.py script).
+
+RA10, 21 Nov 2026 - who used each check (Demetri: "Can we check which user
+used the 35 so far for today?"): every search counted is also logged with
+why (Suggest, Show me more, Check them now, the morning catch-up, the key
+check), who and for which trip - set around the work with purpose().
+Kept 13 months.
 """
+import contextlib
+import contextvars
 import logging
 
 logger = logging.getLogger(__name__)
 WARN_AT = 80
+KEEP_DAYS = 400
+_who = contextvars.ContextVar('travel_google_who', default=None)
+
+
+@contextlib.contextmanager
+def purpose(why=None, user=None, trip=None):
+    """Searches made inside are logged with why, who and the trip; what is
+    not given is kept from an outer purpose()."""
+    was = _who.get() or {}
+    now = dict(was)
+    for k, v in (('why', why), ('user', user), ('trip', trip)):
+        if v is not None:
+            now[k] = getattr(v, 'pk', v)
+    tok = _who.set(now)
+    try:
+        yield
+    finally:
+        _who.reset(tok)
+
+
+def _log(today):
+    from .models import GoogleCheck
+    w = _who.get() or {}
+    GoogleCheck.objects.create(day=today, why=w.get('why') or 'other',
+                               user_id=w.get('user'), trip_id=w.get('trip'))
+
+
+def used_by(today=None):
+    """Today's checks and this month's, by who, why and trip - most first."""
+    from django.db.models import Count
+    from .models import GoogleCheck
+    today = today or _today()
+
+    def rows(qs):
+        out = []
+        for r in qs.values('user__first_name', 'user__last_name',
+                           'user__username', 'why', 'trip__name') \
+                .annotate(n=Count('id')).order_by('-n'):
+            who = ('%s %s' % (r['user__first_name'] or '',
+                              r['user__last_name'] or '')).strip() or \
+                r['user__username'] or 'Alivente itself'
+            out.append({'who': who, 'n': r['n'],
+                        'why': dict(GoogleCheck.WHY).get(r['why'], 'Other'),
+                        'trip': r['trip__name'] or ''})
+        return out
+    return {'today': rows(GoogleCheck.objects.filter(day=today)),
+            'month': rows(GoogleCheck.objects.filter(
+                day__gte=today.replace(day=1), day__lte=today))}
 
 
 def _today():
@@ -83,6 +139,10 @@ def note(today=None, send=None):
         warn(today, send=send)
     except Exception:                                   # noqa: BLE001
         logger.exception('google allowance count')
+    try:                                                # RA10 - who
+        _log(today)
+    except Exception:                                   # noqa: BLE001
+        logger.exception('google check log')
 
 
 def warn(today=None, send=None):
@@ -144,12 +204,20 @@ def daily_recheck(now=None):
     if not GoogleAllowance.objects.filter(pk=1).exclude(
             rechecked_on=today).update(rechecked_on=today):
         return None
+    try:                                # RA10 - the log keeps 13 months
+        import datetime as _dt
+        from .models import GoogleCheck
+        GoogleCheck.objects.filter(
+            day__lt=today - _dt.timedelta(KEEP_DAYS)).delete()
+    except Exception:                                   # noqa: BLE001
+        logger.exception('google check log tidy')
     u = usage(today)
     limit = min(u['day_left'] // SHARE, u['month_left'])
     trips = Trip.objects.filter(ideas__checked=False,
                                 ideas__state='').distinct()
     if limit <= 0 or not trips.exists():
         return 0
-    used, done = ID.recheck(list(trips), limit, today)
+    with purpose('morning'):                            # RA10
+        used, done = ID.recheck(list(trips), limit, today)
     logger.info('travel ideas checked later: %d (%d searches)', done, used)
     return done

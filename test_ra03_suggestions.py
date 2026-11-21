@@ -229,8 +229,8 @@ ok(ID.check(i, CENTRE, days, 5) and i.rating == 4.7 and
    i.price_level == '€€' and i.dist_km is not None,
    'A RESTAURANT: rating, price level, distance')
 i = idea('Nowhere')
-ok(ID.check(i, CENTRE, days, 5) and not i.checked and i.flag == '',
-   'NOT FOUND ON GOOGLE: shown as it came, unchecked')
+ok(ID.check(i, CENTRE, days, 5) and i.checked and i.flag == 'nf',
+   'NOT FOUND ON GOOGLE: shown, marked Not found on Google (RA10)')
 
 # ==========================================================================
 head('3. DRIVEN')
@@ -346,7 +346,8 @@ if have_db:
                '  marked: closed on your days, too far, fine; food in its '
                'own groups')
             h = A.get('/travel/%d/ideas/' % t.pk).content.decode()
-            ok(h.count('data-idea-flag=') == 2 and
+            ok(h.count('data-idea-flag=') -
+               h.count('data-idea-flag="nf"') == 2 and
                'Closed on Mondays and Tuesdays' in h and
                'outside your 5 km' in h and
                'value="%d"' % names['Benaki'].pk in h,

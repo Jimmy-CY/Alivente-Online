@@ -22,6 +22,16 @@
     <p class="small tv-sub" style="margin: 8px 0 12px">Google&rsquo;s free amount for these searches is about 1,000 a month; beyond it, roughly $35 per 1,000. Google&rsquo;s own cap on the key&rsquo;s project is 100 a day &ndash; a higher day here does nothing unless Google&rsquo;s is raised too.</p>
     <button type="submit" class="btn action-primary">Save</button>
 </form>
+{# RA10, 21 Nov 2026 - who used the checks. Demetri: "Can we check which user used the 35 so far for today?" #}
+<div class="form-card" style="max-width: 640px; margin-top: 16px" data-google-used>
+    <p style="font-weight: 700; margin: 0 0 4px">Who used them</p>
+    <p class="small tv-sub" style="margin: 0 0 10px">Every Google check, by person, what for and trip. <b>Alivente itself</b> is the morning catch-up and the key check.</p>
+    <p class="small" style="font-weight: 700; margin: 8px 0 4px">Today</p>
+    {% if used.today %}<table class="table table-sm small" style="margin: 0" data-google-used-today><thead><tr><th>Who</th><th>What for</th><th>Trip</th><th style="text-align: right">Checks</th></tr></thead><tbody>{% for r in used.today %}<tr><td>{{ r.who }}</td><td>{{ r.why }}</td><td>{{ r.trip|default:"&ndash;" }}</td><td style="text-align: right">{{ r.n }}</td></tr>{% endfor %}</tbody></table>{% else %}<p class="small tv-sub" style="margin: 0">None yet today.</p>{% endif %}
+    <p class="small" style="font-weight: 700; margin: 14px 0 4px">This month</p>
+    {% if used.month %}<table class="table table-sm small" style="margin: 0" data-google-used-month><thead><tr><th>Who</th><th>What for</th><th>Trip</th><th style="text-align: right">Checks</th></tr></thead><tbody>{% for r in used.month %}<tr><td>{{ r.who }}</td><td>{{ r.why }}</td><td>{{ r.trip|default:"&ndash;" }}</td><td style="text-align: right">{{ r.n }}</td></tr>{% endfor %}</tbody></table>{% else %}<p class="small tv-sub" style="margin: 0">None yet this month.</p>{% endif %}
+    <p class="small tv-sub" style="margin: 10px 0 0">Listed from late November 2026; earlier checks are in the totals above but not listed here.</p>
+</div>
 </div>
 {% render_help_modal "travel" %}
 {% endblock %}

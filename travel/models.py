@@ -658,7 +658,10 @@ class Idea(models.Model):
     ratings = models.PositiveIntegerField(null=True, blank=True)
     price_level = models.CharField(max_length=8, blank=True, default='')
     FLAGS = [('', 'Fine'), ('closed', 'Closed on your days'),
-             ('far', 'Too far'), ('temp', 'Temporarily closed')]
+             ('far', 'Too far'), ('temp', 'Temporarily closed'),
+             # RA10, 21 Nov 2026 - Google found nothing: checked, not
+             # tried again every morning, still tickable.
+             ('nf', 'Not found on Google')]
     flag = models.CharField(max_length=8, choices=FLAGS, blank=True,
                             default='')
     flag_text = models.CharField(max_length=160, blank=True, default='')
@@ -728,3 +731,26 @@ class GoogleAllowance(models.Model):
 
     class Meta:
         db_table = 'travel_google_allowance'
+
+
+# RA10, 21 Nov 2026 - who used each Google check (Demetri: "Can we check
+# which user used the 35 so far for today?"). One row a search; shown to a
+# superuser under Travel > Google allowance; kept 13 months.
+class GoogleCheck(models.Model):
+    WHY = [('suggest', 'Suggest things to do'), ('more', 'Show me more'),
+           ('now', 'Check them now'), ('morning', 'Morning catch-up'),
+           ('key', 'Key check'), ('other', 'Other')]
+    at = models.DateTimeField(auto_now_add=True)
+    day = models.DateField(db_index=True)
+    why = models.CharField(max_length=8, choices=WHY, default='other')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
+                             blank=True, related_name='+')
+    trip = models.ForeignKey(Trip, on_delete=models.SET_NULL, null=True,
+                             blank=True, related_name='+')
+
+    class Meta:
+        db_table = 'travel_google_checks'
+        ordering = ['-at', '-id']
+
+    def __str__(self):
+        return '%s %s' % (self.day, self.why)

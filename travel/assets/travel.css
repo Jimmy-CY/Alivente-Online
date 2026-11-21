@@ -252,7 +252,15 @@ html.tv-turn-90 body.tv-holding .tv-nav, html.tv-turn-270 body.tv-holding .tv-na
 .tv-id-card.is-dim { background: #F3F5F6; }
 .tv-id-card.is-dim .tv-id-pick b, .tv-id-card.is-dim .tv-id-blurb, .tv-id-card.is-dim .tv-id-tags { opacity: .62; }
 .tv-id-flag { align-self: flex-start; font-size: .78rem; font-weight: 600; color: #6B3A00; background: #FCEFD9; border-radius: 999px; padding: 3px 10px; }
-.tv-id-flag.far { color: #0C447C; background: #E6F1FB; }
+.tv-id-flag.is-far { color: #0C447C; background: #E6F1FB; }
+.tv-id-flag.is-nf { color: #45545A; background: #EEF1F2; }
+.tv-id-out { grid-column: 1 / -1; border: 1px solid #D9E0E3; border-radius: 12px; background: #F7F9FA; padding: 0 12px; }
+.tv-id-out > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 12px 0; cursor: pointer; list-style: none; }
+.tv-id-out > summary::-webkit-details-marker { display: none; }
+.tv-id-out > summary::before { content: "\25B8"; color: #5B6B72; }
+.tv-id-out[open] > summary::before { content: "\25BE"; }
+.tv-id-out > summary span { font-size: .85rem; color: #5B6B72; }
+.tv-id-out-body { padding: 0 0 12px; }
 .tv-id-meta { font-size: .8rem; color: #0B5A63; font-weight: 600; }
 .tv-id-meta span { color: #5B6B72; font-weight: 400; }
 .tv-id-km { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .95rem; }
