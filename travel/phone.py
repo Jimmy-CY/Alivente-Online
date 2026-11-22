@@ -69,8 +69,9 @@ ASSET_TYPES = {
 # RA09, 21 Nov 2026 - Google checks left.
 # RA10, 21 Nov 2026 - Not found on Google; the distance note's own class;
 # outside what you asked for, in its own section.
-SW_VERSION = 'tv23-1'
-SW_ASSETS = '1af680bf37b8'
+# RA11, 22 Nov 2026 - an icon for each kind of thing to do.
+SW_VERSION = 'tv24-1'
+SW_ASSETS = 'f8bffa7bc505'
 
 
 def page(request, template, ctx):

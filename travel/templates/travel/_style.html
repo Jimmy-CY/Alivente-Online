@@ -278,6 +278,16 @@ a.tv-bk:hover b { color: var(--alv-accent); }
 .tv-id-out[open] > summary::before { content: "\25BE"; }
 .tv-id-out > summary span { font-size: .85rem; color: #5B6B72; }
 .tv-id-out-body { padding: 0 0 12px; }
+/* RA11, 22 Nov 2026 - the category's icon: top right of each suggestion, and beside its heading. */
+.tv-id-card { position: relative; }
+.tv-id-card .tv-id-pick { padding-right: 34px; }
+.tv-id-ico { width: 30px; height: 30px; border-radius: 50%; background: #E1F5EE; color: #085041; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.tv-id-ico svg { width: 16px; height: 16px; }
+.tv-id-card > .tv-id-ico { position: absolute; top: 10px; right: 10px; }
+.tv-id-card.is-dim > .tv-id-ico { background: #E6E9EB; color: #45545A; }
+.tv-id-group.has-ico { display: flex; align-items: center; gap: 8px; }
+.tv-id-group .tv-id-ico { width: 24px; height: 24px; }
+.tv-id-group .tv-id-ico svg { width: 13px; height: 13px; }
 .tv-id-meta { font-size: .8rem; color: #0B5A63; font-weight: 600; }
 .tv-id-meta span { color: #5B6B72; font-weight: 400; }
 .tv-id-km { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .95rem; }

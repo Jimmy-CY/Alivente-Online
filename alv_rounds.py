@@ -1676,6 +1676,8 @@ ROUNDS = [
     '.bak_ra09',
     # RA10, 21 Nov 2026 - Not found on Google; who used each check.
     '.bak_ra10',
+    # RA11, 22 Nov 2026 - an icon for each kind of thing to do.
+    '.bak_ra11',
 ]
 
 

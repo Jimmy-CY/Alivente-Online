@@ -172,6 +172,9 @@ def ideas(request, trip_id):
     first_new = None
     for i in all_ideas:
         i.new = fresh is not None and i.run_id == fresh
+        # RA11, 22 Nov 2026 - the kind of thing to do, as an icon.
+        i.icon = i.interest if i.interest in ID.LABEL else 'other'
+        i.cat = ID.LABEL.get(i.interest, 'Other')
     # RA10, 21 Nov 2026 - outside what you asked for (too far, closed on
     # your days, temporarily closed) goes to its own closed section at the
     # end of the city (Demetri: "Let's put this in RA10. Let's start it
@@ -195,7 +198,7 @@ def ideas(request, trip_id):
             these = [i for i in fits if (i.interest or '') == k or (
                 k == '' and i.interest not in ID.LABEL)]
             if these:
-                by.append({'name': n, 'ideas': these})
+                by.append({'name': n, 'ideas': these, 'k': k or 'other'})
         out = []                        # RA10 - grouped by why
         for f, n in OUTSIDE.items():
             these = [i for i in mine if i.flag == f]

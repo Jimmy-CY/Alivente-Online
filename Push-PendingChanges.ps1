@@ -3377,7 +3377,9 @@ $suites = @(
     # RA09, 21 Nov 2026 - a monthly Google allowance; what is left.
     'test_ra09_google_allowance.py',
     # RA10, 21 Nov 2026 - Not found on Google; who used each check.
-    'test_ra10_google_checks.py'
+    'test_ra10_google_checks.py',
+    # RA11, 22 Nov 2026 - an icon for each kind of thing to do.
+    'test_ra11_category_icons.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can
