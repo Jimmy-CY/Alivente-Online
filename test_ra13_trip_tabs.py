@@ -173,8 +173,8 @@ if have_db:
             ok(nav.count('<svg') == nav.count('class="tv-tab') >= 4 and
                '<span>Plan</span>' in nav and '<span>Info</span>' in nav,
                'THE PHONE PAGE: an icon on every tab, short names')
-            ok('data-tab="wish" aria-label="Things to do" aria-current="page"'
-               in nav, '  the open tab is marked')
+            ok('data-trip-tab="wish" aria-label="Things to do" '
+               'aria-current="page"' in nav, '  the open tab is marked')
             A = Client(SERVER_NAME='localhost')
             A.force_login(me)
             h = A.get('/travel/%d/good-to-know/' % t.pk).content.decode()

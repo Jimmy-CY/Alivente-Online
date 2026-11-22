@@ -1682,6 +1682,8 @@ ROUNDS = [
     '.bak_ra12',
     # RA13, 22 Nov 2026 - the trip tabs: icons, short names on the phone.
     '.bak_ra13',
+    # RA14, 22 Nov 2026 - the phone's trip tabs open again.
+    '.bak_ra14',
 ]
 
 

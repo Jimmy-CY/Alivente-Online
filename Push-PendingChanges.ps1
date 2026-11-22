@@ -3383,7 +3383,9 @@ $suites = @(
     # RA12, 22 Nov 2026 - Good to know; + Spending from a receipt photo.
     'test_ra12_city_info_receipts.py',
     # RA13, 22 Nov 2026 - the trip tabs: icons, short names on the phone.
-    'test_ra13_trip_tabs.py'
+    'test_ra13_trip_tabs.py',
+    # RA14, 22 Nov 2026 - the phone's trip tabs open again.
+    'test_ra14_trip_tabs_tap.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can
