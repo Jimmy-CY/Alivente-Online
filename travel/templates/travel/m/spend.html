@@ -5,15 +5,24 @@
 {% block sub %}<div class="sub">Meals, taxis, tickets at the door, shopping</div>{% endblock %}
 {% block content %}
 {% comment %} RA07, 19 Nov 2026 - only a day of the trip; the same page changes one already added (Save, Delete). {% endcomment %}
+{% comment %} RA12, 22 Nov 2026 - or from a receipt photo (Demetri: "The user should have the option to manually capture or to take a photo"): Claude reads it and this form comes back filled in, to check and Add. The photo is never kept. {% endcomment %}
+{% if trip_start and not s and not pre %}<form method="post" action="{% url 'travel:m_spend_receipt' trip.pk %}" enctype="multipart/form-data" class="tv-card tv-receipt-m" data-receipt-form>{% csrf_token %}
+  <label class="tv-btn wide" data-receipt-camera><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg> Take a photo of the receipt<input type="file" name="photo" accept="image/*" capture="environment" hidden onchange="if (this.files.length) { this.form.classList.add('is-reading'); this.form.submit(); }"></label>
+  <label class="tv-btn sec wide" data-receipt-choose>Choose a photo<input type="file" name="photo" accept="image/*" hidden onchange="if (this.files.length) { this.form.classList.add('is-reading'); this.form.submit(); }"></label>
+  <p class="tv-muted tv-small tv-receipt-tip" style="margin: 0">Amount, currency, day and shop filled in for you to check. The photo is not kept.</p>
+  <p class="tv-receipt-wait" style="margin: 0">Reading the receipt&hellip;</p>
+</form>
+<p class="tv-h3">Or type it in</p>{% endif %}
+{% if pre %}<section class="tv-card tv-receipt-read" data-receipt-read><b>{% if pre.read %}Read from the receipt &ndash; check it, then Add.{% else %}Not everything could be read &ndash; fill in the rest.{% endif %}</b>{% for n in pre.notes %}<div class="tv-small" data-receipt-note>{{ n }}</div>{% endfor %}</section>{% endif %}
 {% if not trip_start %}<section class="tv-card" data-spend-nodates><p style="margin: 0">The trip needs its dates first &ndash; add a booking, or set From and To on the full site under Edit trip.</p></section>{% else %}
 <form method="post" action="{% if s %}{% url 'travel:m_spend_edit' s.pk %}{% else %}{% url 'travel:m_spend_add' trip.pk %}{% endif %}" class="tv-card tv-form" data-spend-form>{% csrf_token %}
   <label for="a" class="tv-muted tv-small">Amount</label>
-  <input id="a" name="amount" class="tv-input tv-amount" inputmode="decimal" placeholder="0.00" autocomplete="off" required{% if s %} value="{{ s.amount }}"{% else %} autofocus{% endif %}>
+  <input id="a" name="amount" class="tv-input tv-amount" inputmode="decimal" placeholder="0.00" autocomplete="off" required{% if s %} value="{{ s.amount }}"{% elif pre %} value="{{ pre.amount }}"{% else %} autofocus{% endif %}>
   <div class="tv-two">
-    <div><label for="c" class="tv-muted tv-small">Currency</label><select id="c" name="currency" class="tv-select" style="width: 100%">{% for c in currencies %}<option value="{{ c }}"{% if s and c == s.currency or not s and c == 'EUR' %} selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+    <div><label for="c" class="tv-muted tv-small">Currency</label><select id="c" name="currency" class="tv-select" style="width: 100%">{% for c in currencies %}<option value="{{ c }}"{% if s and c == s.currency or pre and c == pre.currency or not pre and not s and c == 'EUR' %} selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
     <div><label for="d" class="tv-muted tv-small">Day</label><input id="d" type="date" name="day" class="tv-input" value="{{ today|date:'Y-m-d' }}" min="{{ trip_start|date:'Y-m-d' }}" max="{{ trip_end|date:'Y-m-d' }}" data-spend-day-pick></div>
   </div>
-  <label for="n" class="tv-muted tv-small">Note (optional)</label><input id="n" name="what" class="tv-input" maxlength="120"{% if s %} value="{{ s.what }}"{% endif %}>
+  <label for="n" class="tv-muted tv-small">Note (optional)</label><input id="n" name="what" class="tv-input" maxlength="120"{% if s %} value="{{ s.what }}"{% elif pre %} value="{{ pre.what }}"{% endif %}>
   <p class="tv-muted tv-small" style="margin: 0">A day of the trip: {{ trip_start|date:"D j M" }} &ndash; {{ trip_end|date:"D j M" }}.</p>
   <button type="submit" class="tv-btn wide" data-spend-add>{% if s %}Save{% else %}Add{% endif %}</button>
 </form>

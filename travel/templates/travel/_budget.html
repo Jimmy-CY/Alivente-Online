@@ -44,6 +44,12 @@
         <div><label for="sp-d">Day</label><input id="sp-d" type="date" name="day" class="form-control" value="{{ spend_day|date:'Y-m-d' }}" min="{{ trip_start|date:'Y-m-d' }}" max="{{ trip_end|date:'Y-m-d' }}" data-spend-day-pick title="A day of the trip: {{ trip_start|date:'D j M' }} – {{ trip_end|date:'D j M' }}"></div>
         <div class="tv-spend-note"><label for="sp-n">Note (optional)</label><input id="sp-n" name="what" class="form-control" maxlength="120"></div>
         <button type="submit" class="btn action-primary" data-spend-add><i class="fas fa-plus" aria-hidden="true"></i> Spending</button>
+    </form>
+    {% comment %} RA12, 22 Nov 2026 - or from a receipt photo: Claude reads it, the form comes back filled in; the photo is never kept. {% endcomment %}
+    <form method="post" action="{% url 'travel:spend_receipt' trip.pk %}" enctype="multipart/form-data" class="tv-receipt" data-receipt-form>{% csrf_token %}
+        <label class="btn action-secondary btn-sm" style="margin: 0"><i class="fas fa-camera" aria-hidden="true"></i> From a receipt photo<input type="file" name="photo" accept="image/*" hidden onchange="if (this.files.length) { this.form.classList.add('is-reading'); this.form.submit(); }" data-receipt-pick></label>
+        <span class="tv-sub tv-receipt-wait">Reading the receipt&hellip;</span>
+        <span class="tv-sub tv-receipt-tip">Amount, currency, day and shop filled in for you to check. The photo is not kept.</span>
     </form>{% else %}<p class="tv-sub" data-spend-nodates>The trip needs its dates first &ndash; add a booking, or set From and To under <b>Edit trip</b>.</p>{% endif %}{% endif %}
     {% if not bud.set and bud.show_chart %}{% include 'travel/_budget_chart.html' %}{% endif %}
     {% for d in spend_days %}

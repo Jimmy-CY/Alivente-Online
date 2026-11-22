@@ -288,6 +288,28 @@ a.tv-bk:hover b { color: var(--alv-accent); }
 .tv-id-group.has-ico { display: flex; align-items: center; gap: 8px; }
 .tv-id-group .tv-id-ico { width: 24px; height: 24px; }
 .tv-id-group .tv-id-ico svg { width: 13px; height: 13px; }
+/* RA12, 22 Nov 2026 - Good to know, a card a city; + Spending from a receipt photo. */
+.tv-ci { margin-bottom: 14px; }
+.tv-ci-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+.tv-ci-title { font-weight: 700; font-size: 1.02rem; }
+.tv-ci-refresh { border: 0; background: none; padding: 0; color: #0F6E56; font-size: .85rem; cursor: pointer; }
+.tv-ci-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.tv-ci-it { background: #F3F5F6; border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.tv-ci-it b { font-weight: 600; }
+.tv-ci-l { font-size: .75rem; color: #5B6B72; text-transform: none; }
+.tv-ci-s { display: block; font-size: .78rem; color: #5B6B72; }
+.tv-ci-wait { margin: 0; color: #5B6B72; }
+.tv-ci-say { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.tv-ci-btn { display: flex; align-items: flex-start; gap: 8px; text-align: left; border: 1px solid #D9E0E3; border-radius: 8px; padding: 7px 9px; background: #fff; cursor: pointer; font: inherit; color: inherit; }
+.tv-ci-btn svg { width: 18px; height: 18px; flex: none; color: #0F6E56; margin-top: 2px; }
+.tv-ci-btn b { display: block; font-weight: 600; }
+.tv-ci-btn.is-on { background: #E1F5EE; border-color: #5DCAA5; }
+.tv-receipt { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 8px 0 4px; }
+.tv-receipt-wait { display: none; }
+.tv-receipt.is-reading .tv-receipt-wait, .tv-receipt-m.is-reading .tv-receipt-wait { display: block; font-weight: 600; }
+.tv-receipt.is-reading .tv-receipt-tip, .tv-receipt-m.is-reading .tv-receipt-tip, .tv-receipt-m.is-reading label { display: none; }
+.tv-receipt-m { display: flex; flex-direction: column; gap: 8px; }
+.tv-receipt-read { background: #E1F5EE; color: #085041; }
 .tv-id-meta { font-size: .8rem; color: #0B5A63; font-weight: 600; }
 .tv-id-meta span { color: #5B6B72; font-weight: 400; }
 .tv-id-km { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .95rem; }

@@ -3,7 +3,7 @@
 {% block title %}{{ trip.name }} - Travel{% endblock %}
 {% block top %}<div style="min-width: 0"><a class="tv-back" href="{% url 'travel:m_trips' %}"><span aria-hidden="true">‹</span> Trips</a><h1>{{ trip.name }}</h1></div>{% endblock %}
 {% block sub %}<div class="sub">{% if trip.start %}{{ trip.start|date:"D j M" }}{% if trip.end and trip.end != trip.start %} – {{ trip.end|date:"D j M Y" }}{% endif %}{% endif %}{% if trip.where %} · {{ trip.where }}{% endif %}</div>{% endblock %}
-{% block tabs %}<nav class="tv-tabs" aria-label="Trip" style="overflow-x: auto"><a class="tv-tab{% if sub == 'bookings' %} on{% endif %}" href="{% url 'travel:m_trip' trip.pk %}">Bookings</a><a class="tv-tab{% if sub == 'itinerary' %} on{% endif %}" href="?tab=itinerary">Itinerary</a><a class="tv-tab{% if sub == 'wish' %} on{% endif %}" href="?tab=wish">Things to do</a>{% if show_money %}<a class="tv-tab{% if sub == 'costs' %} on{% endif %}" href="?tab=costs">Costs</a>{% endif %}</nav>{% endblock %}
+{% block tabs %}<nav class="tv-tabs" aria-label="Trip" style="overflow-x: auto"><a class="tv-tab{% if sub == 'bookings' %} on{% endif %}" href="{% url 'travel:m_trip' trip.pk %}">Bookings</a><a class="tv-tab{% if sub == 'itinerary' %} on{% endif %}" href="?tab=itinerary">Itinerary</a><a class="tv-tab{% if sub == 'wish' %} on{% endif %}" href="?tab=wish">Things to do</a>{% if show_money %}<a class="tv-tab{% if sub == 'costs' %} on{% endif %}" href="?tab=costs">Costs</a>{% endif %}<a class="tv-tab{% if sub == 'info' %} on{% endif %}" href="?tab=info" data-tab-info>Good to know</a></nav>{% endblock %}
 {% block content %}
 {% if sub == 'itinerary' %}
 {% comment %} TR-4 - the itinerary: every day, bookings and places in time order. {% endcomment %}
@@ -21,6 +21,8 @@
 {% if wish %}<p class="tv-h3" id="todo">Things to do &mdash; no day yet</p>
 <section class="tv-card" data-itinerary-todo>{% for b in wish %}{% include 'travel/m/_row.html' %}{% endfor %}<a href="?tab=wish" class="tv-muted tv-small">Put them on a day</a></section>{% endif %}
 {% else %}<section class="tv-card"><p class="tv-muted" style="margin: 0">The itinerary needs the trip&rsquo;s dates &mdash; they come from its bookings.</p></section>{% endif %}
+{% elif sub == 'info' %}{% comment %} RA12, 22 Nov 2026 - Good to know, a card a city. {% endcomment %}
+{% for c in cards %}{% include 'travel/_city_info.html' with phone=True %}{% empty %}<section class="tv-card" data-city-none><p class="tv-muted" style="margin: 0">Good to know shows once the trip has a hotel or a flight to a city.</p></section>{% endfor %}
 {% elif sub == 'wish' %}
 {% comment %} TR-4 - Things to do: places with no day yet. TR-11 - Plan my days, to spread them over the trip. {% endcomment %}
 <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px">{% include 'travel/_ideas_added.html' with phone=True %}{% include 'travel/_plan_banner.html' with phone=True %}

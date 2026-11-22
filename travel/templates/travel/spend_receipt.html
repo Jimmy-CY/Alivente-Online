@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}Check the receipt - Travel{% render_help_modal "travel" %}
+{% endblock %}
+{# RA12, 22 Nov 2026 - + Spending from a receipt photo, read by Claude: check it, then Add. The photo is not kept. Demetri: "The user should have the option to manually capture or to take a photo." #}
+{% block content %}
+{% include 'travel/_style.html' %}
+<h2 class="page-title-h2">TRAVEL</h2>
+<h4 class="page-subtitle-h4">{{ trip.name|upper }} &middot; CHECK THE RECEIPT</h4>
+<div class="page-action-buttons">
+    <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#travelHelpModal" title="How Travel works" data-travel-help><i class="fas fa-question-circle"></i> Help</button>
+    <a href="{% url 'travel:trip_costs' trip.pk %}" class="btn action-back" aria-label="Back"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+<section class="form-card" style="max-width: 760px" data-receipt-read>
+    <p style="margin: 0 0 4px; font-weight: 600">{% if pre.read %}Read from the receipt &ndash; check it, then add it.{% else %}Not everything could be read &ndash; fill in the rest.{% endif %}</p>
+    {% for n in pre.notes %}<p class="tv-sub" style="margin: 0" data-receipt-note>{{ n }}</p>{% endfor %}
+    <form method="post" action="{% url 'travel:spend_add' trip.pk %}" class="tv-spend-add" style="margin-top: 12px" data-spend-form>{% csrf_token %}
+        <div><label for="sp-a">Amount</label><input id="sp-a" name="amount" class="form-control tv-money" inputmode="decimal" value="{{ pre.amount }}" placeholder="0.00" required></div>
+        <div><label for="sp-c">Currency</label><select id="sp-c" name="currency" class="form-control">{% for c in currencies %}<option value="{{ c }}"{% if c == pre.currency %} selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+        <div><label for="sp-d">Day</label><input id="sp-d" type="date" name="day" class="form-control" value="{{ pre.day|date:'Y-m-d' }}" min="{{ trip_start|date:'Y-m-d' }}" max="{{ trip_end|date:'Y-m-d' }}"></div>
+        <div class="tv-spend-note"><label for="sp-n">Note (optional)</label><input id="sp-n" name="what" class="form-control" maxlength="120" value="{{ pre.what }}"></div>
+        <button type="submit" class="btn action-primary" data-spend-add><i class="fas fa-plus" aria-hidden="true"></i> Spending</button>
+    </form>
+    <p class="tv-sub" style="margin: 10px 0 0">The receipt photo is not kept.</p>
+</section>
+{% endblock %}

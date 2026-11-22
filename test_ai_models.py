@@ -152,6 +152,11 @@ CALL_SITES = {
     # TR-4, 15 Nov 2026 - the ninth: looking a place up on the web (with
     # Anthropic's web search tool) for Travel's "Add a place".
     'travel/places.py': 'looking up places for Travel',
+    # RA12, 22 Nov 2026 - the tenth and eleventh: Travel's Good to know card
+    # for a city (TRAVEL_CITY_MODEL) and reading a receipt photo into
+    # + Spending (TRAVEL_RECEIPT_MODEL), both the small model.
+    'travel/cityinfo.py': 'the Good to know card for a city',
+    'travel/receipt.py': 'reading a receipt photo into Travel spending',
 }
 
 passed = failed = skipped = 0

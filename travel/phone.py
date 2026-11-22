@@ -70,8 +70,9 @@ ASSET_TYPES = {
 # RA10, 21 Nov 2026 - Not found on Google; the distance note's own class;
 # outside what you asked for, in its own section.
 # RA11, 22 Nov 2026 - an icon for each kind of thing to do.
-SW_VERSION = 'tv24-1'
-SW_ASSETS = 'f8bffa7bc505'
+# RA12, 22 Nov 2026 - Good to know; + Spending from a receipt photo.
+SW_VERSION = 'tv25-1'
+SW_ASSETS = '90edbdcd1f50'
 
 
 def page(request, template, ctx):
@@ -237,6 +238,13 @@ def today(request):
                                              day, pl)
         elif trip.start and (trip.start - day).days <= weather.AHEAD:
             ctx['wx'] = weather.for_day(shaped, trip.start, day, pl)
+        # RA12, 22 Nov 2026 - Good to know for the city you are in (or
+        # the first one, before the trip).
+        from . import cityinfo
+        at = weather.place_for(shaped, day if now else trip.start)
+        if at:
+            ctx['card'] = cityinfo.card_at(at[0], at[1], day if now
+                                           else trip.start)
         ctx['passes_today'] = BoardingPass.objects.filter(
             booking__trip=trip, booking__start_date__in=(
                 day, day + dt.timedelta(days=1))).count()
@@ -304,12 +312,14 @@ def trip(request, trip_id):
             undated.append(b)
     costs = request.GET.get('tab') == 'costs'
     sub = request.GET.get('tab') if request.GET.get('tab') in (
-        'costs', 'itinerary', 'wish') else 'bookings'
+        'costs', 'itinerary', 'wish', 'info') else 'bookings'
     pl = list(t.places.all())
     for p in pl:
         p.is_place = True
     return page(request, 'travel/m/trip.html', {
         'sub': sub, 'wish': [p for p in pl if not p.day],
+        # RA12, 22 Nov 2026 - Good to know, a card a city.
+        'cards': _cards(t) if sub == 'info' else [],
         'itinerary': with_weather(itinerary(t, bs, pl), bs, pl)
         if sub == 'itinerary' else [],
         # TR-11 - the trip's own days (its bookings decide them), so Plan
@@ -328,6 +338,11 @@ def trip(request, trip_id):
         # TR-12 - Suggest things to do.
         **(ideas.page_state(t, request)
            if sub in ('wish', 'itinerary') else {})})
+
+
+def _cards(t):
+    from . import cityinfo
+    return cityinfo.cards_for(t, list(t.bookings.all()))
 
 
 def _days_of(t):

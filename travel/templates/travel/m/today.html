@@ -26,6 +26,7 @@
   <div class="tv-row"><a href="{% url 'travel:m_trip' trip.pk %}?tab=costs" style="color: inherit; text-decoration: none">Today <b{% if bud.today_over %} class="tv-over"{% endif %}>{{ bud.today_label }}</b> of {{ bud.per_day_label }}</a>{% if can_spend %}<a href="{% url 'travel:m_spend' trip.pk %}" class="tv-small" style="font-weight: 700" data-spend-new>+ Spending</a>{% endif %}</div>
   <div class="tv-small {% if bud.ahead %}tv-good{% else %}tv-over{% endif %}" data-bud-pace="{% if bud.ahead %}ahead{% else %}behind{% endif %}">{{ bud.gap_label }} {% if bud.ahead %}ahead of{% else %}behind{% endif %} plan</div>
 </section>{% endif %}
+{% if card %}{% include 'travel/_city_info.html' with c=card phone=True %}{% endif %}
 <p class="tv-h3">Today</p>
 <section class="tv-card" data-today>{% for b in today_rows %}{% include 'travel/m/_row.html' %}{% empty %}<p class="tv-muted" style="margin: 0">Nothing booked today. Enjoy it.</p>{% endfor %}</section>
 <p class="tv-h3">Tomorrow · {{ tomorrow|date:"D j M" }}</p>

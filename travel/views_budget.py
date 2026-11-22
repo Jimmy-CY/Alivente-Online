@@ -189,3 +189,77 @@ def google_allowance(request):
     return render(request, 'travel/google_allowance.html', {
         'a': a, 'gq': gquota.usage(), 'used': used,
         'back': request.GET.get('back') or '/travel/'})
+
+
+# ------------------------------------------------- RA12 - a receipt photo
+@travel_view
+@require_POST
+def spend_receipt(request, trip_id):
+    """RA12, 22 Nov 2026 - + Spending from a receipt photo (Demetri: "The
+    user should have the option to manually capture or to take a photo").
+    Claude reads it; the form comes back filled in to check and Add. The
+    photo is never kept ("Let's not keep the receipt photo")."""
+    from django.shortcuts import render
+    from . import receipt
+    t = _owned(request, trip_id)
+    f = request.FILES.get('photo')
+    start, end = span(t, list(t.bookings.all()))
+    if not start:
+        messages.error(request, 'The trip needs its dates first.')
+        return _back(request, t)
+    end = end or start
+    try:
+        if f is None:
+            raise receipt.LookupError_('Take or choose a photo first.')
+        got = receipt.read(f.read(), getattr(f, 'content_type', ''))
+    except Exception as e:                              # noqa: BLE001
+        messages.error(request, 'The receipt could not be read - %s Type '
+                       'it in instead.' % (str(e).rstrip('.') + '.'
+                                           if str(e) else ''))
+        if _phone(request):
+            return redirect('travel:m_spend', trip_id=t.pk)
+        return _back(request, t)
+    finally:
+        if f is not None:
+            f.close()
+    notes = []
+    day = _date(got['date']) if got['date'] else None
+    if day and not B.inside(day, start, end):
+        notes.append('The receipt is dated %s, outside the trip - pick the '
+                     'day.' % _d(day))
+        day = None
+    cur = got['currency'] if got['currency'] in fx.CURRENCIES else 'EUR'
+    if got['currency'] and got['currency'] != cur:
+        notes.append('%s cannot be converted here - pick the currency.'
+                     % got['currency'])
+    if got['amount'] is None:
+        notes.append('The total could not be read - type it.')
+    pre = {'amount': got['amount'] or '', 'currency': cur,
+           'day': day or B.default_day(start, end), 'what': got['merchant'],
+           'notes': notes, 'read': got['amount'] is not None}
+    if _phone(request):
+        from .phone import page
+        return page(request, 'travel/m/spend.html', {
+            'trip': t, 'tab': 'trips', 'currencies': fx.CURRENCIES,
+            's': None, 'pre': pre, 'today': pre['day'],
+            'trip_start': start, 'trip_end': end})
+    return render(request, 'travel/spend_receipt.html', {
+        'trip': t, 'pre': pre, 'currencies': fx.CURRENCIES,
+        'trip_start': start, 'trip_end': end})
+
+
+# ------------------------------------------------- RA12 - Good to know
+@travel_view
+@require_POST
+def city_refresh(request, trip_id, info_id):
+    """Refresh a city's Good to know card: Claude writes it again."""
+    from . import cityinfo
+    from .models import CityInfo
+    t = _trip(request, trip_id)
+    row = get_object_or_404(CityInfo, pk=info_id)
+    cityinfo.refresh(row)
+    messages.success(request, 'Good to know for %s is being written again '
+                     '- it shows in a moment.' % row.city)
+    if (request.POST.get('phone') or '') == '1':
+        return redirect('/travel/m/trip/%d/?tab=info' % t.pk)
+    return redirect('travel:trip_info', trip_id=t.pk)

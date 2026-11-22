@@ -754,3 +754,28 @@ class GoogleCheck(models.Model):
 
     def __str__(self):
         return '%s %s' % (self.day, self.why)
+
+
+# RA12, 22 Nov 2026 - Good to know: one card a city, written once by
+# Claude and kept (travel/cityinfo.py). Demetri: "I like 12 - City Info
+# card". The euro rate is the ECB's on the day it was made, never moved.
+class CityInfo(models.Model):
+    STATES = [('working', 'Being written'), ('ready', 'Ready'),
+              ('failed', 'Could not be written')]
+    key = models.CharField(max_length=160, unique=True)
+    city = models.CharField(max_length=80)
+    country = models.CharField(max_length=80, blank=True)
+    state = models.CharField(max_length=8, choices=STATES, default='working')
+    data = models.JSONField(default=dict, blank=True)
+    rate = models.DecimalField(max_digits=16, decimal_places=6, null=True,
+                               blank=True)
+    rate_day = models.DateField(null=True, blank=True)
+    error = models.CharField(max_length=200, blank=True)
+    made_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'travel_city_info'
+        ordering = ['city']
+
+    def __str__(self):
+        return self.city

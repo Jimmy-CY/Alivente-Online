@@ -1,0 +1,39 @@
+{% comment %} RA12, 22 Nov 2026 - Good to know, one city (travel/cityinfo.py): c = {row, d}; phone = the phone app. Demetri: "Add which side they drive on, typical shopping hours ... the latest conversion rate to Euro ... For the phrases, I must be able to click on them and it plays them out loud." {% endcomment %}
+{% with r=c.row d=c.d %}<section class="tv-ci{% if phone %} tv-card{% else %} form-card{% endif %}" data-city-info="{{ r.city }}" data-city-state="{{ r.state }}">
+  <div class="tv-ci-head"><span class="tv-ci-title">{{ r.city }}{% if d.country %}, {{ d.country }}{% elif r.country %}, {{ r.country }}{% endif %}</span>
+    {% if trip and r.state != 'working' %}<form method="post" action="{% url 'travel:city_refresh' trip.pk r.pk %}" style="margin: 0">{% csrf_token %}{% if phone %}<input type="hidden" name="phone" value="1">{% endif %}<button type="submit" class="tv-ci-refresh" data-city-refresh>{% if r.state == 'failed' %}Try again{% else %}Refresh{% endif %}</button></form>{% endif %}</div>
+  {% if r.state == 'working' %}<p class="tv-ci-wait" data-city-working>Being written &ndash; it shows in a moment. Open this page again shortly.</p>
+  {% elif r.state == 'failed' %}<p class="tv-ci-wait" data-city-failed>Could not be written this time.{% if r.error %} {{ r.error }}{% endif %}</p>
+  {% else %}
+  <div class="tv-ci-grid">
+    <div class="tv-ci-it"><span class="tv-ci-l">Emergency</span><b>{{ d.emergency }}</b>{% if d.emergency_note %}<span class="tv-ci-s">{{ d.emergency_note }}</span>{% endif %}</div>
+    <div class="tv-ci-it" data-city-plugs><span class="tv-ci-l">Plugs</span><b>Type {{ d.plugs }}{% if d.voltage %} &middot; {{ d.voltage }}{% endif %}</b><span class="tv-ci-s">{% if d.adapter %}Cyprus is Type G: bring an adapter{% else %}Same plugs as Cyprus{% endif %}</span></div>
+    <div class="tv-ci-it" data-city-drives="{{ d.drives }}"><span class="tv-ci-l">Driving</span><b>On the {{ d.drives }}</b><span class="tv-ci-s">{% if d.same_side %}Same as Cyprus{% else %}Cyprus drives on the left{% endif %}</span></div>
+    <div class="tv-ci-it" data-city-money><span class="tv-ci-l">Money</span><b>{{ d.currency_name }}{% if d.currency_code %} ({{ d.currency_code }}){% endif %}</b>{% if d.euro %}<span class="tv-ci-s">The euro, as at home</span>{% elif d.per_eur %}<span class="tv-ci-s" data-city-rate>&euro;1 = {{ d.per_eur }} {{ d.currency_code }} &middot; 100 {{ d.currency_code }} &asymp; &euro;{{ d.per_100 }}<br>ECB rate on {{ d.rate_day|date:"j M Y" }}</span>{% endif %}{% if d.money_note %}<span class="tv-ci-s">{{ d.money_note }}</span>{% endif %}</div>
+    <div class="tv-ci-it"><span class="tv-ci-l">Tipping</span><b>{{ d.tipping }}</b>{% if d.tipping_note %}<span class="tv-ci-s">{{ d.tipping_note }}</span>{% endif %}</div>
+    <div class="tv-ci-it" data-city-shops><span class="tv-ci-l">Shops</span><b>{{ d.shops }}</b>{% if d.shops_note %}<span class="tv-ci-s">{{ d.shops_note }}</span>{% endif %}</div>
+    {% if d.time %}<div class="tv-ci-it" data-city-time><span class="tv-ci-l">Time</span><b>{{ d.time }}</b><span class="tv-ci-s">On your dates</span></div>{% endif %}
+    <div class="tv-ci-it" data-city-water="{{ d.water }}"><span class="tv-ci-l">Tap water</span><b>{% if d.water == 'drinkable' %}Fine to drink{% elif d.water == 'boil' %}Boil it first{% else %}Drink bottled{% endif %}</b>{% if d.water_note %}<span class="tv-ci-s">{{ d.water_note }}</span>{% endif %}</div>
+    <div class="tv-ci-it"><span class="tv-ci-l">Language</span><b>{{ d.language }}</b>{% if d.language_note %}<span class="tv-ci-s">{{ d.language_note }}</span>{% endif %}</div>
+  </div>
+  {% if d.phrases %}<p class="tv-ci-l" style="margin: 12px 0 6px">Tap to hear it</p>
+  <div class="tv-ci-say">{% for p in d.phrases %}<button type="button" class="tv-ci-btn" data-say="{{ p.text }}" data-lang="{{ d.lang }}" onclick="tvSay(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg><span><b>{{ p.text }}</b>{% if p.say %}<span class="tv-ci-s">{{ p.say }}</span>{% endif %}<span class="tv-ci-s">{{ p.means }}</span></span></button>{% endfor %}</div>{% endif %}
+  <p class="tv-ci-s" style="margin: 10px 0 0">Prepared by Claude for this city and kept for next time{% if d.per_eur %}; the rate is a one-off indication from the day it was made{% endif %}.</p>
+  {% endif %}
+</section>{% endwith %}
+<script>
+window.tvSay = window.tvSay || function (b) {
+  var s = window.speechSynthesis;
+  if (!s || !window.SpeechSynthesisUtterance) { return; }
+  s.cancel();
+  var u = new SpeechSynthesisUtterance(b.getAttribute('data-say'));
+  var lang = b.getAttribute('data-lang') || '';
+  u.lang = lang; u.rate = 0.85;
+  var want = lang.toLowerCase().split('-')[0];
+  var v = s.getVoices().filter(function (x) { return x.lang && x.lang.toLowerCase().indexOf(want) === 0; })[0];
+  if (v) { u.voice = v; }
+  b.classList.add('is-on');
+  u.onend = u.onerror = function () { b.classList.remove('is-on'); };
+  s.speak(u);
+};
+</script>

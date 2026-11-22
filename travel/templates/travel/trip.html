@@ -67,6 +67,7 @@
     <a class="tv-chip{% if tab == 'itinerary' %} is-on{% endif %}" href="{% url 'travel:trip_itinerary' trip.pk %}"{% if tab == 'itinerary' %} aria-current="page"{% endif %}>Itinerary</a>
     <a class="tv-chip{% if tab == 'wish' %} is-on{% endif %}" href="{% url 'travel:trip_wishlist' trip.pk %}"{% if tab == 'wish' %} aria-current="page"{% endif %}>Things to do{% if wish %} <span class="tv-sub">{{ wish|length }}</span>{% endif %}</a>
     {% if show_money %}<a class="tv-chip{% if tab == 'costs' %} is-on{% endif %}" href="{% url 'travel:trip_costs' trip.pk %}"{% if tab == 'costs' %} aria-current="page"{% endif %}>Costs</a>{% endif %}
+    <a class="tv-chip{% if tab == 'info' %} is-on{% endif %}" href="{% url 'travel:trip_info' trip.pk %}"{% if tab == 'info' %} aria-current="page"{% endif %} data-tab-info>Good to know</a>
 </nav>
 
 <div class="tv-cols">
@@ -160,6 +161,9 @@
         {% for b in bookings %}{% include 'travel/_booking_row.html' %}{% empty %}<p class="text-muted" style="margin: 0">No bookings yet.</p>{% endfor %}
         <p class="tv-sub" style="margin: 10px 0 0">Other currencies are shown in euros at the European Central Bank&rsquo;s rate for the day. Type the euro amount from your card statement on a booking to use that instead.</p>
     </section>
+{% endif %}
+{% if tab == 'info' %}{% comment %} RA12, 22 Nov 2026 - Good to know: a card a city (Demetri: "I like 12 - City Info card"). {% endcomment %}
+    {% for c in cards %}{% include 'travel/_city_info.html' %}{% empty %}<section class="form-card" data-city-none><p class="tv-sub" style="margin: 0">Good to know shows once the trip has a hotel or a flight to a city.</p></section>{% endfor %}
 {% endif %}
 </div>
 

@@ -38,6 +38,11 @@ def travel_view(fn):
     return login_required(permission_required(PERM, raise_exception=True)(fn))
 
 
+def _cards(t):
+    from . import cityinfo
+    return cityinfo.cards_for(t, list(t.bookings.all()))
+
+
 def _trip(request, trip_id):
     return get_object_or_404(trips_for(request.user), pk=trip_id)
 
@@ -357,8 +362,8 @@ def trip_new(request):
 def trip(request, trip_id):
     t = _trip(request, trip_id)
     tab = {'trip_costs': 'costs', 'trip_itinerary': 'itinerary',
-           'trip_wishlist': 'wish'}.get(request.resolver_match.url_name,
-                                        'bookings')
+           'trip_wishlist': 'wish', 'trip_info': 'info'}.get(
+        request.resolver_match.url_name, 'bookings')
     bs = list(t.bookings.prefetch_related('travellers'))
     fx.convert_pending(bs)
     # TR-5 - a hotel's or a restaurant's missing details, looked up once.
@@ -405,6 +410,8 @@ def trip(request, trip_id):
         'itinerary': with_weather(itinerary(t, bs, pl), bs, pl)
         if tab == 'itinerary' else [],
         'wish': [p for p in pl if not p.day],
+        # RA12, 22 Nov 2026 - Good to know, a card a city.
+        'cards': _cards(t) if tab == 'info' else [],
         'trip_days': days_of(start, end),
         # TR-7 - after the trip: still To pay? (asked, never done alone)
         'settle': settle_rows(t, bs) if show_money else [],

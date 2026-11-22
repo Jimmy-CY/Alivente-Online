@@ -1678,6 +1678,8 @@ ROUNDS = [
     '.bak_ra10',
     # RA11, 22 Nov 2026 - an icon for each kind of thing to do.
     '.bak_ra11',
+    # RA12, 22 Nov 2026 - Good to know; + Spending from a receipt photo.
+    '.bak_ra12',
 ]
 
 
