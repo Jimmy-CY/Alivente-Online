@@ -71,8 +71,9 @@ ASSET_TYPES = {
 # outside what you asked for, in its own section.
 # RA11, 22 Nov 2026 - an icon for each kind of thing to do.
 # RA12, 22 Nov 2026 - Good to know; + Spending from a receipt photo.
-SW_VERSION = 'tv25-1'
-SW_ASSETS = '90edbdcd1f50'
+# RA13, 22 Nov 2026 - the trip tabs: icons and short names.
+SW_VERSION = 'tv26-1'
+SW_ASSETS = '10dd4084105c'
 
 
 def page(request, template, ctx):

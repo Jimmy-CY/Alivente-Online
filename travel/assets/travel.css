@@ -293,6 +293,10 @@ html.tv-turn-90 body.tv-holding .tv-nav, html.tv-turn-270 body.tv-holding .tv-na
 .tv-receipt.is-reading .tv-receipt-tip, .tv-receipt-m.is-reading .tv-receipt-tip, .tv-receipt-m.is-reading label { display: none; }
 .tv-receipt-m { display: flex; flex-direction: column; gap: 8px; }
 .tv-receipt-read { background: #E1F5EE; color: #085041; }
+/* RA13, 22 Nov 2026 - the trip tabs: an icon over a short name, all on one line. */
+.tv-tabs.is-icons { padding: 0; gap: 0; }
+.tv-tabs.is-icons .tv-tab { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 9px 2px 7px; font-size: 12px; line-height: 1.2; text-align: center; white-space: nowrap; }
+.tv-tabs.is-icons .tv-tab svg { width: 21px; height: 21px; }
 .tv-id-meta { font-size: .8rem; color: #0B5A63; font-weight: 600; }
 .tv-id-meta span { color: #5B6B72; font-weight: 400; }
 .tv-id-km { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .95rem; }

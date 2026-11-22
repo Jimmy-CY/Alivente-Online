@@ -62,12 +62,13 @@
 {% endif %}
 <p class="tv-sub" data-trip-span>{% if start %}{{ start|date:"D j M" }}{% if end and end != start %} – {{ end|date:"D j M Y" }}{% if nights %} · {{ nights }} night{{ nights|pluralize }}{% endif %}{% else %} {{ start|date:"Y" }}{% endif %}{% else %}No dates yet{% endif %}{% if trip.where %} · {{ trip.where }}{% endif %}</p>
 
+{% comment %} RA13, 22 Nov 2026 - each tab has its icon, the same as on the phone; full names here, short ones on the phone. {% endcomment %}
 <nav class="tv-tabs" aria-label="Trip">
-    <a class="tv-chip{% if tab == 'bookings' %} is-on{% endif %}" href="{% url 'travel:trip' trip.pk %}"{% if tab == 'bookings' %} aria-current="page"{% endif %}>Bookings <span class="tv-sub">{{ bookings|length }}</span></a>
-    <a class="tv-chip{% if tab == 'itinerary' %} is-on{% endif %}" href="{% url 'travel:trip_itinerary' trip.pk %}"{% if tab == 'itinerary' %} aria-current="page"{% endif %}>Itinerary</a>
-    <a class="tv-chip{% if tab == 'wish' %} is-on{% endif %}" href="{% url 'travel:trip_wishlist' trip.pk %}"{% if tab == 'wish' %} aria-current="page"{% endif %}>Things to do{% if wish %} <span class="tv-sub">{{ wish|length }}</span>{% endif %}</a>
-    {% if show_money %}<a class="tv-chip{% if tab == 'costs' %} is-on{% endif %}" href="{% url 'travel:trip_costs' trip.pk %}"{% if tab == 'costs' %} aria-current="page"{% endif %}>Costs</a>{% endif %}
-    <a class="tv-chip{% if tab == 'info' %} is-on{% endif %}" href="{% url 'travel:trip_info' trip.pk %}"{% if tab == 'info' %} aria-current="page"{% endif %} data-tab-info>Good to know</a>
+    <a class="tv-chip{% if tab == 'bookings' %} is-on{% endif %}" href="{% url 'travel:trip' trip.pk %}"{% if tab == 'bookings' %} aria-current="page"{% endif %}>{% include 'travel/_tab_icon.html' with k='bookings' %}Bookings <span class="tv-sub">{{ bookings|length }}</span></a>
+    <a class="tv-chip{% if tab == 'itinerary' %} is-on{% endif %}" href="{% url 'travel:trip_itinerary' trip.pk %}"{% if tab == 'itinerary' %} aria-current="page"{% endif %}>{% include 'travel/_tab_icon.html' with k='itinerary' %}Itinerary</a>
+    <a class="tv-chip{% if tab == 'wish' %} is-on{% endif %}" href="{% url 'travel:trip_wishlist' trip.pk %}"{% if tab == 'wish' %} aria-current="page"{% endif %}>{% include 'travel/_tab_icon.html' with k='wish' %}Things to do{% if wish %} <span class="tv-sub">{{ wish|length }}</span>{% endif %}</a>
+    {% if show_money %}<a class="tv-chip{% if tab == 'costs' %} is-on{% endif %}" href="{% url 'travel:trip_costs' trip.pk %}"{% if tab == 'costs' %} aria-current="page"{% endif %}>{% include 'travel/_tab_icon.html' with k='costs' %}Costs</a>{% endif %}
+    <a class="tv-chip{% if tab == 'info' %} is-on{% endif %}" href="{% url 'travel:trip_info' trip.pk %}"{% if tab == 'info' %} aria-current="page"{% endif %} data-tab-info>{% include 'travel/_tab_icon.html' with k='info' %}Good to know</a>
 </nav>
 
 <div class="tv-cols">

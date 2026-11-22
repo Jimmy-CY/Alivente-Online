@@ -1680,6 +1680,8 @@ ROUNDS = [
     '.bak_ra11',
     # RA12, 22 Nov 2026 - Good to know; + Spending from a receipt photo.
     '.bak_ra12',
+    # RA13, 22 Nov 2026 - the trip tabs: icons, short names on the phone.
+    '.bak_ra13',
 ]
 
 

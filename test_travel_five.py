@@ -564,8 +564,8 @@ if have_db:
                '  and in the PDF')
             h = A.get('/travel/%d/' % t.pk).content.decode()
             ok('>Things to do' in h and '>Wish list' not in h and
-               'Things to do</a>' in M.get('/travel/m/trip/%d/' % t.pk)
-               .content.decode(),
+               'aria-label="Things to do"' in M.get(
+                   '/travel/m/trip/%d/' % t.pk).content.decode(),
                'THE TAB IS "Things to do", on the computer and the phone')
             raise Rollback
     except Rollback:
