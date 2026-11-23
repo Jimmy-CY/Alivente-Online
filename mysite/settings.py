@@ -61,6 +61,9 @@ INSTALLED_APPS = [
     "wellness",
     # TR-1, 15 Nov 2026 - Travel: its own app, like Wellness.
     "travel",
+    # RA18, 23 Nov 2026 - Property Acquisitions: its own app, like CRS -
+    # inside the house standard, under Property Operations.
+    "acquisitions.apps.AcquisitionsConfig",
     # PK-1, 30 Oct 2026 - sign in with a fingerprint. No templates.
     "passkeys",
     "whitenoise.runserver_nostatic",

@@ -98,6 +98,8 @@ MODULES = [
       'delete-comment']),
     ('projects', 'Projects', 'ops', '',
      ['projects', 'ajax/projects', 'ajax/tasks', 'translate']),
+    # RA18, 23 Nov 2026 - a business area, so its changes are logged.
+    ('acquisitions', 'Acquisitions', 'ops', '', ['acquisitions']),
     ('dashboard', 'Dashboard', 'ops', '',
      ['property_management_dashboard', 'property_detail']),
     # ---- Financial Management
@@ -317,6 +319,14 @@ WATCHED = [
     ('pages', 'supplier', 'suppliers', 'Supplier'),
     ('pages', 'issues', 'issues', 'Issue'),
     ('pages', 'Project', 'projects', 'Project'),
+    # RA18 - Acquisitions: what a person decides. A property's FACTS and
+    # its scores are written by searches and re-scoring, many at a time,
+    # and are not watched; the rules, the scenarios and your decisions on
+    # a listing are.
+    ('acquisitions', 'Scenario', 'acquisitions', 'Search scenario'),
+    ('acquisitions', 'Criterion', 'acquisitions', 'Search rule'),
+    ('acquisitions', 'ScenarioMatch', 'acquisitions', 'Listing decision'),
+    ('acquisitions', 'Viewing', 'acquisitions', 'Viewing'),
     ('pages', 'ProjectTask', 'projects', 'Task'),
     ('pages', 'invoices', 'invoices', 'Invoice'),
     ('pages', 'InvoiceCustomer', 'invoices', 'Invoice customer'),
@@ -342,9 +352,23 @@ NOT_SHOWN = {'last_login', 'updated_at', 'modified', 'date_modified',
              'last_updated', 'modified_at', 'updated'}
 
 
+# RA18, 23 Nov 2026 - FIELDS A MACHINE WRITES, per model. A search
+# scenario's match is re-scored whenever a rule or a fact changes, often
+# hundreds at a time; those writes are not anyone's change. What a person
+# decides on a listing - its status, your comments - still is, and a save
+# that changes only these fields logs nothing at all.
+MACHINE_FIELDS = {
+    ('acquisitions', 'scenariomatch'): {
+        'score', 'raw_score', 'is_capped', 'passes_musts', 'failed_musts',
+        'unknown_musts', 'breakdown', 'judgements', 'flags', 'last_checked'},
+}
+
+
 def _fields(obj):
+    skip = MACHINE_FIELDS.get((obj._meta.app_label, obj._meta.model_name),
+                              ())
     for f in obj._meta.concrete_fields:
-        if f.primary_key or f.name in NOT_SHOWN or \
+        if f.primary_key or f.name in NOT_SHOWN or f.name in skip or \
                 getattr(f, 'auto_now', False):
             continue
         yield f

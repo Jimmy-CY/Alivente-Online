@@ -883,6 +883,10 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             # ---------- TRAVEL (TR-1, 15 Nov 2026) ----------
             ('travel', 'auth.can_access_travel'),
 
+            # ---------- ACQUISITIONS (RA18, 23 Nov 2026) ----------
+            # No trailing slash, for Wellness's reason.
+            ('acquisitions', 'auth.can_access_acquisitions'),
+
             # ---------- RECIPES ----------
             ('recipe_management', 'auth.can_access_recipes'),
             ('recipes/', 'auth.can_access_recipes'),

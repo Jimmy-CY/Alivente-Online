@@ -1690,6 +1690,8 @@ ROUNDS = [
     '.bak_ra16',
     # RA17, 23 Nov 2026 - Send in the house shape; the month on screen.
     '.bak_ra17',
+    # RA18, 23 Nov 2026 - Property Acquisitions, step 1: the foundation.
+    '.bak_ra18',
 ]
 
 

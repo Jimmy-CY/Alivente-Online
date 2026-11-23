@@ -45,6 +45,10 @@ MODULE_PERMISSIONS = [
     # TR-1, 15 Nov 2026 - Travel. No edit tier, like Wellness: a trip is
     # its owner's, and shared ones are shared to change as well as see.
     {'codename': 'can_access_travel',         'edit_codename': None,                      'label': 'Travel',                'icon': 'fa-plane'},
+    # RA18, 23 Nov 2026 - Property Acquisitions, under Property Operations.
+    # AN EDIT TIER, like the other business modules: Demetri wants to be
+    # able to give someone view-only access to the search and its results.
+    {'codename': 'can_access_acquisitions',   'edit_codename': 'can_edit_acquisitions',   'label': 'Acquisitions',          'icon': 'fa-search-location'},
 ]
 
 # `can_access_fsr` is checked in the Issues module and granted to the Property
