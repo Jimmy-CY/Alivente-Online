@@ -547,6 +547,18 @@ def meal_planner(request):
     except (TypeError, ValueError):
         month = anchor.month
 
+    # THE MONTH ARROWS MOVE THE ANCHOR - RA17, 23 Nov 2026. goMonth()
+    # sends ?year= and ?month= and carries the OLD week along, so the
+    # grid showed December while the anchor - which Send, Print and the
+    # Shopping List all read - stayed in November. Demetri: "when I
+    # have a specific month open ... it must always send those
+    # recipes." A month that was asked for by name is the month the
+    # page is about, so the anchor moves to its 1st unless it is
+    # already in it.
+    if (('year' in request.GET or 'month' in request.GET)
+            and (year, month) != (anchor.year, anchor.month)):
+        anchor = date(year, month, 1)
+
     # THE WEEK IS THE ANCHOR'S WEEK - MV-1, 19 Oct 2026. This block
     # read ?week= for itself; the anchor above now does that for all
     # three views, so there is one reading of the date instead of two
@@ -1198,6 +1210,28 @@ def planner_view(request):
     return found[0] if found[0] in PLANNER_VIEWS else 'month'
 
 
+def move_landing(request, when):
+    """Where a moved meal sends you - RA17, 23 Nov 2026.
+
+    Demetri: "if I drag and drop a recipe to a future or past month, it
+    must then stay on the month where the recipe was dropped into."
+
+    Still in the month, week or day on screen: you stay where you were,
+    as planner_back has always done. Gone to another one - Move to...
+    with a date next month, a drop across a week that spans two months,
+    or an Undo that puts it back - and the planner follows it, in the
+    same view, to the period that now holds it.
+    """
+    from .meal_send import period as _period
+    raw = request.POST.get('from_date') or request.GET.get('from_date')
+    seen = week_of(raw, None) if raw else None
+    if seen is not None:
+        first, last = _period(planner_view(request), seen)
+        if not first <= when <= last:
+            return planner_back(request, when, stay=False)
+    return planner_back(request, when)
+
+
 def planner_back(request, when=None, stay=True):
     """The planner, at the view and the DAY you came from.
 
@@ -1337,12 +1371,12 @@ def move_meal_entry(request):
             'back': was.strftime('%Y-%m-%d'),
             'to': when.strftime('%Y-%m-%d'),
             'leftovers': len(travelling)}
-        return redirect(planner_back(request, when))
+        return redirect(move_landing(request, when))
 
     if request.POST.get('undo') == '1':
         messages.success(request, 'Put "%s" back on %s'
                          % (what, when.strftime('%A, %d %B')))
-        return redirect(planner_back(request, when))
+        return redirect(move_landing(request, when))
 
     if travelling:
         messages.success(
@@ -1355,7 +1389,7 @@ def move_meal_entry(request):
     else:
         messages.success(request, 'Moved "%s" to %s'
                          % (what, when.strftime('%A, %d %B')))
-    return redirect(planner_back(request, when))
+    return redirect(move_landing(request, when))
 
 
 def _drop_order(when, raw):

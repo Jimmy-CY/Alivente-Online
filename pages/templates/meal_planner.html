@@ -1847,9 +1847,17 @@
     .month-cell.is-drop, .week-col-body.is-drop { outline: 2px dashed var(--alv-accent); outline-offset: -3px; background: var(--alv-accent-soft); }
     .mp-undo { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 14px; margin: 0 0 12px; padding: 6px 14px; border: 1px solid var(--alv-good-line); border-radius: var(--alv-radius-sm); background: var(--alv-good-soft); color: var(--alv-good-ink); }
     .mp-undo form { margin: 0; }
-    .send-preview { white-space: pre-wrap; font-family: Consolas, Menlo, monospace; font-size: 13px; max-height: 260px; overflow: auto; margin: 0 0 14px; padding: 10px 12px; border: 1px solid var(--alv-line); border-radius: var(--alv-radius-sm); background: var(--alv-surface); color: var(--alv-ink); }
-    .send-ways { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
-    .send-h { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--alv-ink-strong); }
+    /* RA17 - the Copy dialog's shape: a muted intro, a quiet framed
+       list like a read-only field, day on the left and its meals stacked
+       beside it. */
+    .send-intro { margin: 0 0 16px; font-size: 13px; color: var(--alv-ink-soft); }
+    .send-preview { max-height: 240px; overflow: auto; padding: 6px 12px; border: 1px solid var(--alv-line); border-radius: var(--alv-radius-sm); background: var(--alv-surface); color: var(--alv-ink); font-size: 14px; }
+    .send-day { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 2px 12px; padding: 6px 0; border-bottom: 1px solid var(--alv-line-soft); }
+    .send-day:last-child { border-bottom: 0; }
+    .send-day-label { font-weight: 600; color: var(--alv-accent-ink); }
+    .send-day-meals { display: flex; flex-direction: column; }
+    .send-empty { padding: 6px 0; color: var(--alv-ink-soft); }
+    .send-ways { display: flex; flex-wrap: wrap; gap: 8px; }
     .send-people { list-style: none; margin: 0 0 8px; padding: 0; }
     .send-people label { display: flex; align-items: center; gap: 12px; min-height: 44px; margin: 0; cursor: pointer; }
     .send-status { min-height: 18px; margin: 8px 0 0; font-size: 13px; color: var(--alv-ink-soft); }
@@ -3667,9 +3675,19 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
+            {# THE HOUSE SHAPE - RA17, 23 Nov 2026. Demetri: "standardise #}
+            {# the look of the modal (to our standards)". The Copy dialog's #}
+            {# shape: a muted line saying what happens, then bold labels   #}
+            {# over each part, Cancel and the one primary in the footer.   #}
             <div class="modal-body">
-                <pre class="send-preview" id="sendPreview" aria-label="What will be sent">Loading...</pre>
-                <div class="send-ways">
+                <p class="send-intro" id="sendIntro">Sends what you are looking at. Days with nothing planned are left out.</p>
+                <div class="form-group">
+                    <label><strong>What will be sent</strong></label>
+                    <div class="send-preview" id="sendPreview" aria-live="polite">Loading...</div>
+                </div>
+                <div class="form-group">
+                    <label><strong>Send by</strong></label>
+                    <div class="send-ways">
                     <a class="btn action-secondary" id="sendWhatsApp" href="#"
                        target="_blank" rel="noopener">
                         <i class="fab fa-whatsapp"></i> WhatsApp
@@ -3683,10 +3701,13 @@
                             onclick="sendNative()" hidden>
                         <i class="fas fa-share-alt"></i> More apps...
                     </button>
+                    </div>
                 </div>
                 {% if perms.auth.can_edit_recipes %}
-                <p class="send-h">Email it to</p>
-                <ul class="send-people" id="sendPeople"></ul>
+                <div class="form-group">
+                    <label><strong>Email to</strong></label>
+                    <ul class="send-people" id="sendPeople"></ul>
+                </div>
                 {% endif %}
                 <p class="send-status" id="sendStatus" role="status" aria-live="polite"></p>
             </div>
@@ -3695,7 +3716,7 @@
             {# body's own buttons quiet.                                #}
             <div class="modal-footer">
                 <button type="button" class="btn action-secondary"
-                        data-dismiss="modal">Close</button>
+                        data-dismiss="modal">Cancel</button>
                 {% if perms.auth.can_edit_recipes %}
                 <button type="button" class="btn action-primary" id="sendEmailBtn"
                         onclick="sendEmail()">
@@ -3735,7 +3756,7 @@ function sendLoad() {
         .then(function (r) { if (!r.ok) { throw new Error(r.status); } return r.json(); })
         .then(function (d) {
             sendWords = d;
-            if (pre) { pre.textContent = d.text; }
+            sendDraw(d);
             if (wa) {
                 wa.setAttribute('href', 'https://wa.me/?text=' +
                     encodeURIComponent(d.whatsapp));
@@ -3746,6 +3767,44 @@ function sendLoad() {
             if (pre) { pre.textContent = ''; }
             sendStatus('Could not load the plan. Close this and try again.', true);
         });
+}
+
+// THE PREVIEW IS A LIST, NOT A CODE BOX - RA17. Each day on its own
+// row, its meals stacked beside it; the intro says which period.
+function sendDraw(d) {
+    var pre = document.getElementById('sendPreview');
+    var intro = document.getElementById('sendIntro');
+    if (intro) {
+        intro.textContent = 'Sends ' + (d.period || 'what you are looking at') +
+            '. Days with nothing planned are left out.';
+    }
+    if (!pre) { return; }
+    while (pre.firstChild) { pre.removeChild(pre.firstChild); }
+    var days = d.days || [];
+    if (!days.length) {
+        var none = document.createElement('div');
+        none.className = 'send-empty';
+        none.textContent = 'Nothing planned yet.';
+        pre.appendChild(none);
+        return;
+    }
+    days.forEach(function (day) {
+        var row = document.createElement('div');
+        row.className = 'send-day';
+        var lab = document.createElement('div');
+        lab.className = 'send-day-label';
+        lab.textContent = day.label;
+        var meals = document.createElement('div');
+        meals.className = 'send-day-meals';
+        day.names.forEach(function (n) {
+            var m = document.createElement('span');
+            m.textContent = n;
+            meals.appendChild(m);
+        });
+        row.appendChild(lab);
+        row.appendChild(meals);
+        pre.appendChild(row);
+    });
 }
 
 // BUILT, NOT INTERPOLATED - a name is a person's words (SL-4).

@@ -244,8 +244,12 @@ if have_db:
                '\n'.join(lines))
             ok(w.get('subject') == 'Meal plan - 24 Nov to 30 Nov 2031',
                '  headed with the week', w.get('subject'))
-            ok('```\n' + '\n'.join(want) + '\n```' in w.get('whatsapp', ''),
-               '  WhatsApp gets it in monospace, so the lining-up survives')
+            # RA17, 23 Nov 2026 - NO ``` BLOCK ANY MORE. Demetri's month
+            # arrived in WhatsApp with only its first line; the block was
+            # the only unusual thing in it. The same plain lines as Copy.
+            ok(w.get('whatsapp', '').endswith('\n'.join(want)) and
+               '```' not in w.get('whatsapp', ''),
+               '  WhatsApp gets the same lines, with no code block (RA17)')
             st, m = words('month', ISO[3])
             ok(m.get('subject') == 'Meal plan - November 2031' and
                '\n'.join(want) in m.get('text', ''),
@@ -548,8 +552,9 @@ if have_db:
                     pg.wait_for_timeout(800)
                     href = pg.get_attribute('#sendWhatsApp', 'href') or ''
                     pre = pg.text_content('#sendPreview') or ''
+                    # RA17 - the preview is a day-by-meal list now.
                     ok(href.startswith('https://wa.me/?text=') and
-                       'Wed (26th Nov): Kebabs' in pre,
+                       'Wed (26th Nov)' in pre and 'Kebabs' in pre,
                        'SEND: the dialog shows the plan and WhatsApp '
                        'carries it', (href[:60], pre[:80]))
                     ok(pg.evaluate("document.querySelectorAll("

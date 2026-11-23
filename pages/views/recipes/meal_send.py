@@ -142,23 +142,50 @@ def text_lines(by_day, start, end):
     return lines
 
 
+def described(view, start, end):
+    """What the dialog says it is sending - RA17."""
+    if view == 'month':
+        return start.strftime('%B %Y')
+    if view == 'day':
+        return '%s %d %s' % (start.strftime('%A'), start.day,
+                             start.strftime('%B'))
+    return 'the week of %d %s to %d %s' % (
+        start.day, start.strftime('%b'), end.day, end.strftime('%b'))
+
+
+def day_rows(by_day, start, end):
+    """[{label, names}] for the days that have something on them."""
+    out = []
+    d = start
+    while d <= end:
+        names = [n for n in (entry_name(e) for e in by_day.get(d, [])) if n]
+        if names:
+            out.append({'label': day_label(d), 'names': names})
+        d += timedelta(days=1)
+    return out
+
+
 def plan_text(view, anchor):
     start, end = period(view, anchor)
     by_day = gather(start, end)
     head = title(view, start, end)
     lines = text_lines(by_day, start, end)
+    common = {'subject': head, 'period': described(view, start, end),
+              'from': start.strftime('%Y-%m-%d'),
+              'to': end.strftime('%Y-%m-%d'),
+              'days': day_rows(by_day, start, end)}
     if not lines:
         body = 'Nothing planned yet.'
-        return {'subject': head, 'text': head + '\n\n' + body,
-                'whatsapp': '*' + head + '*\n\n' + body, 'empty': True}
-    return {
-        'subject': head,
-        'text': head + '\n\n' + '\n'.join(lines),
-        # MONOSPACE, so the second and third meals of a day still line
-        # up under the first in WhatsApp's proportional font.
-        'whatsapp': '*' + head + '*\n\n```\n' + '\n'.join(lines) + '\n```',
-        'empty': False,
-    }
+        return dict(common, text=head + '\n\n' + body,
+                    whatsapp='*' + head + '*\n\n' + body, empty=True)
+    # NO ``` BLOCK FOR WHATSAPP - RA17, 23 Nov 2026. RA16 wrapped the
+    # list in one so a day's later meals lined up under its first; the
+    # month Demetri sent arrived with only its first line. The block was
+    # the only unusual thing in that message, so it is gone: the same
+    # plain lines as Copy, the bold title kept.
+    return dict(common, text=head + '\n\n' + '\n'.join(lines),
+                whatsapp='*' + head + '*\n\n' + '\n'.join(lines),
+                empty=False)
 
 
 def allowed_recipients(user):

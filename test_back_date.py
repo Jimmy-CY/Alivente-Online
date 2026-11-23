@@ -149,8 +149,13 @@ def claims(bundle):
     c['and the day is the anchor the page was rendered at'] = (
         t.count("name=\"from_date\" value=\"{{ anchor|date:'Y-m-d' }}\"")
         == N_FORMS)
-    c['exactly one action still moves you on purpose'] = (
-        len(re.findall(r'planner_back\([^)]*stay=False', v)) == 1)
+    # RA17, 23 Nov 2026 - TWO NOW. A moved meal that leaves the month,
+    # week or day on screen takes the planner with it (move_landing).
+    # Demetri: "it must then stay on the month where the recipe was
+    # dropped into."
+    c['exactly two actions move you on purpose - the week copy and a '
+      'move that leaves the period'] = (
+        len(re.findall(r'planner_back\([^)]*stay=False', v)) == 2)
     # THE CALL SITES ARE NOT REWRITTEN. Their date is the right
     # FALLBACK for a request carrying no from_date - an old open tab,
     # or a link somebody saved.
@@ -166,10 +171,15 @@ for msg, got in claims(NOW).items():
     ok(got, msg)
 
 _v = T.python_code_only(NOW[VIEW], payloads=True)
-_i = _v.index('stay=False')
-ok('copy_meal_week' in _v[max(0, _i - 2500):_i],
-   'and the one that opts out is the week copy, where seeing the copy '
-   'is the point of the action')
+_hits = [m.start() for m in re.finditer(r'stay=False', _v)]
+_owners = []
+for _i in _hits:
+    _d = _v.rfind('\ndef ', 0, _i)
+    _owners.append(_v[_d + 5:_v.find('(', _d)] if _d >= 0 else '?')
+ok('copy_meal_week' in _owners and 'move_landing' in _owners,
+   'and the two that opt out are the week copy, where seeing the copy is '
+   'the point, and move_landing, where seeing the moved meal is (RA17)',
+   _owners)
 
 
 # ==========================================================================

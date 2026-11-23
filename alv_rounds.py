@@ -1688,6 +1688,8 @@ ROUNDS = [
     '.bak_ra15',
     # RA16, 23 Nov 2026 - the planner: the eye, drag to a day, Send.
     '.bak_ra16',
+    # RA17, 23 Nov 2026 - Send in the house shape; the month on screen.
+    '.bak_ra17',
 ]
 
 
