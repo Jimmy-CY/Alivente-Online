@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load help_modal_tags %}
+{% block title %}Activity{% endblock %}
+{% block content %}
+{# RA15, 23 Nov 2026 - who used Alivente, how and when (pages/activity.py). Superusers only. Demetri: "I want the sign-ins information. I want the changes to the business records. I also want the Pages visited and time spent. For the personal, I want to be able to see which modules/areas are used the most ... I don't want access to the information they are saving in the Personal side." #}
+<style>
+.act-wrap { max-width: 1180px; margin: 0 auto; }
+.act-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin: 6px 0 14px; }
+.act-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.act-tab { padding: 6px 14px; border-radius: 999px; border: 1px solid var(--alv-accent-line); color: var(--alv-ink-soft); text-decoration: none; font-weight: 600; font-size: 14px; }
+.act-tab:hover { text-decoration: none; color: var(--alv-accent); }
+.act-tab.is-on { background: var(--alv-accent); border-color: var(--alv-accent); color: var(--alv-on-accent); }
+.act-pick { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0; }
+.act-pick select { width: auto; min-width: 150px; }
+.act-note { font-size: 13px; color: var(--alv-ink-soft); margin: 10px 0 0; }
+.act-grid { table-layout: fixed; }
+.act-grid th, .act-grid td { text-align: center; vertical-align: middle; padding: 4px 3px; }
+.act-grid th:first-child, .act-grid td:first-child { text-align: left; }
+.act-grid td:first-child { padding-left: 14px; }
+.act-cell { line-height: 1.15; padding: 4px 0; font-size: 13px; }
+.act-cell small { display: block; font-size: 11px; opacity: .85; }
+.act-z { background: var(--alv-line-soft); color: var(--alv-ink-soft); }
+.act-a { background: var(--alv-line-soft); color: var(--alv-ink-strong); font-weight: 600; }
+.act-b { background: var(--alv-accent-line); color: var(--alv-ink-strong); font-weight: 600; }
+.act-d { background: var(--alv-accent); color: var(--alv-on-accent); font-weight: 600; }
+.act-area td { background: var(--alv-line-soft); font-weight: 700; cursor: pointer; }
+.act-area td:first-child { padding-left: 4px; }
+.act-area .act-cell { background: transparent; }
+.act-sub td { font-size: 12px; font-style: italic; color: var(--alv-ink-soft); padding-top: 6px; }
+.act-folded .act-row, .act-folded .act-sub { display: none; }
+.act-pill { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 999px; background: var(--alv-line-soft); color: var(--alv-ink-soft); font-weight: 500; margin-left: 6px; }
+.act-del { color: var(--alv-danger); }
+.act-mods { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.act-mod { font-size: 12px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--alv-accent-line); }
+.act-pages { font-size: 12px; margin: 4px 0 0 0; padding-left: 16px; color: var(--alv-ink-soft); }
+.act-changes { margin: 2px 0 0; padding-left: 16px; font-size: 13px; }
+@media screen and (max-width: 768px) {
+    .act-grid { font-size: 11px; }
+    .act-wrap { padding: 0 6px; }
+    .table-container { overflow-x: auto; }
+}
+</style>
+<div class="act-wrap">
+    <h2 class="page-title-h2">ACTIVITY</h2>
+    <br/>
+    <div class="page-action-buttons">
+        <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#user_administrationHelpModal" aria-label="Help">
+            <i class="fas fa-question-circle"></i> Help
+        </button>
+        <a href="{% url 'user_administration' %}" class="btn action-back" aria-label="Back">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+        </a>
+    </div>
+
+    <div class="act-bar">
+        <nav class="act-tabs" aria-label="Activity">
+            {% for k, name in tabs %}<a class="act-tab{% if k == tab %} is-on{% endif %}" href="?tab={{ k }}&amp;p={% if period_key == '30' or period_key == '12' %}{{ period_key }}{% else %}&amp;m={{ period_key }}{% endif %}{% if who %}&amp;u={{ who.pk }}{% endif %}"{% if k == tab %} aria-current="page"{% endif %} data-act-tab="{{ k }}">{{ name }}</a>{% endfor %}
+        </nav>
+        <form method="get" class="act-pick" data-act-period>
+            <input type="hidden" name="tab" value="{{ tab }}">
+            <select name="when" class="form-control" aria-label="Period" onchange="var v = this.value; this.form.p.value = (v === '30' || v === '12') ? v : ''; this.form.m.value = (v === '30' || v === '12') ? '' : v; this.form.submit();">
+                <option value="30"{% if period_key == '30' %} selected{% endif %}>Last 30 days</option>
+                <option value="12"{% if period_key == '12' %} selected{% endif %}>Last 12 months</option>
+                {% for k, name in months %}<option value="{{ k }}"{% if period_key == k %} selected{% endif %}>{{ name }}</option>{% endfor %}
+            </select>
+            <input type="hidden" name="p" value="{% if period_key == '30' or period_key == '12' %}{{ period_key }}{% endif %}">
+            <input type="hidden" name="m" value="{% if period_key != '30' and period_key != '12' %}{{ period_key }}{% endif %}">
+            {% if tab != 'usage' %}<select name="u" class="form-control" aria-label="Person" onchange="this.form.submit();">
+                <option value="">Everyone</option>
+                {% for p in people %}<option value="{{ p.pk }}"{% if who and who.pk == p.pk %} selected{% endif %}>{{ p.get_full_name|default:p.username }}</option>{% endfor %}
+            </select>{% elif who %}<input type="hidden" name="u" value="{{ who.pk }}">{% endif %}
+        </form>
+    </div>
+
+    {% if tab == 'usage' %}
+    <div class="table-container" data-act-usage>
+        <table class="table alv-table act-grid">
+            <thead><tr><th style="width: 26%">{{ period_words }}</th>{% for u in grid.users %}<th title="{{ u.get_full_name|default:u.username }} &middot; {{ u.email }}">{{ u.get_full_name|default:u.username }}</th>{% endfor %}</tr></thead>
+            {% for a in grid.areas %}<tbody class="act-group" data-act-area="{{ a.key }}">
+                <tr class="act-area" onclick="this.parentNode.classList.toggle('act-folded')" title="Click to fold or open"><td><i class="fas fa-chevron-down" aria-hidden="true"></i> {{ a.name }}{% if a.personal %}<span class="act-pill">usage only</span>{% endif %}</td>{% for t in a.totals %}<td><div class="act-cell">{% if t.n %}{{ t.n }}<small>{{ t.t }}</small>{% else %}&ndash;{% endif %}</div></td>{% endfor %}</tr>
+                {% for r in a.rows %}{% if r.sub %}<tr class="act-sub"><td colspan="{{ grid.users|length|add:1 }}">{{ r.sub }}</td></tr>{% endif %}
+                <tr class="act-row" data-act-module="{{ r.key }}"><td>{{ r.label }}</td>{% for c in r.cells %}<td><div class="act-cell act-{{ c.shade }}" title="{{ c.title }}">{% if c.n %}{{ c.n }}<small>{{ c.t }}</small>{% else %}&ndash;{% endif %}</div></td>{% endfor %}</tr>{% endfor %}
+            </tbody>{% endfor %}
+        </table>
+    </div>
+    <p class="act-note">Visits, with the time spent underneath (until the next page, at most 30 minutes; the last page of a sitting counts a minute). Personal shows only how much each module is used &ndash; never the pages or anything saved. Click an area to fold it.</p>
+
+    {% elif tab == 'pages' %}
+    <div class="table-container" data-act-pages>
+        <table class="table alv-table">
+            <thead><tr><th style="width: 22%; text-align: left">When</th><th style="width: 18%; text-align: left">Who</th><th style="width: 10%">Time</th><th style="text-align: left">What</th></tr></thead>
+            <tbody>
+            {% for s in visits %}<tr data-act-sitting>
+                <td style="text-align: left">{{ s.start|date:"D j M" }}<br><span class="act-pill" style="margin: 0">{{ s.start|date:"H:i" }}&ndash;{{ s.end|date:"H:i" }}</span></td>
+                <td style="text-align: left"><a href="?tab=pages&amp;{% if period_key == '30' or period_key == '12' %}p={{ period_key }}{% else %}m={{ period_key }}{% endif %}&amp;u={{ s.uid }}">{{ s.who }}</a></td>
+                <td>{{ s.spent }}</td>
+                <td style="text-align: left">{{ s.n }} page{{ s.n|pluralize }}
+                    <div class="act-mods">{% for m in s.mods %}<span class="act-mod" title="{{ m.n }} page{{ m.n|pluralize }}">{{ m.label }} &middot; {{ m.t }}{% if m.personal %}<span class="act-pill">usage only</span>{% endif %}</span>{% endfor %}</div>
+                    {% for m in s.mods %}{% if m.pages %}<details><summary style="font-size: 12px">{{ m.label }}: the pages</summary><ul class="act-pages">{% for p in m.pages %}<li>{{ p.at|date:"H:i" }} &middot; {{ p.path }}</li>{% endfor %}</ul></details>{% endif %}{% endfor %}
+                </td></tr>
+            {% empty %}<tr><td colspan="4" style="text-align: left">No pages opened {% if who %}by {{ who.get_full_name|default:who.username }} {% endif %}in this period.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="act-note">A sitting ends after 30 minutes with nothing opened. The pages are shown for Property Operations, Financial Management and Administration only; in Personal just the module and the time.</p>
+
+    {% elif tab == 'changes' %}
+    <div class="table-container" data-act-changes>
+        <table class="table alv-table">
+            <thead><tr><th style="width: 16%; text-align: left">When</th><th style="width: 15%; text-align: left">Who</th><th style="width: 17%; text-align: left">Module</th><th style="text-align: left">What</th></tr></thead>
+            <tbody>
+            {% for c in changes %}<tr data-act-change="{{ c.action }}">
+                <td style="text-align: left">{{ c.at|date:"D j M H:i" }}</td>
+                <td style="text-align: left">{% if c.user %}{{ c.user.get_full_name|default:c.user.username }}{% else %}Alivente itself{% endif %}</td>
+                <td style="text-align: left">{{ c.module_label }}</td>
+                <td style="text-align: left"><span{% if c.action == 'deleted' %} class="act-del"{% endif %}>{{ c.get_action_display }} {{ c.what|lower }}</span> <b>{{ c.name }}</b>
+                    {% if c.changes %}<ul class="act-changes">{% for f in c.changes %}<li>{{ f.0 }}: {% if not f.1 and not f.2 %}changed{% else %}{{ f.1|default:"(empty)" }} &rarr; {{ f.2|default:"(empty)" }}{% endif %}</li>{% endfor %}</ul>{% endif %}</td></tr>
+            {% empty %}<tr><td colspan="4" style="text-align: left">No business records changed {% if who %}by {{ who.get_full_name|default:who.username }} {% endif %}in this period.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="act-note">Properties, tenants, suppliers, issues, projects, invoices, receipts, expenses, petty cash, financials, leases, signing, company details, workspaces and users. Account and ID numbers, signatures and passwords show only that they changed. Nothing in Personal is recorded.</p>
+
+    {% else %}
+    <div class="table-container" data-act-signins>
+        <table class="table alv-table">
+            <thead><tr><th style="width: 18%; text-align: left">When</th><th style="width: 22%; text-align: left">Who</th><th style="width: 18%; text-align: left">What</th><th style="text-align: left">Device</th><th style="width: 16%; text-align: left">IP address</th></tr></thead>
+            <tbody>
+            {% for s in signins %}<tr data-act-signin="{{ s.kind }}">
+                <td style="text-align: left">{{ s.at|date:"D j M H:i" }}</td>
+                <td style="text-align: left">{% if s.user %}{{ s.user.get_full_name|default:s.user.username }}{% else %}{{ s.username|default:"(blank)" }}{% endif %}</td>
+                <td style="text-align: left"><span{% if s.kind == 'failed' %} class="act-del"{% endif %}>{{ s.get_kind_display }}</span></td>
+                <td style="text-align: left">{{ s.device|default:"&ndash;" }}</td>
+                <td style="text-align: left">{{ s.ip|default:"&ndash;" }}</td></tr>
+            {% empty %}<tr><td colspan="5" style="text-align: left">No sign-ins {% if who %}for {{ who.get_full_name|default:who.username }} {% endif %}in this period.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="act-note">Five wrong passwords in a row for one sign-in send you an email.</p>
+    {% endif %}
+    <p class="act-note" data-act-keep>Kept for 12 months, then deleted. Only superusers see this page.</p>
+</div>
+{% render_help_modal "user_administration" %}
+{% endblock %}

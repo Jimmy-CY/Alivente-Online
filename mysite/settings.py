@@ -89,6 +89,10 @@ MIDDLEWARE = [
     "pages.middleware.ModuleAccessMiddleware",  # Add this line
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # RA15, 23 Nov 2026 - the activity log (pages/activity.py): who is
+    # asking, for the change log, and each page shown. Last, so a page
+    # refused or redirected above is not counted as a visit.
+    "pages.activity.ActivityMiddleware",
 ]
 
 ROOT_URLCONF = "mysite.urls"

@@ -5873,3 +5873,68 @@ class KeyStatus(models.Model):
 
     def __str__(self):
         return '%s: %s' % (self.service, 'ok' if self.ok else self.problem)
+
+
+# RA15, 23 Nov 2026 - who used Alivente, how and when (pages/activity.py).
+# Demetri: "I want the sign-ins information. I want the changes to the
+# business records. I also want the Pages visited and time spent. For the
+# personal, I want to be able to see which modules/areas are used the most
+# ... I don't want access to the information they are saving in the
+# Personal side." Superusers only; kept 12 months.
+class ActivityHit(models.Model):
+    """A page opened. path is blank in Personal: the module only."""
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE,
+                             related_name='+')
+    at = models.DateTimeField()
+    day = models.DateField(db_index=True)
+    module = models.CharField(max_length=20, blank=True)
+    path = models.CharField(max_length=200, blank=True)
+
+    class Meta:
+        db_table = 'activity_hit'
+        indexes = [models.Index(fields=['user', 'at'])]
+
+    def __str__(self):
+        return '%s %s' % (self.at, self.module)
+
+
+class SignIn(models.Model):
+    KINDS = [('in', 'Signed in'), ('out', 'Signed out'),
+             ('failed', 'Wrong password')]
+    at = models.DateTimeField(db_index=True)
+    user = models.ForeignKey('auth.User', on_delete=models.SET_NULL,
+                             null=True, blank=True, related_name='+')
+    username = models.CharField(max_length=150, blank=True)
+    kind = models.CharField(max_length=8, choices=KINDS)
+    ip = models.CharField(max_length=45, blank=True)
+    device = models.CharField(max_length=60, blank=True)
+
+    class Meta:
+        db_table = 'activity_sign_in'
+        ordering = ['-at']
+
+    def __str__(self):
+        return '%s %s %s' % (self.at, self.username, self.kind)
+
+
+class RecordChange(models.Model):
+    """A business record added, changed or deleted. changes: [[field,
+    old, new], ...] - blank old and new for a secret field."""
+    ACTIONS = [('added', 'Added'), ('changed', 'Changed'),
+               ('deleted', 'Deleted')]
+    at = models.DateTimeField(db_index=True)
+    user = models.ForeignKey('auth.User', on_delete=models.SET_NULL,
+                             null=True, blank=True, related_name='+')
+    module = models.CharField(max_length=20, blank=True)
+    what = models.CharField(max_length=40, blank=True)
+    object_id = models.CharField(max_length=40, blank=True)
+    name = models.CharField(max_length=200, blank=True)
+    action = models.CharField(max_length=8, choices=ACTIONS)
+    changes = models.JSONField(default=list, blank=True)
+
+    class Meta:
+        db_table = 'activity_change'
+        ordering = ['-at']
+
+    def __str__(self):
+        return '%s %s %s' % (self.at, self.action, self.name)

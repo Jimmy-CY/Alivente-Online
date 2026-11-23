@@ -23,6 +23,13 @@ class PagesConfig(AppConfig):
             key_health.start_watcher()
         except Exception:  # never stops the app starting
             pass
+        # RA15, 23 Nov 2026 - the activity log (pages/activity.py): sign-ins,
+        # wrong passwords and changes to business records.
+        try:
+            from pages import activity
+            activity.connect()
+        except Exception:  # never stops the app starting
+            pass
 
 
 def _ensure_permissions(sender, using='default', verbosity=1, **kwargs):

@@ -1684,6 +1684,8 @@ ROUNDS = [
     '.bak_ra13',
     # RA14, 22 Nov 2026 - the phone's trip tabs open again.
     '.bak_ra14',
+    # RA15, 23 Nov 2026 - the activity log.
+    '.bak_ra15',
 ]
 
 

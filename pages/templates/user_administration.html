@@ -127,6 +127,9 @@
         <a href="{% url 'workspace_management' %}" class="btn action-secondary">
             <i class="fas fa-layer-group"></i> Workspaces
         </a>
+        {% if request.user.is_superuser %}{# RA15, 23 Nov 2026 - who used Alivente, how and when. #}<a href="{% url 'user_activity' %}" class="btn action-secondary" data-activity-link>
+            <i class="fas fa-history"></i> Activity
+        </a>{% endif %}
         <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#user_administrationHelpModal">
             <i class="fas fa-question-circle"></i> Help
         </button>
@@ -139,6 +142,9 @@
                 <a href="{% url 'workspace_management' %}" class="action-more-item" role="menuitem">
                     <i class="fas fa-layer-group"></i> Workspaces
                 </a>
+                {% if request.user.is_superuser %}<a href="{% url 'user_activity' %}" class="action-more-item" role="menuitem">
+                    <i class="fas fa-history"></i> Activity
+                </a>{% endif %}
                 <button type="button" class="action-more-item" role="menuitem"
                         data-toggle="modal" data-target="#user_administrationHelpModal">
                     <i class="fas fa-question-circle"></i> Help

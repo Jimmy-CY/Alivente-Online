@@ -417,6 +417,11 @@ def start_watcher():
                 gquota.daily_recheck()
             except Exception:                           # noqa: BLE001
                 logger.exception('travel ideas catch-up')
+            try:            # RA15 - the activity log keeps 12 months
+                from pages import activity
+                activity.purge()
+            except Exception:                           # noqa: BLE001
+                logger.exception('activity purge')
             finally:
                 close_old_connections()
             time.sleep(EVERY)

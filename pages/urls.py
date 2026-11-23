@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 from . import views
+from . import views_activity  # RA15, 23 Nov 2026 - the activity log
 from . import css_files
 from .views_setup import setup_permissions
 
@@ -99,6 +100,9 @@ urlpatterns = [
     path('setup-permissions/', setup_permissions, name='setup_permissions'),  # Now properly imported
     path('user-administration/', views.user_administration, name='user_administration'),
     path('user-administration/add/', views.user_add, name='user_add'),
+    # RA15, 23 Nov 2026 - who used Alivente, how and when (superusers).
+    path('user-administration/activity/', views_activity.user_activity,
+         name='user_activity'),
     path('user-administration/<int:user_id>/edit/', views.user_edit, name='user_edit'),
     path('user-administration/<int:user_id>/permissions/', views.user_permissions, name='user_permissions'),
     path('user-administration/<int:user_id>/delete/', views.user_delete, name='user_delete'),

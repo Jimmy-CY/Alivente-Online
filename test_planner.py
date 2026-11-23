@@ -776,7 +776,9 @@ if django_up:
     # this is, the plans shared with you, who yours is shared with, and
     # the people the Share dialog offers (one query, however many).
     # None of them grows with the meals - the check above proves that.
-    ok(q_big <= 18, '  and that number is under 18', q_big)
+    # RA15, 23 Nov 2026 - nineteen. One more on every page: the activity
+    # log writes the visit (pages/activity.py). Fixed, never per meal.
+    ok(q_big <= 19, '  and that number is under 19', q_big)
 
     head('8f. the shopping list shops a range')
     r, q = cost('/meal_plans/shopping_list/?from=2026-10-19&to=2026-10-25')

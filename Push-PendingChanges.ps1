@@ -3385,7 +3385,9 @@ $suites = @(
     # RA13, 22 Nov 2026 - the trip tabs: icons, short names on the phone.
     'test_ra13_trip_tabs.py',
     # RA14, 22 Nov 2026 - the phone's trip tabs open again.
-    'test_ra14_trip_tabs_tap.py'
+    'test_ra14_trip_tabs_tap.py',
+    # RA15, 23 Nov 2026 - the activity log.
+    'test_ra15_activity_log.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can
