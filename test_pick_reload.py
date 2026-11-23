@@ -133,8 +133,14 @@ NOW = dict((p, read(p)) for p in FILES)
 def claims(bundle):
     js = T.code_only_js(bundle[TPL])
     c = {}
-    c['there is exactly one close handler'] = (
-        js.count("on('hidden.bs.modal'") == 1)
+    # RA16, 23 Nov 2026 - TWO NOW, AND THE SECOND IS NOT THE PICKER'S.
+    # The quick view opens over the picker from the card's eye, and its
+    # own close handler (bindPeek) puts modal-open back for the picker
+    # underneath. The picker still has exactly one.
+    c['there is exactly one close handler on the picker, one on the quick '
+      'view over it'] = (
+        js.count("on('hidden.bs.modal'") == 2
+        and js.count("getElementById('pickerModal');\n        if (!el") == 1)
     c['IT BINDS AFTER THE DOCUMENT IS PARSED - the finding, in one '
       'line'] = ("document.addEventListener('DOMContentLoaded', bind)"
                  in js)

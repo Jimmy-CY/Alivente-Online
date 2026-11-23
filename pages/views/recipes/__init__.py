@@ -8,6 +8,7 @@ from .categories import *
 from .ingredients import *
 from .shopping import *
 from .meal_planning import *
+from .meal_send import *     # RA16, 23 Nov 2026 - Send the plan.
 from .spellcheck import *
 from .recipe_crud import *
 from .recipe_extras import *

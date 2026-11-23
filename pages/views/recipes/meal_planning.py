@@ -775,6 +775,19 @@ def meal_planner(request):
             span_days=Coalesce(Max('items__day_index'), -1) + 1,
         ).order_by('name'),
     }
+    # RA16, 23 Nov 2026 - THE UNDO FOR A DROP, offered once. Popped, so
+    # a refresh or the next page does not offer it again.
+    undo = request.session.pop('meal_move_undo', None)
+    if isinstance(undo, dict) and undo.get('id'):
+        try:
+            back = datetime.strptime(undo.get('back', ''), '%Y-%m-%d').date()
+            to = datetime.strptime(undo.get('to', ''), '%Y-%m-%d').date()
+            context['move_undo'] = {
+                'id': int(undo['id']), 'what': str(undo.get('what', '')),
+                'back': back, 'to': to,
+                'leftovers': int(undo.get('leftovers') or 0)}
+        except (TypeError, ValueError):
+            pass
     # MS-1, 12 Nov 2026 - the Share dialog, on your own plan only.
     cal = getattr(request, 'meal_calendar', None)
     if cal is not None and cal.owner_id == request.user.pk:
@@ -1298,12 +1311,38 @@ def move_meal_entry(request):
                 nxt.append(child)
         frontier = nxt
 
+    was = entry.date
     with transaction.atomic():
         for child in travelling:
             child.date = child.date + delta
             child.save(update_fields=['date'])
         entry.date = when
         entry.save(update_fields=['date'])
+        # DROPPED, NOT TYPED - RA16, 23 Nov 2026. A drag onto another
+        # day posts here with dragged=1 and the order the target day
+        # was left in, so the meal lands where it was let go rather
+        # than wherever its old sort_order happens to put it. Ids that
+        # are not on that day are ignored; rows the drag did not list
+        # (leftovers that travelled in) go after.
+        if request.POST.get('dragged') == '1':
+            _drop_order(when, request.POST.get('order', ''))
+
+    # AND IT CAN BE UNDONE - RA16. A drop is one careless flick away
+    # from a wrong day in a way a typed date is not, so the planner
+    # offers Undo once, on the page the move lands on. The session
+    # holds only the row id and the two dates.
+    if request.POST.get('dragged') == '1':
+        request.session['meal_move_undo'] = {
+            'id': entry.meal_entry_id, 'what': what,
+            'back': was.strftime('%Y-%m-%d'),
+            'to': when.strftime('%Y-%m-%d'),
+            'leftovers': len(travelling)}
+        return redirect(planner_back(request, when))
+
+    if request.POST.get('undo') == '1':
+        messages.success(request, 'Put "%s" back on %s'
+                         % (what, when.strftime('%A, %d %B')))
+        return redirect(planner_back(request, when))
 
     if travelling:
         messages.success(
@@ -1317,6 +1356,26 @@ def move_meal_entry(request):
         messages.success(request, 'Moved "%s" to %s'
                          % (what, when.strftime('%A, %d %B')))
     return redirect(planner_back(request, when))
+
+
+def _drop_order(when, raw):
+    """Write the order a drop left a day in - RA16, 23 Nov 2026."""
+    want = []
+    for piece in (raw or '').split(','):
+        piece = piece.strip()
+        if piece.isdigit() and int(piece) not in want:
+            want.append(int(piece))
+    rows = list(MC.entries().filter(date=when)
+                .order_by('sort_order', 'meal_entry_id'))
+    if not want or not rows:
+        return
+    by_id = {r.meal_entry_id: r for r in rows}
+    ordered = [by_id[i] for i in want if i in by_id]
+    ordered += [r for r in rows if r.meal_entry_id not in want]
+    for i, r in enumerate(ordered):
+        if r.sort_order != i:
+            r.sort_order = i
+            r.save(update_fields=['sort_order'])
 
 
 @login_required
@@ -2403,6 +2462,8 @@ def picker_recipes(request):
             'servings': r.servings or '',
             'minutes': (r.prep_time or 0) + (r.cook_time or 0),
             'photo': r.photo_url or '',
+            # RA16, 23 Nov 2026 - the card's eye opens this.
+            'view': reverse('recipe_quicklook', args=[r.recipe_id]),
         })
     return JsonResponse({
         'success': True,

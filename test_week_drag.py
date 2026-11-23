@@ -203,6 +203,16 @@ def column_binding(js):
     return js[o if o >= 0 else a:b]
 
 
+# RA16, 23 Nov 2026 - THE OPTIONS ARE SHARED NOW. The week columns and
+# the month cells are bound with one object, MEAL_DRAG, so the four
+# class names and the animation are read off it rather than off the
+# column binding.
+def drag_options(js):
+    a = js.find('var MEAL_DRAG')
+    b = js.find('function dropMark')
+    return js[a:b] if 0 <= a < b else ''
+
+
 def save_column(js):
     a = js.find('function saveColumnOrder')
     b = js.find('function saveDayOrder')
@@ -214,6 +224,7 @@ def claims(d):
     js = T.code_only_js(t)
     col = column_binding(js)
     sav = save_column(js)
+    opt = drag_options(js) or col
     g = d[GUIDE]
     return {
         # NOT "data-day is somewhere in the file". It was: the DAY card
@@ -228,13 +239,19 @@ def claims(d):
             bool(col) and 'new Sortable(col' in col,
         '  dragging the chips themselves, with no grip in a 152px column':
             "draggable: '.week-chip'" in col,
-        '  and NOT across days - no shared group':
-            bool(col) and 'group' not in col,
+        # RA16, 23 Nov 2026 - THIS WAS "and NOT across days - no shared
+        # group", WD-1's design, and Demetri reversed it: "I want to be
+        # able to drag-and-drop Chicken - Cajun Garlic to another day".
+        # The columns share MEAL_DRAG's group now, and a drop on another
+        # day is a Move (test_ra16_meal_send_drag drives it).
+        '  and ACROSS days now, in one shared group - RA16':
+            bool(col) and 'MEAL_DRAG' in col
+            and "group: 'meal-days'" in opt,
         '  with the same four class names the rest of the app drags with':
-            ("ghostClass: 'sortable-ghost'" in col
-             and "dragClass: 'sortable-drag'" in col
-             and "chosenClass: 'sortable-chosen'" in col
-             and 'animation: 150' in col),
+            ("ghostClass: 'sortable-ghost'" in opt
+             and "dragClass: 'sortable-drag'" in opt
+             and "chosenClass: 'sortable-chosen'" in opt
+             and 'animation: 150' in opt),
         '  and nothing is marked draggable until Sortable answers':
             bool(col) and "typeof Sortable === 'undefined'" in col,
         'the drop sends the ids and the day to RO-1 endpoint':
@@ -263,8 +280,9 @@ def claims(d):
              '    box-shadow: 0 0 0 2px var(--alv-accent-ink);' in t),
         'the guide says the week drags':
             'the meals themselves drag up and down their own column' in g,
-        '  and names crossing days as what is still coming':
-            'dragging a meal from one day to another' in g,
+        # RA16 - the guide no longer calls it "coming"; it says how.
+        '  and says a meal drags to another day now - RA16':
+            'drag a meal onto any other day' in g,
     }
 
 
@@ -304,9 +322,11 @@ ok('data-move=' in NOW[TPL] and 'askMove(' in JS,
    'drag deliberately cannot cross columns')
 
 # TWO BINDINGS, TWO GUARDS, ONE FLAG.
-ok(JS.count("typeof Sortable === 'undefined'") == 2,
-   'both bindings on this page guard on the library - the day card and '
-   'the week columns', JS.count("typeof Sortable === 'undefined'"))
+# THREE SINCE RA16 - the month's cells are bound too.
+ok(JS.count("typeof Sortable === 'undefined'") == 3,
+   'all three bindings on this page guard on the library - the day '
+   'card, the week columns and (RA16) the month cells',
+   JS.count("typeof Sortable === 'undefined'"))
 
 # WHO MAY DRAG, ASKED OF THE TEMPLATE AND NOT ASSUMED. The first draft
 # of this round added a permission flag to both bindings, because
@@ -347,9 +367,12 @@ ok('.week-chip.is-note' in NOW[TPL] and '.week-chip.is-leftover'
    in NOW[TPL],
    '  and all three kinds are still coloured - meal, note, leftover')
 
-ok("if (!col.querySelector('.week-chip')) { return; }" in COL,
-   'an empty column is not bound at all - there is nothing in it to '
-   'put in an order')
+# RA16 - AN EMPTY COLUMN IS BOUND NOW. WD-1 skipped it because there
+# was nothing in it to order; since a meal can be dropped onto another
+# day, an empty day is exactly where one may go.
+ok("if (!col.querySelector('.week-chip')) { return; }" not in COL,
+   'an empty column IS bound now - RA16 - it is somewhere a meal can '
+   'be dropped')
 
 # AND THE TAGS STILL BALANCE. BM-1's lesson, 22 October: a template
 # that is wrong in a way no suite reads prints across every page.
@@ -634,17 +657,19 @@ else:
            'WITH SORTABLE SERVED the column is marked draggable', cls)
         ok(cur == 'grab', '  and the chip offers a grab cursor - %s' % cur)
         empty = pg.evaluate("""() => {
-            let n = 0;
+            let n = 0, b = 0;
             document.querySelectorAll('.week-col-body[data-day]')
                 .forEach(c => {
-                    if (!c.querySelector('.week-chip')
-                        && c.classList.contains('is-draggable')) { n += 1; }
+                    if (!c.querySelector('.week-chip')) {
+                        n += 1;
+                        if (c.classList.contains('is-draggable')) { b += 1; }
+                    }
                 });
-            return n;
+            return [n, b];
         }""")
-        ok(empty == 0,
-           '  and a column with no meals in it was not bound at all',
-           empty)
+        ok(empty[0] > 0 and empty[0] == empty[1],
+           '  and a column with no meals in it IS bound - RA16, a drop '
+           'target - %d of %d' % (empty[1], empty[0]), empty)
         pg.close()
 
         # ---- A REAL DRAG, AND THE REQUEST IT SENDS.
@@ -720,8 +745,9 @@ else:
                '  and no picker either, though the column body carries '
                'an onclick that opens one - %s' % pick, pick)
 
-            # ---- AND NOTHING LANDED IN THE NEIGHBOURING COLUMN. No
-            #      shared group, measured rather than asserted.
+            # ---- AND NOTHING LANDED IN THE NEIGHBOURING COLUMN. A drag
+            #      WITHIN a column stays an order; RA16's group only
+            #      lets a meal leave when it is let go over another day.
             others = pg.evaluate("""(wed) => {
                 const out = {};
                 document.querySelectorAll('.week-col-body[data-day]')

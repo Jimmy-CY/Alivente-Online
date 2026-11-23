@@ -1686,6 +1686,8 @@ ROUNDS = [
     '.bak_ra14',
     # RA15, 23 Nov 2026 - the activity log.
     '.bak_ra15',
+    # RA16, 23 Nov 2026 - the planner: the eye, drag to a day, Send.
+    '.bak_ra16',
 ]
 
 

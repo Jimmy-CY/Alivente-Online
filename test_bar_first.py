@@ -170,7 +170,9 @@ def claims(bundle):
     # more secondaries the same day. House order and the primary
     # first - the whole of what BO-1 claimed - are unchanged, and
     # section 3 still reads the order off the rendered page.
-    c['THE BAR READS PSSSSB - the finding'] = (seq == 'PSSSSB')
+    # RA16, 23 Nov 2026 - PSSSSSB. Send... joined the secondaries,
+    # after Print (Demetri: email, WhatsApp, etc the plan).
+    c['THE BAR READS PSSSSSB - the finding'] = (seq == 'PSSSSSB')
     c['  which is house order'] = bool(seq) and bool(HOUSE.match(seq))
     # NOT HERE: "exactly one primary". SPSB had one too - it is the
     # standard holding, not this round's delta. Asked in section 1.

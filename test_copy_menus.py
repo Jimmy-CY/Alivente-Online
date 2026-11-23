@@ -341,8 +341,9 @@ rng = fn(vsrc, 'copy_meal_range')
 seq = seq_of(code)
 ok(bool(re.match(r'^P*S*F*B*$', seq)),
    'the bar is in house order: %s' % seq, seq)
-ok(seq.count('S') == 4,
-   'and carries four secondaries - Copy, Saved Menus, Print, Help',
+# RA16, 23 Nov 2026 - FIVE: Send... joined them, after Print.
+ok(seq.count('S') == 5,
+   'and carries five secondaries - Copy, Saved Menus, Print, Send, Help',
    seq)
 ok(seq.count('P') == 1, 'and exactly one primary, which is the verb', seq)
 ok('def copy_week_rows' in vsrc,

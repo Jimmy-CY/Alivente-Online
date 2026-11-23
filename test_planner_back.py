@@ -96,8 +96,8 @@ MARK = 'PB-2, 19 Oct 2026'
 # A number may only move when the thing it counts really grew, and
 # this one did: 11 -> 16 and 8 -> 9, by one named round.
 N_REWROTE = 11
-N_REDIRECTS = 18   # CP-2, 21 Oct 2026 - copy_meal_range asks the helper twice: once for the address every refusal returns to, and once for the one a successful copy returns to, which is the LANDING date rather than the day you started on.   # (was 16)
-N_FORMS = 9
+N_REDIRECTS = 20   # RA16, 23 Nov 2026 - move_meal_entry asks the helper twice more: once for where a dropped meal lands (the page Undo is offered on), once for where an Undo lands.   # (was N_REDIRECTS = 18)   # CP-2, 21 Oct 2026 - copy_meal_range asks the helper twice: once for the address every refusal returns to, and once for the one a successful copy returns to, which is the LANDING date rather than the day you started on.   # (was 16)
+N_FORMS = 10   # RA16, 23 Nov 2026 - the Undo for a dropped meal.   # (was 9)
 VIEWS = ('month', 'week', 'day')
 
 VIEW = os.path.join(ROOT, 'pages', 'views', 'recipes', 'meal_planning.py')

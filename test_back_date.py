@@ -80,7 +80,7 @@ TPL = os.path.join(ROOT, 'pages', 'templates', 'meal_planner.html')
 VIEW = os.path.join(ROOT, 'pages', 'views', 'recipes', 'meal_planning.py')
 GATE = os.path.join(ROOT, PS1)
 FILES = (TPL, VIEW)
-N_FORMS = 9
+N_FORMS = 10   # RA16, 23 Nov 2026 - the Undo for a dropped meal is a form that sends both.   # (was 9)
 
 passed = failed = skipped = 0
 

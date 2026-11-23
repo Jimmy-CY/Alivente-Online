@@ -97,8 +97,10 @@ FILES = (HELP, MH)
 # printable plan. It sits there because that is the order the two
 # buttons sit in on the planner bar, and a guide that disagrees with
 # the screen about order is a guide somebody stops trusting.
+# RA16, 23 Nov 2026 - AND A NINTH, after Printing: Sending a plan, the
+# order Print and Send sit in on the bar.
 ORDER = ('mp-overview', 'mp-calendar', 'mp-build', 'mp-week',
-         'mp-shopping', 'mp-print', 'mp-permissions', 'mp-tips')
+         'mp-shopping', 'mp-print', 'mp-send', 'mp-permissions', 'mp-tips')
 # The four things MH-2 promised and MW-1 and MO-1 built.
 BUILT = ('repeating a whole week', 'saved menus',
          'a free-text note on a day', 'marking a meal as leftovers')
@@ -264,15 +266,19 @@ def claims(text):
     coming = coming_sentences(block)
     c['NOTHING THE PLANNER DOES IS DESCRIBED AS COMING'] = (
         bool(tabs) and not [w2 for w2 in BUILT for s in coming if w2 in s])
-    c['  and what is NOT built is still named as coming'] = (
-        any(OUTSTANDING in s.lower() for s in coming))
+    # RA16, 23 Nov 2026 - THE LAST PROMISE IS KEPT. Dragging a meal
+    # from one day to another ships, so the guide stops promising it and
+    # says how - the claim this was ("still named as coming") would now
+    # ask the guide to promise a thing that is built.
+    c['  and the last promise is kept - described now, not promised'] = (
+        not any(OUTSTANDING in s.lower() for s in coming)
+        and 'drag a meal onto any other day' in whole)
     # WD-1, 22 Oct 2026 - the coming sentence is no longer about
     # reordering anything: the week reorders. It is about crossing days,
     # which writes a date. Asking for the word 'reordering' here would
     # ask the guide to keep promising a thing that now ships.
-    c['  and it is about crossing days, not ordering them'] = (
-        any('from one day to another' in s.lower() for s in coming)
-        and not any('reordering' in s.lower() for s in coming))
+    # (WD-1's "about crossing days, not ordering them" went with it:
+    # there is no coming sentence left to be about either.)
 
     # ---- 5. two tips, and they are about the two free things
     t = html.get('mp-tips', '')
@@ -350,7 +356,7 @@ if up:
     got = [t['name'] for t in mod.get('tabs', [])]
     ok(got == ['Overview', 'The Calendar', 'Adding a Meal',
                'Moving a Week', 'Shopping List', 'Printing',
-               'Who Can Do What', 'Tips'],
+               'Sending a plan', 'Who Can Do What', 'Tips'],
        '%d named tabs, in order, out of the real parser'
        % len(ORDER), got)
     empty = [t['name'] for t in mod['tabs']
@@ -374,8 +380,11 @@ if up:
     ok(not stale,
        'THROUGH THE RENDERER TOO: the guide promises nothing the '
        'planner already does', stale)
-    ok(any(OUTSTANDING in s.lower() for s in coming),
-       '  and still names what is not built', coming[:2])
+    # RA16, 23 Nov 2026 - and nothing is left to promise: crossing days
+    # was the last outstanding thing, and it ships.
+    ok(not any(OUTSTANDING in s.lower() for s in coming),
+       '  and no longer promises dragging to another day - RA16 built it',
+       coming[:2])
 
     # THE CONTROL ON THE PROMISE GATE. An absence claim passes on a
     # guide that never mentions the feature at all, so each one is
@@ -463,7 +472,8 @@ else:
             for slug in ORDER:
                 # mp-print has no 'before' to compare against either -
                 # MH-5 creates it, as MH-3 created mp-week.
-                if slug in ('mp-week', 'mp-print'):
+                # RA16, 23 Nov 2026 - nor mp-send, which RA16 creates.
+                if slug in ('mp-week', 'mp-print', 'mp-send'):
                     continue
                 a = shot(_br, old_by_slug[slug], w)
                 b = heights[(slug, w)]

@@ -458,6 +458,9 @@ urlpatterns = [
     path('meal_plans/share/', views.meal_plan_share, name='meal_plan_share'),
     path('meal_plans/print/', views.meal_plan_print,
          name='meal_plan_print'),
+    # RA16, 23 Nov 2026 - Send the plan in view: its text for WhatsApp
+    # and Copy (GET), or an email to the household roster (POST).
+    path('meal_plans/send/', views.meal_plan_send, name='meal_plan_send'),
     path('meal_plans/send_shopping_list/', views.send_meal_plan_shopping_list, name='send_meal_plan_shopping_list'),
     path('meal_plans/add/', views.add_meal_entry, name='add_meal_entry'),
     path('meal_plans/remove/', views.remove_meal_entry, name='remove_meal_entry'),

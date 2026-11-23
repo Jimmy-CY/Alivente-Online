@@ -1833,6 +1833,27 @@
     .mp-share-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
     .mp-share-list label { display: flex; align-items: center; gap: 12px; min-height: 44px; margin: 0; cursor: pointer; }
     .mp-whose-note { font-size: 13px; color: var(--alv-ink-soft); }
+    /* RA16, 23 Nov 2026 - the picker's eye, the drop target, Undo and
+       Send. No colour here that is not a token. */
+    .recipe-option.has-eye { padding-right: 46px; }
+    .pick-eye { position: absolute; top: 6px; right: 6px; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border-radius: 50%; border: 1px solid var(--alv-line); background: var(--alv-paper); color: var(--alv-accent-ink); }
+    .pick-eye:hover { background: var(--alv-accent-soft); border-color: var(--alv-accent-line); }
+    .pick-eye:focus-visible { outline: 2px solid var(--alv-accent-ring); outline-offset: 2px; }
+    .ql-pickfoot { display: flex; justify-content: flex-end; gap: 8px; }
+    #quickLookModal.is-over { z-index: 1060; }
+    .modal-backdrop.is-over { z-index: 1055; }
+    .month-grid.is-draggable .month-chip { cursor: grab; }
+    .month-cell .sortable-ghost { opacity: 0.4; }
+    .month-cell.is-drop, .week-col-body.is-drop { outline: 2px dashed var(--alv-accent); outline-offset: -3px; background: var(--alv-accent-soft); }
+    .mp-undo { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 14px; margin: 0 0 12px; padding: 6px 14px; border: 1px solid var(--alv-good-line); border-radius: var(--alv-radius-sm); background: var(--alv-good-soft); color: var(--alv-good-ink); }
+    .mp-undo form { margin: 0; }
+    .send-preview { white-space: pre-wrap; font-family: Consolas, Menlo, monospace; font-size: 13px; max-height: 260px; overflow: auto; margin: 0 0 14px; padding: 10px 12px; border: 1px solid var(--alv-line); border-radius: var(--alv-radius-sm); background: var(--alv-surface); color: var(--alv-ink); }
+    .send-ways { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+    .send-h { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--alv-ink-strong); }
+    .send-people { list-style: none; margin: 0 0 8px; padding: 0; }
+    .send-people label { display: flex; align-items: center; gap: 12px; min-height: 44px; margin: 0; cursor: pointer; }
+    .send-status { min-height: 18px; margin: 8px 0 0; font-size: 13px; color: var(--alv-ink-soft); }
+    .send-status.is-bad { color: var(--alv-bad-ink); }
 </style>
 
 <div class="calendar-container">
@@ -1889,6 +1910,14 @@
            class="btn action-secondary">
             <i class="fas fa-print"></i> Print
         </a>
+        {# SEND - RA16, 23 Nov 2026. Demetri: "add a "Share" button where #}
+        {# I can email, Whatsapp, etc the plan". Called Send because     #}
+        {# Share is already MS-1's - who else can open this plan.        #}
+        {# Whatever view is on screen is what goes.                      #}
+        <button type="button" class="btn action-secondary"
+                data-toggle="modal" data-target="#sendModal" onclick="sendLoad()">
+            <i class="fas fa-paper-plane"></i> Send&hellip;
+        </button>
         {% if perms.auth.can_edit_recipes %}
         {# BACK ON THE BAR - CP-2, 21 Oct 2026.                       #}
         {#                                                            #}
@@ -1957,6 +1986,11 @@
                    href="{% url 'meal_plan_print' %}?from={{ sl_from|date:'Y-m-d' }}&amp;to={{ sl_to|date:'Y-m-d' }}&amp;view={{ view_mode }}&amp;date={{ anchor|date:'Y-m-d' }}">
                     <i class="fas fa-print"></i> Print this plan
                 </a>
+                {# AND SEND, for the same reason as Print - RA16. #}
+                <button type="button" class="action-more-item" role="menuitem"
+                        data-toggle="modal" data-target="#sendModal" onclick="sendLoad()">
+                    <i class="fas fa-paper-plane"></i> Send this plan...
+                </button>
                 {# AND HELP - HP-1, 21 Oct 2026.                          #}
                 {#                                                        #}
                 {# base hides every .action-secondary below 768px in a    #}
@@ -2031,6 +2065,27 @@
 
     <div class="calendar-layout">
 
+        {# UNDO A DROP - RA16, 23 Nov 2026. Offered once, on the page the  #}
+        {# drop landed on, at the top of the calendar: test_bar_first reads #}
+        {# the bar down to the switcher, and test_view_switch the switcher  #}
+        {# down to here, and neither wants this button in what it reads.    #}
+        {# It posts the same Move with the old date, so    #}
+        {# leftovers come back with their meal too.                        #}
+        {% if move_undo and perms.auth.can_edit_recipes %}
+        <div class="mp-undo" role="status" data-move-undo>
+            <span>Moved &ldquo;{{ move_undo.what }}&rdquo; to {{ move_undo.to|date:"D j M" }}{% if move_undo.leftovers %}, with its leftovers{% endif %}</span>
+            <form method="POST" action="{% url 'move_meal_entry' %}">
+                {% csrf_token %}
+                <input type="hidden" name="view" value="{{ view_mode }}">
+                <input type="hidden" name="from_date" value="{{ anchor|date:'Y-m-d' }}">
+                <input type="hidden" name="meal_entry_id" value="{{ move_undo.id }}">
+                <input type="hidden" name="date" value="{{ move_undo.back|date:'Y-m-d' }}">
+                <input type="hidden" name="undo" value="1">
+                <button type="submit" class="btn action-secondary"><i class="fas fa-undo"></i> Undo</button>
+            </form>
+        </div>
+        {% endif %}
+
         {# ------------------------------------------------ the month #}
         {#                                                             #}
         {# MV-2, 19 Oct 2026. Demetri, testing the live planner: "why  #}
@@ -2091,6 +2146,7 @@
                 <div class="month-dow">Sun</div>
                 {% for week in month_weeks %}{% for cell in week %}{% if cell %}
                 <div class="month-cell{% if cell.is_today %} is-today{% endif %}{% if cell.in_week %} in-week{% endif %}"
+                     data-day="{{ cell.date|date:'Y-m-d' }}"
                      {% if perms.auth.can_edit_recipes %}role="button" tabindex="0"
                      aria-label="{{ cell.count }} meal{{ cell.count|pluralize }} on {{ cell.date|date:'l j F' }} - add one"
                      onclick="openPicker('{{ cell.date|date:'Y-m-d'|escapejs }}', '{{ cell.date|date:'l j F'|escapejs }}')"{% endif %}>
@@ -3590,6 +3646,183 @@
 </form>
 {% endif %}
 
+{# ------------------------------------------------- SEND, RA16 #}
+{# OUTSIDE the edit-tier block on purpose: a reader can send too,  #}
+{# only the email half is an editor's.                            #}
+{# Demetri, 23 Nov 2026: email, WhatsApp, etc. The text is asked   #}
+{# for when the dialog opens (meal_plan_send), so the planner page #}
+{# itself costs no extra query. WhatsApp is a real link whose href #}
+{# is filled in when the text arrives, so the click is the user's  #}
+{# own and no pop-up blocker stands in the way.                    #}
+<div class="modal fade" id="sendModal" tabindex="-1" role="dialog"
+     aria-labelledby="sendTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header alv-modal-head">
+                <h5 class="modal-title" id="sendTitle">
+                    <i class="fas fa-paper-plane"></i> Send this plan
+                </h5>
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <pre class="send-preview" id="sendPreview" aria-label="What will be sent">Loading...</pre>
+                <div class="send-ways">
+                    <a class="btn action-secondary" id="sendWhatsApp" href="#"
+                       target="_blank" rel="noopener">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </a>
+                    <button type="button" class="btn action-secondary" onclick="sendCopy()">
+                        <i class="fas fa-copy"></i> Copy as text
+                    </button>
+                    {# THE PHONE'S OWN SHARE MENU, where there is one - #}
+                    {# Messages, Viber, Mail, whatever is installed.     #}
+                    <button type="button" class="btn action-secondary" id="sendNative"
+                            onclick="sendNative()" hidden>
+                        <i class="fas fa-share-alt"></i> More apps...
+                    </button>
+                </div>
+                {% if perms.auth.can_edit_recipes %}
+                <p class="send-h">Email it to</p>
+                <ul class="send-people" id="sendPeople"></ul>
+                {% endif %}
+                <p class="send-status" id="sendStatus" role="status" aria-live="polite"></p>
+            </div>
+            {# THE EMAIL IS THE DIALOG'S ONE PRIMARY, so it sits in the  #}
+            {# footer - test_calendar_grid's button gate keeps a modal  #}
+            {# body's own buttons quiet.                                #}
+            <div class="modal-footer">
+                <button type="button" class="btn action-secondary"
+                        data-dismiss="modal">Close</button>
+                {% if perms.auth.can_edit_recipes %}
+                <button type="button" class="btn action-primary" id="sendEmailBtn"
+                        onclick="sendEmail()">
+                    <i class="fas fa-envelope"></i> Send email
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// RA16, 23 Nov 2026 - SEND. One fetch per opening: the plan may have
+// changed since the page was drawn, and the dialog says what will go.
+var sendWords = null;
+
+function sendStatus(msg, bad) {
+    var s = document.getElementById('sendStatus');
+    if (!s) { return; }
+    s.textContent = msg || '';
+    s.classList.toggle('is-bad', !!bad);
+}
+
+function sendLoad() {
+    sendWords = null;
+    sendStatus('');
+    var pre = document.getElementById('sendPreview');
+    var wa = document.getElementById('sendWhatsApp');
+    var nat = document.getElementById('sendNative');
+    if (pre) { pre.textContent = 'Loading...'; }
+    if (wa) { wa.setAttribute('href', '#'); }
+    if (nat) { nat.hidden = !navigator.share; }
+    fetch('{% url "meal_plan_send" %}?view={{ view_mode }}&date={{ anchor|date:"Y-m-d" }}', {
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+        .then(function (r) { if (!r.ok) { throw new Error(r.status); } return r.json(); })
+        .then(function (d) {
+            sendWords = d;
+            if (pre) { pre.textContent = d.text; }
+            if (wa) {
+                wa.setAttribute('href', 'https://wa.me/?text=' +
+                    encodeURIComponent(d.whatsapp));
+            }
+            sendPeople(d.people || []);
+        })
+        .catch(function () {
+            if (pre) { pre.textContent = ''; }
+            sendStatus('Could not load the plan. Close this and try again.', true);
+        });
+}
+
+// BUILT, NOT INTERPOLATED - a name is a person's words (SL-4).
+function sendPeople(people) {
+    var ul = document.getElementById('sendPeople');
+    var btn = document.getElementById('sendEmailBtn');
+    if (!ul) { return; }
+    while (ul.firstChild) { ul.removeChild(ul.firstChild); }
+    people.forEach(function (p) {
+        var li = document.createElement('li');
+        var lab = document.createElement('label');
+        var box = document.createElement('input');
+        box.type = 'checkbox';
+        box.value = p.email;
+        var span = document.createElement('span');
+        span.textContent = p.name + ' - ' + p.email;
+        lab.appendChild(box);
+        lab.appendChild(span);
+        li.appendChild(lab);
+        ul.appendChild(li);
+    });
+    if (!people.length) {
+        var li2 = document.createElement('li');
+        li2.className = 'text-muted';
+        li2.textContent = 'Nobody in the household has an email address yet.';
+        ul.appendChild(li2);
+    }
+    if (btn) { btn.hidden = !people.length; }
+}
+
+document.addEventListener('click', function (e) {
+    var wa = e.target.closest('#sendWhatsApp');
+    if (wa && !sendWords) { e.preventDefault(); }
+});
+
+function sendCopy() {
+    if (!sendWords) { return; }
+    var done = function () { sendStatus('Copied. Paste it wherever you like.'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(sendWords.text).then(done, function () {
+            sendStatus('Your browser would not copy. Select the text above instead.', true);
+        });
+    } else {
+        sendStatus('Your browser would not copy. Select the text above instead.', true);
+    }
+}
+
+function sendNative() {
+    if (!sendWords || !navigator.share) { return; }
+    navigator.share({ title: sendWords.subject, text: sendWords.text })
+        .catch(function () { /* cancelled - nothing to say */ });
+}
+
+function sendEmail() {
+    var boxes = document.querySelectorAll('#sendPeople input:checked');
+    var to = [].map.call(boxes, function (b) { return b.value; });
+    if (!to.length) { sendStatus('Tick who to send it to.', true); return; }
+    var btn = document.getElementById('sendEmailBtn');
+    if (btn) { btn.disabled = true; }
+    sendStatus('Sending...');
+    fetch('{% url "meal_plan_send" %}', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json',
+                   'X-CSRFToken': '{{ csrf_token }}' },
+        body: JSON.stringify({ view: '{{ view_mode }}',
+                               date: '{{ anchor|date:"Y-m-d" }}', to: to })
+    })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            sendStatus(d.success ? d.message : d.error, !d.success);
+        })
+        .catch(function () { sendStatus('The email could not be sent. Try again.', true); })
+        .then(function () { if (btn) { btn.disabled = false; } });
+}
+</script>
+
 
 {# SORTABLE 1.15.0 - RO-1, 21 Oct 2026. The version and the URL are    #}
 {# preview_imported_recipe's, so the browser has one copy to cache and #}
@@ -3938,6 +4171,26 @@ function pfDraw(d) {
         box.appendChild(document.createElement('br'));
         box.appendChild(small);
         card.appendChild(box);
+
+        // THE EYE - RA16, 23 Nov 2026. Demetri: "include a small icon
+        // on the top right of each recipe box with the "eye" icon. If
+        // the user presses this, then they see just the quick-view of
+        // the recipe." The rest of the card still adds, as PS-1 made
+        // it; the eye stops its own click from reaching the card.
+        if (r.view) {
+            var eye = document.createElement('button');
+            eye.type = 'button';
+            eye.className = 'pick-eye';
+            eye.title = 'Quick view';
+            eye.setAttribute('aria-label', 'Quick view of ' + r.name);
+            eye.innerHTML = '<i class="fas fa-eye" aria-hidden="true"></i>';
+            eye.onclick = function (ev) {
+                ev.stopPropagation();
+                pickPeek(card, r.view);
+            };
+            card.classList.add('has-eye');
+            card.appendChild(eye);
+        }
         list.insertBefore(card, empty);
     });
 
@@ -3969,6 +4222,94 @@ function pfDraw(d) {
         }
     }
 }
+
+// THE QUICK VIEW, OVER THE PICKER - RA16, 23 Nov 2026.
+//
+// RD-1's dialog, opened ON TOP of the picker rather than instead of
+// it, so closing it puts you back in the list with your search and
+// filters as you left them. Bootstrap 4.1 does not stack dialogs, so
+// this one and its backdrop are lifted a layer (.is-over), and when it
+// closes the page is told the picker is still open (modal-open), or
+// the list underneath would stop scrolling.
+//
+// ITS FOOTER IS THE PICKER'S: Back to list, and Add to <the day>.
+// Opening the whole recipe from here would leave the planner.
+var pickPeekCard = null;
+
+function pickPeek(card, url) {
+    var box = document.getElementById('quickLookContent');
+    var modal = document.getElementById('quickLookModal');
+    if (!box || !modal || !window.jQuery) { window.location.href = url; return; }
+    pickPeekCard = card;
+    box.innerHTML = '<div class="modal-body text-center ql-none">' +
+        '<i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+    modal.classList.add('is-over');
+    window.jQuery(modal).modal('show');
+    var drops = document.querySelectorAll('.modal-backdrop');
+    if (drops.length > 1) { drops[drops.length - 1].classList.add('is-over'); }
+    fetch(url, {credentials: 'same-origin'})
+        .then(function (r) {
+            if (!r.ok) { throw new Error(r.status); }
+            return r.text();
+        })
+        .then(function (html) {
+            box.innerHTML = html;
+            pickPeekFoot(box);
+        })
+        .catch(function () {
+            box.innerHTML = '<div class="modal-body ql-none">' +
+                'Could not load the recipe.</div>';
+        });
+}
+
+function pickPeekFoot(box) {
+    var foot = box.querySelector('.modal-footer');
+    if (!foot) {
+        foot = document.createElement('div');
+        foot.className = 'modal-footer';
+        box.appendChild(foot);
+    }
+    while (foot.firstChild) { foot.removeChild(foot.firstChild); }
+    foot.classList.add('ql-pickfoot');
+    var back = document.createElement('button');
+    back.type = 'button';
+    back.className = 'btn action-secondary';
+    back.textContent = 'Back to list';
+    back.setAttribute('data-dismiss', 'modal');
+    var add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'btn action-primary';
+    var day = document.getElementById('pickerDayName');
+    add.textContent = 'Add to ' + ((day && day.textContent) || 'this day');
+    add.onclick = function () {
+        if (pickPeekCard) { pickAdd(pickPeekCard); }
+        window.jQuery('#quickLookModal').modal('hide');
+    };
+    foot.appendChild(back);
+    foot.appendChild(add);
+}
+
+// AND PUT THE PAGE BACK WHEN IT CLOSES. Bound when the document is
+// parsed, for RL-1's reason: jQuery arrives at the END of base.
+(function () {
+    function bindPeek() {
+        var el = document.getElementById('quickLookModal');
+        if (!el || !window.jQuery) { return; }
+        window.jQuery(el).on('hidden.bs.modal', function () {
+            el.classList.remove('is-over');
+            pickPeekCard = null;
+            var picker = document.getElementById('pickerModal');
+            if (picker && picker.classList.contains('show')) {
+                document.body.classList.add('modal-open');
+            }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindPeek);
+    } else {
+        bindPeek();
+    }
+})();
 
 // CLICK IS THE ADD - PS-1, 19 Oct 2026.
 //
@@ -4218,33 +4559,111 @@ function removeMeal(entryId, name) {
 // WD-1, 22 Oct 2026. Demetri, asked on 21 October and answered on 22:
 // yes, the week too.
 //
-// ONE SORTABLE PER COLUMN, WITH NO SHARED GROUP, so nothing crosses
-// from Tuesday to Wednesday. Dragging between columns writes a DATE
-// and not an order, which is what Move on the chip menu already does.
+// THE SAME ENDPOINT AS THE DAY CARD for an order. A column is a date,
+// and reorder_meal_day has taken a date and an order since RO-1.
 //
-// THE SAME ENDPOINT AS THE DAY CARD. A column is a date, and
-// reorder_meal_day has taken a date and an order since RO-1 - it
-// refuses an order that is not exactly the rows on that date, which
-// is as true of a column as of a card.
+// AND NOW ACROSS DAYS - RA16, 23 Nov 2026. WD-1 kept each column to
+// itself on purpose: a drop on another day writes a DATE, which is
+// Move, and Move carries leftovers with their meal. Demetri, 23 Nov:
+// "I want to be able to drag-and-drop Chicken - Cajun Garlic to
+// another day on my calendar (instead of using the "Move To" option."
+// So the columns - and the month's cells - share one group, and a drop
+// on ANOTHER day posts to move_meal_entry, the very endpoint Move to...
+// uses, so the leftovers still travel. A drop on the SAME column is
+// still an order, as before. The day under the pointer is outlined
+// while you drag, and the page the drop lands on offers Undo.
+//
+// THE DAY-DROP GROUP. Touch waits 200ms before a drag starts, so a
+// finger can still scroll the page and a tap still opens the menu.
+var MEAL_DRAG = {
+    group: 'meal-days',
+    ghostClass: 'sortable-ghost',
+    dragClass: 'sortable-drag',
+    chosenClass: 'sortable-chosen',
+    animation: 150,
+    delay: 200,
+    delayOnTouchOnly: true
+};
+
+function dropMark(el) {
+    document.querySelectorAll('.is-drop').forEach(function (x) {
+        if (x !== el) { x.classList.remove('is-drop'); }
+    });
+    if (el) { el.classList.add('is-drop'); }
+}
+
+function dropMove(chip, target) {
+    var ids = [].map.call(target.querySelectorAll('[data-chip]'),
+        function (c) { return c.getAttribute('data-chip'); });
+    var f = document.createElement('form');
+    f.method = 'POST';
+    f.action = '{% url "move_meal_entry" %}';
+    f.hidden = true;
+    var put = function (k, v) {
+        var i = document.createElement('input');
+        i.type = 'hidden'; i.name = k; i.value = v;
+        f.appendChild(i);
+    };
+    put('csrfmiddlewaretoken', '{{ csrf_token }}');
+    put('view', '{{ view_mode }}');
+    put('from_date', '{{ anchor|date:"Y-m-d" }}');
+    put('meal_entry_id', chip.getAttribute('data-chip'));
+    put('date', target.getAttribute('data-day'));
+    put('order', ids.join(','));
+    put('dragged', '1');
+    document.body.appendChild(f);
+    f.submit();
+}
+
+function dragEnded(evt, sameList) {
+    window.__alvDragEnded = Date.now();
+    dropMark(null);
+    if (evt.to !== evt.from) {
+        dropMove(evt.item, evt.to);
+        return;
+    }
+    if (sameList) { sameList(evt.from); }
+}
+
 (function () {
     if (typeof Sortable === 'undefined') { return; }
     var cols = document.querySelectorAll('.week-col-body[data-day]');
     if (!cols.length) { return; }
     [].forEach.call(cols, function (col) {
-        if (!col.querySelector('.week-chip')) { return; }
         col.classList.add('is-draggable');
-        new Sortable(col, {
+        new Sortable(col, Object.assign({}, MEAL_DRAG, {
             draggable: '.week-chip',
-            ghostClass: 'sortable-ghost',
-            dragClass: 'sortable-drag',
-            chosenClass: 'sortable-chosen',
-            animation: 150,
             onStart: function () { window.__alvDragEnded = 0; },
-            onEnd: function () {
-                window.__alvDragEnded = Date.now();
-                saveColumnOrder(col);
-            }
-        });
+            onMove: function (evt) {
+                dropMark(evt.to !== evt.from ? evt.to : null);
+            },
+            onEnd: function (evt) { dragEnded(evt, saveColumnOrder); }
+        }));
+    });
+}());
+
+// THE MONTH - RA16. Its cells take a drop from another day; inside a
+// cell there is no reordering (sort: false), because a cell can show
+// "+2 more" and an order written from part of a day would be a guess.
+// Below 768px the cells show dots, not chips, so there is nothing to
+// drag on a phone - Move to... is the phone's way, as before.
+(function () {
+    if (typeof Sortable === 'undefined') { return; }
+    var grid = document.querySelector('.month-grid');
+    if (!grid) { return; }
+    var cells = grid.querySelectorAll('.month-cell[data-day]');
+    if (!cells.length) { return; }
+    grid.classList.add('is-draggable');
+    [].forEach.call(cells, function (cell) {
+        new Sortable(cell, Object.assign({}, MEAL_DRAG, {
+            draggable: '.month-chip',
+            sort: false,
+            onStart: function () { window.__alvDragEnded = 0; },
+            onMove: function (evt) {
+                dropMark(evt.to !== evt.from ? evt.to : null);
+            },
+            onEnd: function (evt) { dragEnded(evt, null); }
+        }));
     });
 }());
 

@@ -141,8 +141,11 @@ FILES = (HELP,) + PAGES
 # about a list of things to buy and this is about a calendar on paper.
 # It sits after Shopping List, which is the order the two buttons sit
 # in on the planner bar.
+# RA16, 23 Nov 2026 - AND NINE. 'Sending a plan' follows Printing, the
+# order Print and Send sit in on the planner bar.
 TABS = ('Overview', 'The Calendar', 'Adding a Meal', 'Moving a Week',
-        'Shopping List', 'Printing', 'Who Can Do What', 'Tips')
+        'Shopping List', 'Printing', 'Sending a plan', 'Who Can Do What',
+        'Tips')
 
 passed = failed = skipped = 0
 
@@ -718,9 +721,13 @@ if up and mod:
     # on the chip menu now, so one of the two is in PROMISED_WORDS
     # above and the other is the honest remainder. The claim is the
     # same claim - that the guide still says what it cannot do.
-    ok(any('dragging a meal from one day to another' in s.lower()
-           for s in coming),
-       '  while what is NOT built is still named as outstanding',
+    # RA16, 23 Nov 2026 - THE REMAINDER SHIPPED. Dragging a meal to
+    # another day is built, so the guide describes it and promises it no
+    # longer.
+    ok(not any('dragging a meal from one day to another' in s.lower()
+               for s in coming)
+       and 'drag a meal onto any other day' in whole,
+       '  and what RA16 built is described, not still promised',
        coming[:2])
     # AND IT REALLY IS NOT BUILT. Without this, the line above would
     # keep passing for as long as nobody edited the guide, however

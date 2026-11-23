@@ -98,8 +98,10 @@ GATE = os.path.join(ROOT, PS1)
 
 FILES = (HELP, MH, G3)
 
+# RA16, 23 Nov 2026 - AND A NINTH, after Printing: Sending a plan, the
+# order Print and Send sit in on the bar.
 ORDER = ('mp-overview', 'mp-calendar', 'mp-build', 'mp-week',
-         'mp-shopping', 'mp-print', 'mp-permissions', 'mp-tips')
+         'mp-shopping', 'mp-print', 'mp-send', 'mp-permissions', 'mp-tips')
 
 # THE PROSE OF A SCREEN THAT IS GONE. This is the finding: each of
 # these described a control on 19 October and described nothing at all
@@ -294,8 +296,10 @@ def claims(text):
     # sentence and it was true before this round as well as after, so
     # asked as a delta it fails the control for being right. It is
     # asked in section 4, where an unchanging claim belongs.
-    c['  and the word coming appears nowhere else'] = (
-        len(coming) == 1)
+    # RA16, 23 Nov 2026 - NONE NOW. The one left was dragging a meal
+    # from one day to another, and it ships.
+    c['  and the word coming appears nowhere - RA16 kept the last'] = (
+        len(coming) == 0)
 
     # ---- 8. the two suites that count tabs moved with them
     c['test_meal_help counts eight tabs'] = (
@@ -366,7 +370,7 @@ if up:
     got = [t['name'] for t in (mod or {}).get('tabs', [])]
     ok(got == ['Overview', 'The Calendar', 'Adding a Meal',
                'Moving a Week', 'Shopping List', 'Printing',
-               'Who Can Do What', 'Tips'],
+               'Sending a plan', 'Who Can Do What', 'Tips'],
        '%d named tabs, in order, out of the real parser'
        % len(ORDER), got)
     empty = [t['name'] for t in (mod or {}).get('tabs', [])
@@ -405,8 +409,9 @@ for probe, what in (('meal_plan_print', 'the Print button'),
 # THE PROMISE IS STILL MADE, and it is still honest. Neither half of
 # this changed in this round - MH-3 wrote the sentence - so neither is
 # a delta; both are the thing the delta must not have broken.
-ok(any(OUTSTANDING in x.lower() for x in coming_sentences(block)),
-   'what is NOT built is still named as outstanding')
+# RA16, 23 Nov 2026 - BUILT NOW, so the guide must not still promise it.
+ok(not any(OUTSTANDING in x.lower() for x in coming_sentences(block)),
+   'what RA16 built is no longer named as outstanding')
 ok('def reorder_meal_day' in view and 'def move_meal_entry' in view,
    'CONTROL: ordering and MOVING are two endpoints, which is why one '
    'remaining promise is honest')
