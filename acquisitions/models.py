@@ -137,6 +137,17 @@ class Scenario(models.Model):
     def points_total(self):
         return sum((c.points or 0) for c in self.criteria.all())
 
+    def target_areas(self):
+        """RA21, 24 Nov 2026 - the areas a listing must be in, read from the
+        Location rule (a Must on Area). Demetri: "Areas must come out of
+        Where to look ... the suburb where we want the property ... must be
+        under location." One list, so the search and the rule cannot drift."""
+        names = set()
+        for c in self.criteria.all():
+            if c.field == "area" and c.kind == "must" and c.operator in ("in", "eq"):
+                names |= {str(v).strip().lower() for v in (c.text_values or [])}
+        return [a for a in Area.objects.all() if a.name.lower() in names]
+
     def rescore_all(self):
         """Re-score every match after the criteria change. No new search needed."""
         from .scoring import apply_score

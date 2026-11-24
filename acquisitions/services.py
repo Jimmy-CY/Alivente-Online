@@ -391,7 +391,7 @@ def counts(scenario):
     crit = list(scenario.criteria.all())
     return {"musts": sum(1 for c in crit if c.kind == "must"),
             "scoring": sum(1 for c in crit if c.kind != "must"),
-            "areas": scenario.areas.count(), "sites": scenario.websites.count()}
+            "areas": len(scenario.target_areas()), "sites": scenario.websites.count()}
 
 
 def schedule_text(s):

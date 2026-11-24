@@ -324,6 +324,8 @@ WATCHED = [
     # and are not watched; the rules, the scenarios and your decisions on
     # a listing are.
     ('acquisitions', 'Scenario', 'acquisitions', 'Search scenario'),
+    # RA21 - an area added from the Location rule.
+    ('acquisitions', 'Area', 'acquisitions', 'Area'),
     ('acquisitions', 'Criterion', 'acquisitions', 'Search rule'),
     ('acquisitions', 'ScenarioMatch', 'acquisitions', 'Listing decision'),
     ('acquisitions', 'Viewing', 'acquisitions', 'Viewing'),

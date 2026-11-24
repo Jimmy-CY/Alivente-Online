@@ -1696,6 +1696,8 @@ ROUNDS = [
     '.bak_ra19',
     # RA20, 24 Nov 2026 - Good to know shows Good to know; why pages can come with no sign-in.
     '.bak_ra20',
+    # RA21, 24 Nov 2026 - the areas are the Location rule's; add an area.
+    '.bak_ra21',
 ]
 
 

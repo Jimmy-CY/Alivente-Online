@@ -226,13 +226,12 @@ def scenario_edit(request, pk=None):
     tpl = request.GET.get("template")
     if scenario is not None:
         rows = [dict(S.criterion_row(c), **_raw(c)) for c in scenario.criteria.all()]
-        area_ids = set(scenario.areas.values_list("pk", flat=True))
         site_ids = set(scenario.websites.values_list("pk", flat=True))
     else:
         scenario = Scenario(name="", property_type="apartment",
                             max_unknown_musts=4, unknown_score_cap=60)
         rows = []
-        area_ids, site_ids = set(), set()
+        site_ids = set()
         if tpl in presets.TEMPLATES:
             t = presets.TEMPLATES[tpl]
             scenario.name = t["title"]
@@ -242,7 +241,7 @@ def scenario_edit(request, pk=None):
         scenario.pk = None
     return _page(request, "scenario_edit.html", "scenarios", s=scenario,
                  rows=rows,
-                 areas=Area.objects.all(), area_ids=area_ids,
+                 areas=Area.objects.all(),
                  sites=Website.objects.filter(is_active=True), site_ids=site_ids,
                  field_choices=[(k, v["label"]) for k, v in FIELDS.items()],
                  kinds=Criterion.Kind.choices, operators=Criterion.Operator.choices,
@@ -295,10 +294,12 @@ def _save_scenario(request, scenario):
         scenario.max_unknown_musts = _int(P.get("max_unknown_musts"), 4, 0, 30)
         scenario.cadence = P.get("cadence") if P.get("cadence") in \
             dict(Scenario.CADENCE_CHOICES) else "daily"
-        try:
-            scenario.run_time = datetime.strptime(P.get("run_time") or "06:50", "%H:%M").time()
-        except ValueError:
-            pass
+        # RA21 - a greyed-out Time (Only when I ask) is not posted: keep it.
+        if P.get("run_time"):
+            try:
+                scenario.run_time = datetime.strptime(P.get("run_time"), "%H:%M").time()
+            except ValueError:
+                pass
         scenario.run_weekday = (_int(P.get("run_weekday"), 0, 0, 6)
                                 if scenario.cadence == "weekly" else None)
         scenario.blocked_sites = P.get("blocked_sites") if P.get("blocked_sites") in \
@@ -310,7 +311,6 @@ def _save_scenario(request, scenario):
             setattr(scenario, f, P.get(f) == "on")
         scenario.summary_instructions = P.get("summary_instructions") or ""
         scenario.save()
-        scenario.areas.set(Area.objects.filter(pk__in=P.getlist("areas")))
         scenario.websites.set(Website.objects.filter(pk__in=P.getlist("websites")))
         # THE RULES BY ID: an existing rule keeps its row, so Claude's
         # answers to a plain-words rule (judgements, keyed by its id) stay.
@@ -333,12 +333,36 @@ def _save_scenario(request, scenario):
             row.save()
             keep.append(row.pk)
         scenario.criteria.exclude(pk__in=keep).delete()
+        # RA21 - the scenario's areas follow its Location rule; they are no
+        # longer chosen under Where to look.
+        scenario.areas.set(scenario.target_areas())
         scenario.rescore_all()
     total = scenario.points_total()
     messages.success(request, 'Saved "%s"%s.' % (
         scenario.name, "" if total == 100 else
         " - its points add up to %s, not 100" % S.num(total)))
     return redirect("acquisitions:scenario", pk=scenario.pk)
+
+
+@login_required
+@require_POST
+@permission_required(EDIT, raise_exception=True)
+def area_add(request):
+    """RA21, 24 Nov 2026 - add an area from the Location rule's list.
+    Demetri: "We need to be able to add areas." An area that is already
+    there (any letter case) is returned rather than made twice."""
+    name = " ".join((request.POST.get("name") or "").split())[:100]
+    if not name:
+        return JsonResponse({"ok": False, "error": "Give the area a name."}, status=400)
+    district = " ".join((request.POST.get("district") or "").split())[:100] or "Nicosia"
+    aliases = [a.strip()[:100] for a in (request.POST.get("aliases") or "").split(",")
+               if a.strip()][:20]
+    area = Area.objects.filter(name__iexact=name).first()
+    created = area is None
+    if created:
+        area = Area.objects.create(name=name, district=district, aliases=aliases)
+    return JsonResponse({"ok": True, "id": area.pk, "name": area.name,
+                         "district": area.district, "created": created})
 
 
 @login_required
@@ -406,7 +430,8 @@ def scenario_results(request, pk):
         return _page(request, "plot_results.html", "scenarios", **ctx)
     ppm = [m.property.price_per_m2 for m in live if m.property.price_per_m2]
     ctx["median_ppm"] = sorted(ppm)[len(ppm) // 2] if ppm else None
-    area = s.areas.first()
+    ta = s.target_areas()  # RA21 - the Location rule's areas
+    area = ta[0] if ta else None
     ctx["area_median"] = S.latest_median(area) if area else None
     return _page(request, "scenario_results.html", "scenarios", **ctx)
 
@@ -684,7 +709,9 @@ def auctions(request):
     qs = (Property.objects.filter(Q(is_auction=True) | Q(sources__website__kind="bank"))
           .distinct().select_related("area")
           .prefetch_related("sources__website", "matches__scenario"))
-    target = set(Area.objects.filter(scenarios__is_active=True).values_list("pk", flat=True))
+    # RA21 - the target areas are each active scenario's Location rule.
+    target = {a.pk for sc in Scenario.objects.filter(is_active=True).prefetch_related("criteria")
+              for a in sc.target_areas()}
     rows = []
     for p in qs:
         ms = [m for m in p.matches.all() if m.status not in ("rejected", "removed")]

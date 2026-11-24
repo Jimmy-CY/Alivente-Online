@@ -33,12 +33,13 @@ class ScenarioAdmin(admin.ModelAdmin):
                     "tracked")
     list_filter = ("is_active", "property_type", "cadence")
     prepopulated_fields = {"slug": ("name",)}
-    filter_horizontal = ("areas", "websites")
+    filter_horizontal = ("websites",)
     inlines = [CriterionInline]
     actions = ["rescore"]
     fieldsets = (
         (None, {"fields": ("name", "slug", "purpose", "property_type", "is_active", "owner")}),
-        ("Where to look", {"fields": ("areas", "websites")}),
+        # RA21 - Where to look is the websites; the areas are the Location rule.
+        ("Where to look", {"fields": ("websites",)}),
         ("Unknowns", {"fields": ("unknown_score_cap", "max_unknown_musts")}),
         ("Schedule", {"fields": ("cadence", "run_time", "run_weekday", "blocked_sites", "notify")}),
         ("Summary", {"fields": ("summary_new_listings", "summary_changes", "summary_site_status",

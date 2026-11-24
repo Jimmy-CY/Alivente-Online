@@ -45,13 +45,10 @@
   </div>
 
   <div class="form-card">
-    <h3 class="form-section-title acq-section-title"><i class="fas fa-map-marker-alt"></i> 2 &middot; Where to look</h3>
+    <h3 class="form-section-title acq-section-title"><i class="fas fa-globe"></i> 2 &middot; Where to look</h3>
+    {# RA21, 24 Nov 2026 - the websites only. The areas are the Location rule's (Demetri: "Areas must come out of Where to look"). #}
     <div>
-      <p class="mb-1"><strong>Areas</strong></p>
-      <div class="acq-check-list mb-3">
-        {% for a in areas %}<label><input type="checkbox" name="areas" value="{{ a.pk }}" {% if a.pk in area_ids %}checked{% endif %}> {{ a.name }}</label>{% endfor %}
-      </div>
-      <p class="mb-1"><strong>Websites</strong></p>
+      <p class="mb-1"><strong>Websites</strong> <span class="acq-muted">&mdash; the area a property must be in is the <strong>Location</strong> rule under Criteria.</span></p>
       <div class="acq-check-list">
         {% for w in sites %}<label><input type="checkbox" name="websites" value="{{ w.pk }}" {% if w.pk in site_ids %}checked{% endif %}> {{ w.name }}{% if w.needs_pc %}<span class="acq-pc" title="This site blocks the cloud, so it is searched from your computer when you ask">PC</span>{% endif %}</label>{% endfor %}
       </div>
@@ -75,9 +72,10 @@
       <button type="button" class="btn action-secondary" onclick="acqOpenRule(-1, false)"><i class="fas fa-plus"></i> Add criterion</button>
       <button type="button" class="btn action-secondary" onclick="acqOpenRule(-1, true)"><i class="fas fa-comment-alt"></i> Add a rule in plain words</button>
       {% endif %}
-      <div class="form-row mt-3">
-        <div class="form-group col-md-6 mb-0"><label for="acqCap"><strong>When a Must can&rsquo;t be confirmed, cap the score at</strong></label><input type="number" min="0" max="100" id="acqCap" name="unknown_score_cap" class="form-control" value="{{ s.unknown_score_cap }}"></div>
-        <div class="form-group col-md-6 mb-0"><label for="acqLimit"><strong>Don&rsquo;t add a listing with more unknown Musts than</strong></label><input type="number" min="0" max="30" id="acqLimit" name="max_unknown_musts" class="form-control" value="{{ s.max_unknown_musts }}"></div>
+      {# RA21 - one-line labels, bottom-aligned, so the two boxes line up (Demetri: "These two fields don't line up"). #}
+      <div class="form-row mt-3 align-items-end">
+        <div class="form-group col-md-6 mb-0"><label for="acqCap"><strong>Score cap if a Must is unconfirmed</strong></label><input type="number" min="0" max="100" id="acqCap" name="unknown_score_cap" class="form-control" value="{{ s.unknown_score_cap }}"></div>
+        <div class="form-group col-md-6 mb-0"><label for="acqLimit"><strong>Most unknown Musts a listing may have</strong></label><input type="number" min="0" max="30" id="acqLimit" name="max_unknown_musts" class="form-control" value="{{ s.max_unknown_musts }}"></div>
       </div>
     </div>
   </div>
@@ -87,7 +85,7 @@
     <div>
       <div class="form-row">
         <div class="form-group col-md-4"><label for="acqCadence"><strong>How often</strong></label><select id="acqCadence" name="cadence" class="form-control">{% for k, l in cadences %}<option value="{{ k }}" {% if s.cadence == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
-        <div class="form-group col-md-4"><label for="acqDay"><strong>Day (weekly)</strong></label><select id="acqDay" name="run_weekday" class="form-control">{% for k, l in weekdays %}<option value="{{ k }}" {% if s.run_weekday == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+        <div class="form-group col-md-4"><label for="acqDay"><strong>Day (weekly)</strong></label><select id="acqDay" name="run_weekday" class="form-control"><option value=""{% if s.run_weekday is None %} selected{% endif %}>&mdash;</option>{% for k, l in weekdays %}<option value="{{ k }}" {% if s.run_weekday == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
         <div class="form-group col-md-4"><label for="acqTime"><strong>Time</strong></label><input type="time" id="acqTime" name="run_time" class="form-control" value="{{ s.run_time|time:'H:i' }}"></div>
       </div>
       <div class="form-row">
@@ -144,7 +142,7 @@
           <div class="form-group col-md-3" data-shape="points"><label for="rPoints"><strong>Points</strong></label><input type="number" id="rPoints" class="form-control" min="0" max="100" step="0.5"></div>
         </div>
         <div class="form-row" data-shape="factual">
-          <div class="form-group col-md-6"><label for="rField"><strong>What it tests</strong></label><select id="rField" class="form-control">{% for k, l in field_choices %}{% if k != 'custom' %}<option value="{{ k }}">{{ l }}</option>{% endif %}{% endfor %}</select></div>
+          <div class="form-group col-md-6"><label for="rField"><strong>What it tests</strong></label><select id="rField" class="form-control" onchange="acqRuleShape()">{% for k, l in field_choices %}{% if k != 'custom' %}<option value="{{ k }}">{{ l }}</option>{% endif %}{% endfor %}</select></div>
           <div class="form-group col-md-6"><label for="rOp"><strong>Rule</strong></label><select id="rOp" class="form-control" onchange="acqRuleShape()">{% for k, l in operators %}{% if k != 'judged' %}<option value="{{ k }}">{{ l }}</option>{% endif %}{% endfor %}</select></div>
         </div>
         <div class="form-row" data-shape="minmax">
@@ -152,6 +150,21 @@
           <div class="form-group col-md-6" data-shape="max"><label for="rMax"><strong>Highest</strong></label><input type="text" inputmode="decimal" id="rMax" class="form-control"></div>
         </div>
         <div class="form-group" data-shape="values"><label for="rValues"><strong>Values</strong> <span class="acq-muted">(separated by commas, e.g. unfinished, unrenovated)</span></label><input type="text" id="rValues" class="form-control"></div>
+        {# RA21 - the Location rule: tick the areas; add one that is missing. #}
+        <div data-shape="areas">
+          <p class="mb-1"><strong>Areas</strong> <span class="acq-muted">(a listing must be in one of these)</span></p>
+          <div class="acq-check-list mb-2" id="rAreas">{% for a in areas %}<label><input type="checkbox" value="{{ a.name }}" data-area> {{ a.name }}</label>{% endfor %}</div>
+          {% if can_edit %}<div class="acq-add-area" data-area-add>
+            <p class="acq-muted mb-1">Not in the list? Add it:</p>
+            <div class="form-row">
+              <div class="form-group col-md-4"><label for="rAreaName"><strong>Area</strong></label><input type="text" id="rAreaName" class="form-control" maxlength="100"></div>
+              <div class="form-group col-md-3"><label for="rAreaDistrict"><strong>District</strong></label><input type="text" id="rAreaDistrict" class="form-control" maxlength="100" value="Nicosia"></div>
+              <div class="form-group col-md-5"><label for="rAreaAka"><strong>Other spellings</strong> <span class="acq-muted">(optional, e.g. Egkomi, &Epsilon;&gamma;&kappa;&omega;&mu;&eta;)</span></label><input type="text" id="rAreaAka" class="form-control"></div>
+            </div>
+            <button type="button" class="btn action-secondary" onclick="acqAddArea()" data-area-add-btn><i class="fas fa-plus"></i> Add area</button>
+            <span class="acq-muted ml-2" id="rAreaMsg" role="status"></span>
+          </div>{% endif %}
+        </div>
         <div data-shape="curve">
           <p class="acq-muted mb-2">A sliding scale: full points inside a window, falling to 0 at the outer values. Or bands instead.</p>
           <div class="form-row">
@@ -183,6 +196,7 @@
   var canEdit = {{ can_edit|yesno:"true,false" }};
   var previewUrl = "{% if s.pk %}{% url 'acquisitions:scenario_preview' s.pk %}{% else %}{% url 'acquisitions:scenario_preview_new' %}{% endif %}";
   var form = document.getElementById('acqEditor');
+  var areaUrl = "{% url 'acquisitions:area_add' %}";
   var $ = function (id) { return document.getElementById(id); };
 
   function cell(tr, text, label, cls) {
@@ -262,7 +276,11 @@
     fd.append('unknown_score_cap', $('acqCap').value);
     fd.append('max_unknown_musts', $('acqLimit').value);
     fetch(previewUrl, {method: 'POST', body: fd, credentials: 'same-origin'})
-      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        // RA21 - signed out: the request was sent to the login page.
+        if (r.redirected && /\/login\//.test(r.url)) { throw 'signed-out'; }
+        return r.json();
+      })
       .then(function (d) {
         var err = $('acqCritError');
         if (!d.ok) { err.textContent = d.error; err.hidden = false; return; }
@@ -273,9 +291,11 @@
         pts.classList.toggle('is-off', Math.abs(d.points - 100) > 0.01);
         drawPreview(d.preview);
       })
-      .catch(function () {
+      .catch(function (why) {
         var err = $('acqCritError');
-        err.textContent = 'The rules could not be checked just now. They will still be saved.';
+        err.textContent = why === 'signed-out'
+          ? 'You have been signed out (the app signs you out after an hour). Sign in again in another tab before you press Save scenario, or these changes will be lost.'
+          : 'The rules could not be checked just now. They will still be saved.';
         err.hidden = false;
       });
   }
@@ -304,6 +324,52 @@
     return out;
   }
 
+  // RA21 - the Location rule's area list.
+  function areaBox(name, on) {
+    var box = $('rAreas'), want = name.toLowerCase(), found = null;
+    box.querySelectorAll('[data-area]').forEach(function (cb) { if (cb.value.toLowerCase() === want) { found = cb; } });
+    if (!found) {
+      var lab = document.createElement('label');
+      found = document.createElement('input');
+      found.type = 'checkbox'; found.value = name; found.setAttribute('data-area', '');
+      lab.appendChild(found); lab.appendChild(document.createTextNode(' ' + name));
+      box.appendChild(lab);
+    }
+    found.checked = on;
+    return found;
+  }
+  function setAreas(values) {
+    $('rAreas').querySelectorAll('[data-area]').forEach(function (cb) { cb.checked = false; });
+    (values || []).forEach(function (v) { if (String(v).trim()) { areaBox(String(v).trim(), true); } });
+  }
+  function tickedAreas() {
+    var out = [];
+    $('rAreas').querySelectorAll('[data-area]').forEach(function (cb) { if (cb.checked) { out.push(cb.value); } });
+    return out;
+  }
+  window.acqAddArea = function () {
+    var name = $('rAreaName').value.trim(), msg = $('rAreaMsg');
+    if (!name) { msg.textContent = 'Type the area first.'; return; }
+    var fd = new FormData();
+    fd.append('name', name);
+    fd.append('district', $('rAreaDistrict').value.trim());
+    fd.append('aliases', $('rAreaAka').value.trim());
+    fd.append('csrfmiddlewaretoken', form.querySelector('[name=csrfmiddlewaretoken]').value);
+    msg.textContent = 'Adding\u2026';
+    fetch(areaUrl, {method: 'POST', body: fd, credentials: 'same-origin'})
+      .then(function (r) {
+        if (r.redirected && /\/login\//.test(r.url)) { throw 'signed-out'; }
+        return r.json();
+      })
+      .then(function (d) {
+        if (!d.ok) { msg.textContent = d.error || 'Could not add the area.'; return; }
+        areaBox(d.name, true);
+        $('rAreaName').value = ''; $('rAreaAka').value = '';
+        msg.textContent = d.created ? d.name + ' added and ticked.' : d.name + ' was already there - ticked.';
+      })
+      .catch(function (why) { msg.textContent = why === 'signed-out' ? 'You have been signed out - sign in again in another tab, then add it.' : 'Could not add the area just now.'; });
+  };
+
   window.acqRuleShape = function () {
     var kind = $('rKind').value, op = $('rOp').value;
     var show = function (name, on) {
@@ -316,7 +382,12 @@
     show('minmax', !judged && kind !== 'scoring' && ['gte', 'lte', 'between', 'eq'].indexOf(op) >= 0);
     show('min', ['gte', 'between', 'eq'].indexOf(op) >= 0);
     show('max', ['lte', 'between'].indexOf(op) >= 0);
-    show('values', !judged && (op === 'in' || op === 'eq'));
+    // RA21 - Area is a tick list of the areas, always "is one of".
+    var area = !judged && $('rField').value === 'area';
+    if (area) { $('rOp').value = 'in'; }
+    $('rOp').disabled = area;
+    show('values', !judged && !area && (op === 'in' || op === 'eq'));
+    show('areas', area);
     show('group', kind === 'must');
   };
 
@@ -334,6 +405,7 @@
     $('rMin').value = r.num_min == null ? '' : r.num_min;
     $('rMax').value = r.num_max == null ? '' : r.num_max;
     $('rValues').value = (r.text_values || []).join(', ');
+    setAreas(r.field === 'area' ? (r.text_values || []) : []);
     $('rFullFrom').value = r.full_from == null ? '' : r.full_from;
     $('rFullTo').value = r.full_to == null ? '' : r.full_to;
     $('rZeroBelow').value = r.zero_below == null ? '' : r.zero_below;
@@ -352,17 +424,22 @@
     if (!label) { err.textContent = 'Give the rule a name.'; err.hidden = false; return; }
     if (judged && !$('rText').value.trim()) { err.textContent = 'Write the rule in plain words.'; err.hidden = false; return; }
     var val = function (id) { var v = $(id).value.trim(); return v === '' ? null : v; };
+    var isArea = !judged && $('rField').value === 'area';
+    var picked = tickedAreas();
+    if (isArea && !picked.length) { err.textContent = 'Tick at least one area.'; err.hidden = false; return; }
     var r = {
       id: editing >= 0 ? rows[editing].id : null, label: label,
       field: judged ? 'custom' : $('rField').value, kind: $('rKind').value,
       operator: judged ? 'judged' : $('rOp').value,
       num_min: val('rMin'), num_max: val('rMax'),
-      text_values: $('rValues').value.split(',').map(function (x) { return x.trim(); }).filter(Boolean),
+      text_values: isArea ? picked : $('rValues').value.split(',').map(function (x) { return x.trim(); }).filter(Boolean),
       points: $('rKind').value === 'must' ? 0 : (val('rPoints') || 0),
       full_from: val('rFullFrom'), full_to: val('rFullTo'),
       zero_below: val('rZeroBelow'), zero_above: val('rZeroAbove'),
       score_bands: bandsParse($('rBands').value), group: $('rGroup').value.trim(),
-      rule_text: $('rText').value.trim()
+      rule_text: $('rText').value.trim(),
+      // RA21 - an area rule reads at once, before the preview answers.
+      rule: isArea ? picked.join(' or ') : ''
     };
     if (editing >= 0) { rows[editing] = r; } else { rows.push(r); }
     if (window.jQuery) { window.jQuery('#acqRuleModal').modal('hide'); }
@@ -373,6 +450,17 @@
     $('acqCriteriaJson').value = JSON.stringify(rows);
   });
   ['acqCap', 'acqLimit'].forEach(function (id) { $(id).addEventListener('change', refresh); });
+  // RA21 - Day is for Weekly only; "Only when I ask" has no day or time
+  // (Demetri: "If you choose Daily, then the Day field should be cleared
+  // and greyed out").
+  function acqCadence() {
+    var c = $('acqCadence').value;
+    if (c !== 'weekly') { $('acqDay').value = ''; }
+    $('acqDay').disabled = c !== 'weekly';
+    $('acqTime').disabled = c === 'manual';
+  }
+  $('acqCadence').addEventListener('change', acqCadence);
+  acqCadence();
   refresh();
 })();
 </script>

@@ -121,8 +121,10 @@ N_RULES = 22               # whole .form-group label rules removed
 # Values, Bands instead, The rule in plain words, Group, and Why in a few
 # words - each a bold name and a plain hint. A new page has no backup of
 # this round, so it counts on both sides (was 69 and 67).
-N_HINT = 75                # labels that bold only part of themselves
-N_HINT_WAS = 73            # ... 73 before this round added two
+# RA21, 24 Nov 2026 - ONE MORE: Other spellings (optional, e.g. Egkomi), in
+# the Location rule's Add area row. Counted on both sides (was 75 and 73).
+N_HINT = 76                # labels that bold only part of themselves
+N_HINT_WAS = 74            # ... 74 before this round added two
 
 CRS_PAGES = ('crs/country_form.html', 'crs/fi_form.html',
              'crs/submission_detail.html', 'crs/submission_start.html')
