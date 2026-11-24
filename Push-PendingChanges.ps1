@@ -3395,7 +3395,9 @@ $suites = @(
     # RA18, 23 Nov 2026 - Property Acquisitions, step 1: the foundation.
     'test_ra18_acquisitions.py',
     # RA19, 23 Nov 2026 - Property Acquisitions, step 2: the eleven screens.
-    'test_ra19_acquisitions_screens.py'
+    'test_ra19_acquisitions_screens.py',
+    # RA20, 24 Nov 2026 - Good to know shows Good to know; why pages can come with no sign-in.
+    'test_ra20_travel_info_tab.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

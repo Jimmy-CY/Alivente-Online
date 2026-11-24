@@ -1694,6 +1694,8 @@ ROUNDS = [
     '.bak_ra18',
     # RA19, 23 Nov 2026 - Property Acquisitions, step 2: the eleven screens.
     '.bak_ra19',
+    # RA20, 24 Nov 2026 - Good to know shows Good to know; why pages can come with no sign-in.
+    '.bak_ra20',
 ]
 
 

@@ -137,7 +137,7 @@
         {% empty %}<p class="tv-sub" style="margin: 8px 0 0">Nothing yet. Add a museum, a garden, a restaurant &mdash; type its name or paste a link, and its address, hours and price are looked up for you. On the phone, share a place from Google Maps to Travel.</p>{% endfor %}
         {% if wish %}{% url 'travel:places_delete' trip.pk as del_url %}{% include 'travel/_wish_select.html' with url=del_url %}{% endif %}
     </section>
-{% else %}
+{% elif tab == 'costs' %}{% comment %} RA20, 24 Nov 2026 - Costs by name, not 'everything else': Good to know (RA12) sits after this chain, so a bare else drew the whole Costs section above its cards (Demetri: "Why does the Good to Know Button open the Costs?"). {% endcomment %}
     {% comment %} RA05, 19 Nov 2026 - the daily spending budget and the spending, first; then the trip's whole costs, its daily spending included. {% endcomment %}
     {% include 'travel/_budget.html' %}
     <section class="form-card" data-costs>
