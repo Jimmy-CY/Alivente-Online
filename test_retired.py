@@ -100,13 +100,18 @@ KEPT = (
     # {% extends %} is added. They are in MOVED, with the other live
     # censuses.
     'test_dr2_values.py',
-    'test_entry_sections.py', 'test_js_escape.py', 'test_label_weight.py',
+    'test_entry_sections.py', 'test_js_escape.py',
     'test_meal_plan_buttons.py', 'test_more_css.py',
     'test_page_title.py',
     'test_recipe_spice.py', 'test_retone.py',
     'test_user_slash.py', 'test_zoom_guards.py',
 )
 MOVED = (
+    # RA19, 23 Nov 2026 - moved out of KEPT. Its hint-label count sums
+    # alv_tree.templates(), the tree as it stands, so a new page with a
+    # bold name and a plain hint moves it - six on the Acquisitions
+    # screens. A census of today's tree, like the colour suites below.
+    'test_label_weight.py',
     # PX-2, 21 Oct 2026 - moved out of KEPT, where RT-1 filed it.
     # PX-1 measured the library on 13 October and its numbers were a
     # record of that day. PX-2 gives the display copy a 1200px floor

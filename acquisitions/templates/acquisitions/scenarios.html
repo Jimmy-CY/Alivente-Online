@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load help_modal_tags acq %}
+{# 2. SCENARIOS - RA19, 23 Nov 2026. #}
+
+{% block title %}Acquisitions — Scenarios{% endblock %}
+
+{% block content %}
+{% include 'acquisitions/_style.html' %}
+
+<h2 class="page-title-h2">SCENARIOS</h2>
+<p class="acq-sub">Each scenario is its own search: what to look for, where, how often, and how listings are scored.</p>
+
+<div class="page-action-buttons">
+  {% if can_edit %}
+  <a href="{% url 'acquisitions:scenario_new' %}" class="btn action-primary" role="button"><i class="fas fa-plus"></i> New scenario</a>
+  {% endif %}
+  <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#acquisitionsHelpModal" aria-label="Help"><i class="fas fa-question-circle"></i> Help</button>
+  <a href="{% url 'acquisitions:overview' %}" class="btn action-back" role="button" aria-label="Back to the overview"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+
+{% include 'acquisitions/_tabs.html' %}
+
+<form method="get" class="d-flex flex-wrap align-items-center mb-3" style="gap: 10px">
+  <input type="search" name="q" value="{{ q }}" class="form-control" style="max-width: 320px" placeholder="Search scenarios" aria-label="Search scenarios">
+  <input type="hidden" name="show" value="{{ show }}">
+  <div class="acq-chips mb-0">
+    <a class="acq-chip {% if show == 'all' %}is-on{% endif %}" href="?show=all{% if q %}&amp;q={{ q|urlencode }}{% endif %}">All ({{ n_all }})</a>
+    <a class="acq-chip {% if show == 'active' %}is-on{% endif %}" href="?show=active{% if q %}&amp;q={{ q|urlencode }}{% endif %}">Active ({{ n_active }})</a>
+    <a class="acq-chip {% if show == 'paused' %}is-on{% endif %}" href="?show=paused{% if q %}&amp;q={{ q|urlencode }}{% endif %}">Paused ({{ n_paused }})</a>
+  </div>
+</form>
+
+<div class="table-container">
+  <table class="table alv-table">
+    <thead>
+      <tr>
+        <th style="text-align: left; width: 24%">Scenario</th>
+        <th style="width: 11%">Type</th>
+        <th style="width: 21%">Key rules</th>
+        <th style="width: 11%">Schedule</th>
+        <th style="width: 6%">Sites</th>
+        <th style="width: 7%">Tracked</th>
+        <th style="width: 10%">Last run</th>
+        <th style="width: 7%">Status</th>
+        <th class="desktop-action-cell cell-actions" style="width: 9%">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td data-label="Scenario" style="text-align: left"><a href="{% url 'acquisitions:scenario' r.s.pk %}"><strong>{{ r.s.name }}</strong></a><div class="acq-muted">{{ r.counts.areas }} area{{ r.counts.areas|pluralize }} &middot; {{ r.counts.musts }} Must{{ r.counts.musts|pluralize }} &middot; {{ r.counts.scoring }} scoring rule{{ r.counts.scoring|pluralize }}</div></td>
+        <td data-label="Type">{{ r.s.get_property_type_display }}</td>
+        <td data-label="Key rules"><span class="acq-muted">{{ r.rules|default:"—" }}</span></td>
+        <td data-label="Schedule">{{ r.schedule }}{% if r.pc %}<div class="acq-muted">+ PC on demand</div>{% endif %}</td>
+        <td data-label="Sites">{{ r.counts.sites }}</td>
+        <td data-label="Tracked">{{ r.s.n_tracked }}{% if r.new %} <span class="acq-muted">({{ r.new }} new)</span>{% endif %}</td>
+        <td data-label="Last run">{% if r.last %}{{ r.last.started_at|date:"D j M H:i" }}<div class="acq-muted">{{ r.outcome }}</div>{% else %}<span class="acq-muted">Not yet</span>{% endif %}</td>
+        <td data-label="Status">{% if r.s.is_active %}<span class="alv-pill alv-pill-good">Active</span>{% else %}<span class="alv-pill alv-pill-neutral">Paused</span>{% endif %}</td>
+        <td class="desktop-action-cell cell-actions">
+          <span class="row-actions">
+            <a href="{% url 'acquisitions:scenario' r.s.pk %}" class="icon-action-btn icon-view" title="Results"><i class="fas fa-eye"></i></a>
+            {% if can_edit %}
+            <a href="{% url 'acquisitions:scenario_edit' r.s.pk %}" class="icon-action-btn icon-edit" title="Edit scenario"><i class="fas fa-pencil-alt"></i></a>
+            {% else %}
+            <span class="icon-action-btn icon-disabled" title="No edit permission"><i class="fas fa-pencil-alt"></i></span>
+            {% endif %}
+          </span>
+        </td>
+        <td class="mobile-action-bar">
+          <a href="{% url 'acquisitions:scenario' r.s.pk %}" class="mobile-action-btn"><i class="fas fa-eye mobile-action-icon icon-color-view"></i><span class="mobile-action-label">Results</span></a>
+          {% if can_edit %}
+          <a href="{% url 'acquisitions:scenario_edit' r.s.pk %}" class="mobile-action-btn"><i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i><span class="mobile-action-label">Edit</span></a>
+          {% else %}
+          <span class="mobile-action-btn mobile-action-disabled"><i class="fas fa-pencil-alt mobile-action-icon"></i><span class="mobile-action-label">Edit</span></span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if not rows %}
+  <div class="alv-empty">
+    <i class="fas fa-sliders-h"></i>
+    <div class="alv-empty-title">{% if q or show != 'all' %}No scenario matches{% else %}No scenarios yet{% endif %}</div>
+    <div class="alv-empty-hint">{% if q or show != 'all' %}Clear the search or choose All.{% else %}Start one from a template below.{% endif %}</div>
+  </div>
+  {% endif %}
+</div>
+
+{% if can_edit %}
+<h3 class="acq-section-h mt-4">Start from a template</h3>
+<div class="acq-grid">
+  {% for key, t in templates.items %}
+  <a class="alv-card" href="{% url 'acquisitions:scenario_new' %}?template={{ key }}" style="text-decoration: none">
+    <div class="alv-card-head"><i class="fas {{ t.icon }}" aria-hidden="true"></i> <span class="alv-card-title">{{ t.title }}</span></div>
+    <div class="alv-card-body acq-muted">{{ t.blurb }}</div>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% render_help_modal "acquisitions" %}
+{% endblock %}

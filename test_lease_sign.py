@@ -886,8 +886,12 @@ for p in (SIGN, DONE, CLOSED):
        'signed in and base queries for a navbar they will never see')
 
 sa = T.standalone()
-ok(len(sa) == 18,
-   'alv_tree counts 18 standalone templates, the four of them included',
+# RA19, 23 Nov 2026 - 22 (was 18): the Acquisitions offer-brief PDF and its three
+# partials (_style, _tabs, _run_modal), fragments included into pages that
+# already extend base. test_ra19_acquisitions_screens.py checks the three
+# partials use house tokens only, since the colour censuses skip them.
+ok(len(sa) == 22,
+   'alv_tree counts 22 standalone templates, the four of them included',
    len(sa))
 for p in (SIGN, DONE, CLOSED, STYLES):
     ok(T.rel(p).replace(os.sep, '/') in sa,

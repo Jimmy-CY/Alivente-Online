@@ -180,7 +180,11 @@ STAND = set(alv_tree.standalone())
 # FIVE SUITES PIN THIS NUMBER AND ES-4 FIRST FOUND ONE. The sweep
 # turned up the other four one at a time, which is the register
 # working: a count nobody checks is a count that drifts.
-ok(len(STAND) == 18, '%d standalone template(s)' % len(STAND), sorted(STAND))
+# RA19, 23 Nov 2026 - 22 (was 18): the Acquisitions offer-brief PDF and its three
+# partials (_style, _tabs, _run_modal), fragments included into pages that
+# already extend base. test_ra19_acquisitions_screens.py checks the three
+# partials use house tokens only, since the colour censuses skip them.
+ok(len(STAND) == 22, '%d standalone template(s)' % len(STAND), sorted(STAND))
 BYNAME = {alv_tree.rel(q).replace(os.sep, '/'): q
           for q in alv_tree.templates()}
 for s in sorted(STAND):

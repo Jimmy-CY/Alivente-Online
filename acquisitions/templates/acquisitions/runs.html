@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load help_modal_tags acq %}
+{# 10. SEARCH RUNS - RA19, 23 Nov 2026. Every run reports back here.   #}
+
+{% block title %}Acquisitions — Search runs{% endblock %}
+
+{% block content %}
+{% include 'acquisitions/_style.html' %}
+
+<h2 class="page-title-h2">SEARCH RUNS</h2>
+<p class="acq-sub">Every run reports back here: which sites it searched, which blocked it, and what it found.</p>
+
+<div class="page-action-buttons">
+  <button type="button" class="btn action-primary" data-toggle="modal" data-target="#acqRunModal"><i class="fas fa-play"></i> Run a scenario now</button>
+  <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#acquisitionsHelpModal" aria-label="Help"><i class="fas fa-question-circle"></i> Help</button>
+  <a href="{% url 'acquisitions:overview' %}" class="btn action-back" role="button" aria-label="Back to the overview"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+
+{% include 'acquisitions/_tabs.html' %}
+
+<div class="acq-two">
+  <div class="table-container">
+    <table class="table alv-table">
+      <thead><tr><th style="width: 15%">Started</th><th style="width: 17%">Scenario</th><th style="width: 9%">Where</th><th style="width: 8%">Took</th><th style="width: 19%">Sites</th><th style="width: 8%">Checked</th><th style="width: 7%">New</th><th style="width: 10%">Result</th><th class="desktop-action-cell cell-actions" style="width: 7%">Actions</th></tr></thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td data-label="Started">{{ r.started_at|date:"D j M H:i" }}</td>
+          <td data-label="Scenario">{{ r.scenario.name|default:r.task_name }}</td>
+          <td data-label="Where">{{ r.get_where_display }}</td>
+          <td data-label="Took">{% if r.took is not None %}{{ r.took }} min{% else %}&mdash;{% endif %}</td>
+          <td data-label="Sites">{{ r.sites_text }}</td>
+          <td data-label="Checked">{{ r.listings_checked }}</td>
+          <td data-label="New">{{ r.listings_added }}</td>
+          <td data-label="Result">{% if r.complete %}<span class="alv-pill alv-pill-good">Complete</span>{% else %}<span class="alv-pill alv-pill-attn">Incomplete</span>{% endif %}</td>
+          <td class="desktop-action-cell cell-actions"><span class="row-actions"><a href="?run={{ r.pk }}" class="icon-action-btn icon-view" title="Show this run"><i class="fas fa-eye"></i></a></span></td>
+          <td class="mobile-action-bar"><a href="?run={{ r.pk }}" class="mobile-action-btn"><i class="fas fa-eye mobile-action-icon icon-color-view"></i><span class="mobile-action-label">Show</span></a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if not rows %}<div class="alv-empty"><i class="fas fa-history"></i><div class="alv-empty-title">No runs reported yet</div><div class="alv-empty-hint">Searches report here once Claude is connected to the app.</div></div>{% endif %}
+  </div>
+
+  {% if chosen %}
+  <div class="alv-card">
+    <div class="alv-card-head"><span class="alv-card-title">{{ chosen.started_at|date:"D j M H:i" }} &middot; {{ chosen.scenario.name|default:chosen.task_name }} &middot; {{ chosen.get_where_display }}</span></div>
+    <div class="alv-card-body">
+      <ul class="acq-sites">
+        {% for s in chosen.site_results.all %}
+        <li><span>{{ s.website.name }}</span><span class="{% if s.outcome == 'full' %}acq-ok{% elif s.outcome == 'skipped' %}acq-muted{% else %}acq-bad{% endif %}">{{ s.get_outcome_display }}{% if s.pages_total %} &middot; {{ s.pages_searched|default:0 }} of {{ s.pages_total }} pages{% endif %}{% if s.listings_opened %} &middot; {{ s.listings_opened }} opened{% endif %}{% if s.notes %} &middot; {{ s.notes }}{% endif %}</span></li>
+        {% empty %}<li><span class="acq-muted">No site results recorded.</span></li>{% endfor %}
+      </ul>
+      {% if chosen.summary %}<p class="mt-3 mb-1"><strong>Summary sent:</strong></p><p class="acq-quote">{{ chosen.summary|linebreaksbr }}</p>{% endif %}
+      {% for f in chosen.follow_ups.all %}
+      <p class="mt-3 mb-0"><strong>Follow-up:</strong> <span class="acq-ok">&#10003;</span> {{ f.get_where_display }} search started {{ f.started_at|date:"H:i" }}{% if f.finished_at %}, completed {{ f.finished_at|date:"H:i" }}{% endif %}.</p>
+      {% endfor %}
+      {% if chosen.follow_up_of %}<p class="acq-muted mt-3 mb-0">Finishes the {{ chosen.follow_up_of.started_at|date:"H:i" }} cloud run.</p>{% endif %}
+      <button type="button" class="btn action-secondary mt-3" data-toggle="modal" data-target="#acqRunModal"><i class="fas fa-desktop"></i> Search blocked sites on my PC again</button>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% include 'acquisitions/_run_modal.html' %}
+{% render_help_modal "acquisitions" %}
+{% endblock %}

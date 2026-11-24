@@ -79,6 +79,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path('', include('pages.urls')),
     path("crs/", include("crs.urls")),
+    # RA19, 23 Nov 2026 - Property Acquisitions, under Property Operations.
+    path("acquisitions/", include("acquisitions.urls")),
     # WL-1, 30 Oct 2026 - Wellness. wellness/app/ (the installable-app
     # shell) answers without a login; everything else needs one.
     path("wellness/", include("wellness.urls")),

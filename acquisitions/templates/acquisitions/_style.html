@@ -1,0 +1,74 @@
+{# Acquisitions - the module's own rules, on base's tokens only (RA19). #}
+<style>
+  .acq-tabs { margin: 0 0 18px; flex-wrap: wrap; }
+  .acq-tabs .alv-tab { text-decoration: none; }
+  .acq-badge { display: inline-block; min-width: 20px; margin-left: 6px; padding: 0 6px; border-radius: 10px; font-size: 12px; font-weight: 700; line-height: 18px; text-align: center; background: var(--alv-warn-soft); color: var(--alv-warn-ink); border: 1px solid var(--alv-warn-line); }
+  .acq-sub { margin: -6px 0 16px; color: var(--alv-ink-soft); font-size: 14px; }
+  .acq-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin: 0 0 20px; }
+  .acq-two { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .acq-card-figs { display: flex; flex-wrap: wrap; gap: 18px; margin: 10px 0; }
+  .acq-fig strong { display: block; font-size: 1.35rem; color: var(--alv-ink-strong); }
+  .acq-fig span { font-size: 12px; color: var(--alv-ink-soft); }
+  .acq-muted { color: var(--alv-ink-soft); font-size: 13px; }
+  .acq-score { display: inline-flex; flex-direction: column; gap: 3px; min-width: 52px; }
+  .acq-scorebar { display: block; height: 6px; border-radius: 3px; background: var(--alv-line-soft); overflow: hidden; }
+  .acq-scorebar > span { display: block; height: 100%; }
+  .acq-scorebar .is-good { background: var(--alv-good); }
+  .acq-scorebar .is-mid { background: var(--alv-warn); }
+  .acq-scorebar .is-low { background: var(--alv-bad); }
+  .acq-bars { list-style: none; margin: 0; padding: 0; }
+  .acq-bars li { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr) 56px; gap: 10px; align-items: center; padding: 6px 0; font-size: 14px; }
+  .acq-bar { height: 10px; border-radius: 5px; background: var(--alv-line-soft); overflow: hidden; }
+  .acq-bar > span { display: block; height: 100%; background: var(--alv-accent); }
+  .acq-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+  .acq-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border: 1px solid var(--alv-line); border-radius: 16px; background: var(--alv-paper); color: var(--alv-ink); font-size: 13px; text-decoration: none; }
+  .acq-chip:hover { border-color: var(--alv-accent-line); color: var(--alv-ink-strong); text-decoration: none; }
+  .acq-chip.is-on { background: var(--alv-accent-soft); border-color: var(--alv-accent-line); color: var(--alv-accent-ink); font-weight: 600; }
+  .acq-pc { display: inline-block; margin-left: 4px; padding: 0 5px; border-radius: var(--alv-radius-sm); font-size: 11px; font-weight: 700; background: var(--alv-info-soft); color: var(--alv-accent-ink); border: 1px solid var(--alv-accent-line); }
+  .acq-sites { list-style: none; margin: 0; padding: 0; }
+  .acq-sites li { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--alv-line-soft); font-size: 14px; }
+  .acq-sites li:last-child { border-bottom: 0; }
+  .acq-ok { color: var(--alv-good-ink); }
+  .acq-bad { color: var(--alv-bad-ink); }
+  .acq-warn { color: var(--alv-warn-ink); }
+  .acq-mark { display: inline-flex; width: 22px; height: 22px; align-items: center; justify-content: center; border-radius: 50%; font-size: 12px; font-weight: 700; }
+  .acq-mark.met { background: var(--alv-good-soft); color: var(--alv-good-ink); }
+  .acq-mark.failed { background: var(--alv-bad-soft); color: var(--alv-bad-ink); }
+  .acq-mark.unknown { background: var(--alv-warn-soft); color: var(--alv-warn-ink); }
+  .acq-mark.partial { background: var(--alv-info-soft); color: var(--alv-accent-ink); }
+  .acq-card-list { list-style: none; margin: 0; padding: 0; }
+  .acq-card-list li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 8px 0; border-bottom: 1px solid var(--alv-line-soft); }
+  .acq-card-list li:last-child { border-bottom: 0; }
+  .acq-facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: 14px; }
+  .acq-facts dt { color: var(--alv-ink-soft); font-weight: 400; }
+  .acq-facts dd { margin: 0; color: var(--alv-ink); }
+  .acq-chart { width: 100%; height: auto; display: block; }
+  .acq-chart .axis { stroke: var(--alv-line); stroke-width: 1; }
+  .acq-chart .line { fill: none; stroke: var(--alv-accent); stroke-width: 2.5; }
+  .acq-chart .dot { fill: var(--alv-accent); }
+  .acq-chart text { font-size: 11px; fill: var(--alv-ink-soft); }
+  .acq-chart .s1 { stroke: var(--alv-series-1); } .acq-chart .s2 { stroke: var(--alv-series-2); }
+  .acq-chart .s3 { stroke: var(--alv-series-3); } .acq-chart .s4 { stroke: var(--alv-series-4); }
+  .acq-key { display: inline-block; width: 14px; height: 3px; margin-right: 6px; vertical-align: middle; }
+  .acq-key.s1 { background: var(--alv-series-1); } .acq-key.s2 { background: var(--alv-series-2); }
+  .acq-key.s3 { background: var(--alv-series-3); } .acq-key.s4 { background: var(--alv-series-4); }
+  .acq-spark { width: 110px; height: 26px; }
+  .acq-spark polyline { fill: none; stroke: var(--alv-accent); stroke-width: 2; }
+  .acq-crit-table td, .acq-crit-table th { vertical-align: middle; }
+  .acq-points { font-weight: 700; }
+  .acq-points.is-off { color: var(--alv-bad-ink); }
+  .acq-check-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 16px; }
+  .acq-check-list label { display: flex; align-items: center; gap: 8px; min-height: 36px; margin: 0; font-weight: 400; }
+  .acq-section-h { margin: 0 0 12px; font-size: 16px; font-weight: 700; color: var(--alv-ink-strong); }
+  .acq-days { list-style: none; margin: 0; padding: 0; }
+  .acq-days li { display: grid; grid-template-columns: 140px 120px minmax(0, 1fr); gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--alv-line-soft); font-size: 14px; }
+  .acq-quote { margin: 0; padding: 10px 14px; border-left: 3px solid var(--alv-accent-line); background: var(--alv-surface); color: var(--alv-ink); font-size: 14px; }
+  @media screen and (max-width: 991px) {
+    .acq-two { grid-template-columns: minmax(0, 1fr); }
+    .acq-days li { grid-template-columns: 110px minmax(0, 1fr); }
+    .acq-days li > :last-child { grid-column: 1 / -1; }
+  }
+/* The editor's section titles carry the points total on the right. */
+.acq-section-title { display: flex; align-items: baseline; gap: 6px; }
+.acq-section-title .ml-auto { font-size: 14px; font-weight: 400; }
+</style>

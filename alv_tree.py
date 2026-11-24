@@ -49,6 +49,10 @@ TEMPLATE_ROOTS = [
      'the main app - every module except CRS'),
     (('crs', 'templates'),
      'the CRS reporting app, mounted at /crs/ by mysite/urls.py'),
+    # RA19, 23 Nov 2026 - inside the house standard, like CRS.
+    (('acquisitions', 'templates'),
+     'the Property Acquisitions app, mounted at /acquisitions/ by '
+     'mysite/urls.py'),
 ]
 
 

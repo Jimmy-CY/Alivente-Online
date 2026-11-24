@@ -117,8 +117,12 @@ N_CRS = 24                 # plain CRS field labels this round wrapped
 N_CRS_PAGES = 4
 N_PART = 2                 # of those, the ones with a hint after the name
 N_RULES = 22               # whole .form-group label rules removed
-N_HINT = 69                # labels that bold only part of themselves
-N_HINT_WAS = 67            # ... 67 before this round added two
+# RA19, 23 Nov 2026 - SIX MORE OF THE SHAPE, on new Acquisitions pages: Purpose,
+# Values, Bands instead, The rule in plain words, Group, and Why in a few
+# words - each a bold name and a plain hint. A new page has no backup of
+# this round, so it counts on both sides (was 69 and 67).
+N_HINT = 75                # labels that bold only part of themselves
+N_HINT_WAS = 73            # ... 73 before this round added two
 
 CRS_PAGES = ('crs/country_form.html', 'crs/fi_form.html',
              'crs/submission_detail.html', 'crs/submission_start.html')

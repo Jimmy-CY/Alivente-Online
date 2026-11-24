@@ -345,7 +345,10 @@ print('        %d standalone template(s) do not inherit the tab: %s'
 # it. So they set their own <title>, which is what the check below
 # this one is really about - "do not inherit the tab" is a statement
 # about where the title comes from, not a complaint.
-check('  the standalone set is small and known', len(_alone) <= 16,
+# RA19, 23 Nov 2026 - 16 -> 20. Acquisitions adds four: its offer-brief
+# PDF body, which never reaches a browser tab, and three partials
+# included into pages that do extend base and so inherit its tab.
+check('  the standalone set is small and known', len(_alone) <= 20,
       '%d' % len(_alone))
 
 # ===========================================================================

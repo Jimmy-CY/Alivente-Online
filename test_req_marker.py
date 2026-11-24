@@ -355,6 +355,11 @@ FALSE_POSITIVE = {
     'finance_revenue_add.html':
         '#alv-owned-from is emitted by Django\'s json_script filter at '
         'render time, and the read is inside a try/catch',
+    # RA19, 23 Nov 2026 - the same data island again: the Acquisitions
+    # scenario editor's rules arrive by json_script, read inside a try.
+    'acquisitions/scenario_edit.html':
+        '#acqRowsData is emitted by Django\'s json_script filter at '
+        'render time, and the read is inside a try/catch',
 }
 suspects = []
 for d, _s, fs in alv_tree.walk3():

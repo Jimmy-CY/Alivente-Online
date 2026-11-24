@@ -467,7 +467,10 @@ for d, _s, fs in T.walk3():
 # GL-3, 29 Oct 2026 - 231 -> 234. The second tenant's father's name, ΑΦΜ
 # and ΔΟΥ on Generate, each kept by the same glGap guard as the first
 # tenant's.
-TOTAL = 234
+# RA19, 24 Nov 2026 - 234 -> 236. Two Acquisitions stars, each on a
+# field with `required` in its markup (row 1): the scenario's Name on the
+# editor, and the Day of a viewing on a property.
+TOTAL = 236
 ok(len(rows) == TOTAL,
    'the corpus is %d starred labels' % len(rows),
    'pinned at %d. THE MARKER IS THE alv-req SPAN, not a bare asterisk - '
@@ -514,7 +517,8 @@ EXPECT = {
     # e-signing moved here from row 2. With no stored lease to choose
     # instead, the field is always shown and `required` sits in the
     # markup.
-    '1 static required': 189,
+    # RA19, 24 Nov 2026 - 189 -> 191: the two Acquisitions stars above.
+    '1 static required': 191,
     # ES-3b, 24 Oct 2026 - 7 -> 8. The lease upload on the Send for
     # Signature screen, the fifth of that screen's five stars. The
     # script writes it through getElementById with a literal on the

@@ -1,0 +1,381 @@
+{% extends 'base.html' %}
+{% load help_modal_tags acq %}
+{# 3. SCENARIO EDITOR - RA19, 23 Nov 2026. The rules live in the page   #}
+{# as JSON until Save; every change asks the server to describe them    #}
+{# and to re-score the listings already tracked (the live preview), so  #}
+{# the words on the screen are the engine's own, never a second copy.   #}
+
+{% block title %}Acquisitions — {% if s.pk %}Edit {{ s.name }}{% else %}New scenario{% endif %}{% endblock %}
+
+{% block content %}
+{% include 'acquisitions/_style.html' %}
+
+<h2 class="page-title-h2">SCENARIOS</h2>
+<h4 class="page-subtitle-h4">{% if s.pk %}EDIT SCENARIO{% else %}NEW SCENARIO{% endif %}</h4>
+<p class="acq-sub">{% if s.pk %}{{ s.name }}{% else %}Nothing is saved until you press Save scenario.{% endif %}</p>
+
+<form method="post" id="acqEditor" action="{% if s.pk %}{% url 'acquisitions:scenario_edit' s.pk %}{% else %}{% url 'acquisitions:scenario_new' %}{% endif %}">
+{% csrf_token %}
+<input type="hidden" name="criteria_json" id="acqCriteriaJson" value="">
+
+<div class="page-action-buttons">
+  {% if can_edit %}
+  <button type="submit" class="btn action-primary"><i class="fas fa-save"></i> Save scenario</button>
+  {% endif %}
+  <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#acquisitionsHelpModal" aria-label="Help"><i class="fas fa-question-circle"></i> Help</button>
+  <a href="{% if s.pk %}{% url 'acquisitions:scenario' s.pk %}{% else %}{% url 'acquisitions:scenarios' %}{% endif %}" class="btn action-back" role="button" aria-label="Back without saving"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+
+{% include 'acquisitions/_tabs.html' %}
+
+<div class="acq-two">
+<div>
+  <div class="form-card">
+    <h3 class="form-section-title acq-section-title"><i class="fas fa-info-circle"></i> 1 &middot; Basics</h3>
+    <div>
+      <div class="form-row">
+        <div class="form-group col-md-6"><label for="acqName"><strong>Name</strong> <span class="alv-req">*</span></label><input type="text" id="acqName" name="name" class="form-control" maxlength="150" value="{{ s.name }}" required></div>
+        <div class="form-group col-md-3"><label for="acqType"><strong>Property type</strong></label>
+          <select id="acqType" name="property_type" class="form-control">{% for k, l in types %}<option value="{{ k }}" {% if s.property_type == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+        <div class="form-group col-md-3"><label for="acqStatus"><strong>Status</strong></label>
+          <select id="acqStatus" name="is_active" class="form-control"><option value="1" {% if s.is_active %}selected{% endif %}>Active</option><option value="0" {% if not s.is_active %}selected{% endif %}>Paused</option></select></div>
+      </div>
+      <div class="form-group mb-0"><label for="acqPurpose"><strong>Purpose</strong> <span class="acq-muted">(shown at the top of every summary)</span></label><input type="text" id="acqPurpose" name="purpose" class="form-control" maxlength="300" value="{{ s.purpose }}"></div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3 class="form-section-title acq-section-title"><i class="fas fa-map-marker-alt"></i> 2 &middot; Where to look</h3>
+    <div>
+      <p class="mb-1"><strong>Areas</strong></p>
+      <div class="acq-check-list mb-3">
+        {% for a in areas %}<label><input type="checkbox" name="areas" value="{{ a.pk }}" {% if a.pk in area_ids %}checked{% endif %}> {{ a.name }}</label>{% endfor %}
+      </div>
+      <p class="mb-1"><strong>Websites</strong></p>
+      <div class="acq-check-list">
+        {% for w in sites %}<label><input type="checkbox" name="websites" value="{{ w.pk }}" {% if w.pk in site_ids %}checked{% endif %}> {{ w.name }}{% if w.needs_pc %}<span class="acq-pc" title="This site blocks the cloud, so it is searched from your computer when you ask">PC</span>{% endif %}</label>{% endfor %}
+      </div>
+      <p class="acq-muted mt-2 mb-0"><span class="acq-pc">PC</span> = this site blocks the cloud, so it&rsquo;s searched from your computer when you ask.</p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3 class="form-section-title acq-section-title"><i class="fas fa-sliders-h"></i> 3 &middot; Criteria <span class="ml-auto">Points used: <span class="acq-points" id="acqPoints">&ndash;</span> / 100</span></h3>
+    <div>
+      <p class="acq-muted"><strong>Must</strong> = rejected if clearly failed. <strong>Preferred</strong> = points if met. <strong>Scoring</strong> = points on a sliding scale. <strong>Checked by</strong>: the app compares facts itself; Claude judges only what the listing text alone can tell.</p>
+      <div class="table-container mb-2">
+        <table class="table alv-table acq-crit-table">
+          <thead><tr><th style="text-align: left; width: 24%">Criterion</th><th style="width: 17%">Field</th><th style="width: 27%">Rule</th><th style="width: 9%">Type</th><th style="width: 7%">Points</th><th style="width: 8%">Checked by</th><th class="desktop-action-cell cell-actions" style="width: 8%">Actions</th></tr></thead>
+          <tbody id="acqCritBody"></tbody>
+        </table>
+        <div class="alv-empty" id="acqCritEmpty" hidden><i class="fas fa-list"></i><div class="alv-empty-title">No rules yet</div><div class="alv-empty-hint">Add the Musts first, then the rules that earn points.</div></div>
+      </div>
+      <p class="acq-bad" id="acqCritError" role="alert" hidden></p>
+      {% if can_edit %}
+      <button type="button" class="btn action-secondary" onclick="acqOpenRule(-1, false)"><i class="fas fa-plus"></i> Add criterion</button>
+      <button type="button" class="btn action-secondary" onclick="acqOpenRule(-1, true)"><i class="fas fa-comment-alt"></i> Add a rule in plain words</button>
+      {% endif %}
+      <div class="form-row mt-3">
+        <div class="form-group col-md-6 mb-0"><label for="acqCap"><strong>When a Must can&rsquo;t be confirmed, cap the score at</strong></label><input type="number" min="0" max="100" id="acqCap" name="unknown_score_cap" class="form-control" value="{{ s.unknown_score_cap }}"></div>
+        <div class="form-group col-md-6 mb-0"><label for="acqLimit"><strong>Don&rsquo;t add a listing with more unknown Musts than</strong></label><input type="number" min="0" max="30" id="acqLimit" name="max_unknown_musts" class="form-control" value="{{ s.max_unknown_musts }}"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3 class="form-section-title acq-section-title"><i class="fas fa-clock"></i> 4 &middot; Schedule &amp; summary</h3>
+    <div>
+      <div class="form-row">
+        <div class="form-group col-md-4"><label for="acqCadence"><strong>How often</strong></label><select id="acqCadence" name="cadence" class="form-control">{% for k, l in cadences %}<option value="{{ k }}" {% if s.cadence == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+        <div class="form-group col-md-4"><label for="acqDay"><strong>Day (weekly)</strong></label><select id="acqDay" name="run_weekday" class="form-control">{% for k, l in weekdays %}<option value="{{ k }}" {% if s.run_weekday == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+        <div class="form-group col-md-4"><label for="acqTime"><strong>Time</strong></label><input type="time" id="acqTime" name="run_time" class="form-control" value="{{ s.run_time|time:'H:i' }}"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6"><label for="acqBlocked"><strong>Blocked sites</strong></label><select id="acqBlocked" name="blocked_sites" class="form-control">{% for k, l in blocked %}<option value="{{ k }}" {% if s.blocked_sites == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+        <div class="form-group col-md-6"><label for="acqNotify"><strong>Notify me</strong></label><select id="acqNotify" name="notify" class="form-control">{% for k, l in notify %}<option value="{{ k }}" {% if s.notify == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+      </div>
+      <p class="mb-1"><strong>The summary for this scenario includes</strong></p>
+      <div class="acq-check-list mb-2">
+        <label><input type="checkbox" name="summary_new_listings" {% if s.summary_new_listings %}checked{% endif %}> New listings with score</label>
+        <label><input type="checkbox" name="summary_changes" {% if s.summary_changes %}checked{% endif %}> Price changes &amp; removals</label>
+        <label><input type="checkbox" name="summary_site_status" {% if s.summary_site_status %}checked{% endif %}> Sites searched / blocked</label>
+        <label><input type="checkbox" name="summary_vs_median" {% if s.summary_vs_median %}checked{% endif %}> Price vs area median</label>
+        <label><input type="checkbox" name="summary_top3" {% if s.summary_top3 %}checked{% endif %}> Top 3 overall, every time</label>
+        <label><input type="checkbox" name="summary_market_trend" {% if s.summary_market_trend %}checked{% endif %}> Weekly market trend</label>
+      </div>
+      <div class="form-group mb-0"><label for="acqExtra"><strong>Anything extra for Claude to put in, or leave out of, this summary</strong></label><textarea id="acqExtra" name="summary_instructions" class="form-control" rows="2">{{ s.summary_instructions }}</textarea></div>
+    </div>
+  </div>
+</div>
+
+<div>
+  <div class="alv-card mb-3">
+    <div class="alv-card-head"><span class="alv-card-title">Live preview</span></div>
+    <div class="alv-card-body">
+      {% if s.pk %}
+      <p class="acq-muted">With these rules, the listings already tracked would score:</p>
+      <ul class="acq-sites" id="acqPreview" aria-live="polite"><li><span class="acq-muted">Working it out&hellip;</span></li></ul>
+      <p class="acq-muted mt-2 mb-0">Changing a rule re-scores everything at once. No new search is needed: facts and scores are kept apart.</p>
+      {% else %}
+      <p class="acq-muted mb-0">Once the scenario is saved and its first search has run, this shows how each listing would score under the rules as you change them.</p>
+      {% endif %}
+    </div>
+  </div>
+  <div class="alv-card">
+    <div class="alv-card-head"><span class="alv-card-title">Behind the scenes</span></div>
+    <div class="alv-card-body acq-muted">Claude&rsquo;s scheduled task reads this scenario before each run once it is connected to the app, so edits here take effect on the next run.</div>
+  </div>
+</div>
+</div>
+</form>
+
+{# ---------------------------------------------------- the rule editor #}
+<div class="modal fade" id="acqRuleModal" tabindex="-1" role="dialog" aria-labelledby="acqRuleTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header alv-modal-head">
+        <h5 class="modal-title" id="acqRuleTitle"><i class="fas fa-sliders-h"></i> <span id="acqRuleTitleText">Criterion</span></h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group col-md-6"><label for="rLabel"><strong>Name</strong></label><input type="text" id="rLabel" class="form-control" maxlength="120"></div>
+          <div class="form-group col-md-3"><label for="rKind"><strong>Type</strong></label><select id="rKind" class="form-control" onchange="acqRuleShape()">{% for k, l in kinds %}<option value="{{ k }}">{{ l }}</option>{% endfor %}</select></div>
+          <div class="form-group col-md-3" data-shape="points"><label for="rPoints"><strong>Points</strong></label><input type="number" id="rPoints" class="form-control" min="0" max="100" step="0.5"></div>
+        </div>
+        <div class="form-row" data-shape="factual">
+          <div class="form-group col-md-6"><label for="rField"><strong>What it tests</strong></label><select id="rField" class="form-control">{% for k, l in field_choices %}{% if k != 'custom' %}<option value="{{ k }}">{{ l }}</option>{% endif %}{% endfor %}</select></div>
+          <div class="form-group col-md-6"><label for="rOp"><strong>Rule</strong></label><select id="rOp" class="form-control" onchange="acqRuleShape()">{% for k, l in operators %}{% if k != 'judged' %}<option value="{{ k }}">{{ l }}</option>{% endif %}{% endfor %}</select></div>
+        </div>
+        <div class="form-row" data-shape="minmax">
+          <div class="form-group col-md-6" data-shape="min"><label for="rMin"><strong>Lowest / equals</strong></label><input type="text" inputmode="decimal" id="rMin" class="form-control"></div>
+          <div class="form-group col-md-6" data-shape="max"><label for="rMax"><strong>Highest</strong></label><input type="text" inputmode="decimal" id="rMax" class="form-control"></div>
+        </div>
+        <div class="form-group" data-shape="values"><label for="rValues"><strong>Values</strong> <span class="acq-muted">(separated by commas, e.g. unfinished, unrenovated)</span></label><input type="text" id="rValues" class="form-control"></div>
+        <div data-shape="curve">
+          <p class="acq-muted mb-2">A sliding scale: full points inside a window, falling to 0 at the outer values. Or bands instead.</p>
+          <div class="form-row">
+            <div class="form-group col-md-3"><label for="rFullFrom"><strong>Full from</strong></label><input type="text" inputmode="decimal" id="rFullFrom" class="form-control"></div>
+            <div class="form-group col-md-3"><label for="rFullTo"><strong>Full up to</strong></label><input type="text" inputmode="decimal" id="rFullTo" class="form-control"></div>
+            <div class="form-group col-md-3"><label for="rZeroBelow"><strong>0 at or below</strong></label><input type="text" inputmode="decimal" id="rZeroBelow" class="form-control"></div>
+            <div class="form-group col-md-3"><label for="rZeroAbove"><strong>0 at or above</strong></label><input type="text" inputmode="decimal" id="rZeroAbove" class="form-control"></div>
+          </div>
+          <div class="form-group"><label for="rBands"><strong>Bands instead</strong> <span class="acq-muted">(e.g. 1995+ = 1; 1985-1994 = 0.5)</span></label><input type="text" id="rBands" class="form-control"></div>
+        </div>
+        <div class="form-group" data-shape="judged"><label for="rText"><strong>The rule, in plain words</strong> <span class="acq-muted">(Claude answers it from the listing text)</span></label><textarea id="rText" class="form-control" rows="2"></textarea></div>
+        <div class="form-group mb-0" data-shape="group"><label for="rGroup"><strong>Group</strong> <span class="acq-muted">(Musts in one group count once when counting unknowns, e.g. bathrooms)</span></label><input type="text" id="rGroup" class="form-control" maxlength="40"></div>
+        <p class="acq-bad mt-2 mb-0" id="rError" role="alert" hidden></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn action-primary" onclick="acqSaveRule()">Use this rule</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ rows|json_script:"acqRowsData" }}
+<script>
+(function () {
+  var rows = [];
+  try { rows = JSON.parse(document.getElementById('acqRowsData').textContent) || []; } catch (e) { rows = []; }
+  var editing = -1, judged = false;
+  var canEdit = {{ can_edit|yesno:"true,false" }};
+  var previewUrl = "{% if s.pk %}{% url 'acquisitions:scenario_preview' s.pk %}{% else %}{% url 'acquisitions:scenario_preview_new' %}{% endif %}";
+  var form = document.getElementById('acqEditor');
+  var $ = function (id) { return document.getElementById(id); };
+
+  function cell(tr, text, label, cls) {
+    var td = document.createElement('td');
+    td.textContent = text == null ? '—' : text;
+    td.setAttribute('data-label', label);
+    if (cls) { td.className = cls; }
+    tr.appendChild(td);
+    return td;
+  }
+
+  function draw(described) {
+    var body = $('acqCritBody');
+    while (body.firstChild) { body.removeChild(body.firstChild); }
+    $('acqCritEmpty').hidden = rows.length > 0;
+    described.forEach(function (d, i) {
+      var tr = document.createElement('tr');
+      var first = cell(tr, d.label, 'Criterion');
+      first.style.textAlign = 'left';
+      cell(tr, d.field_label || d.field, 'Field');
+      cell(tr, d.rule || '…', 'Rule');
+      cell(tr, d.kind_label || d.kind, 'Type');
+      cell(tr, (d.kind === 'must' || d.points == null) ? '—' : String(parseFloat(d.points) || 0), 'Points');
+      cell(tr, d.checked_by, 'Checked by');
+      var act = document.createElement('td');
+      act.className = 'desktop-action-cell cell-actions';
+      var wrap = document.createElement('span');
+      wrap.className = 'row-actions';
+      if (canEdit) {
+        var e = document.createElement('button');
+        e.type = 'button'; e.className = 'icon-action-btn icon-edit'; e.title = 'Edit criterion';
+        e.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+        e.onclick = function () { acqOpenRule(i, rows[i].field === 'custom'); };
+        var x = document.createElement('button');
+        x.type = 'button'; x.className = 'icon-action-btn icon-delete'; x.title = 'Remove criterion';
+        x.innerHTML = '<i class="fas fa-trash"></i>';
+        x.onclick = function () { rows.splice(i, 1); refresh(); };
+        wrap.appendChild(e); wrap.appendChild(x);
+      }
+      act.appendChild(wrap);
+      tr.appendChild(act);
+      body.appendChild(tr);
+    });
+  }
+
+  function drawPreview(list) {
+    var ul = $('acqPreview');
+    if (!ul) { return; }
+    while (ul.firstChild) { ul.removeChild(ul.firstChild); }
+    if (!list.length) {
+      var li0 = document.createElement('li');
+      li0.innerHTML = '<span class="acq-muted">No listings tracked yet.</span>';
+      ul.appendChild(li0);
+      return;
+    }
+    list.forEach(function (p) {
+      var li = document.createElement('li');
+      var a = document.createElement('span'); a.textContent = p.title + ' · ' + p.price;
+      var b = document.createElement('span');
+      if (!p.passes) { b.className = 'acq-bad'; b.textContent = 'fails ' + (p.fails[0] || 'a Must'); }
+      else { b.innerHTML = '<strong></strong>'; b.firstChild.textContent = Math.round(p.score) + (p.capped ? ' (capped)' : ''); }
+      li.appendChild(a); li.appendChild(b); ul.appendChild(li);
+    });
+  }
+
+  function refresh() {
+    // The rules show at once from this page's own data; the preview call
+    // only adds the worded rule and the scores, so a failed call never
+    // hides the criteria.
+    draw(rows);
+    var local = rows.reduce(function (n, r) { return n + (r.kind === 'must' ? 0 : (parseFloat(r.points) || 0)); }, 0);
+    $('acqPoints').textContent = (Math.round(local * 10) / 10).toString();
+    $('acqPoints').classList.toggle('is-off', Math.abs(local - 100) > 0.01);
+    var fd = new FormData();
+    fd.append('csrfmiddlewaretoken', form.querySelector('[name=csrfmiddlewaretoken]').value);
+    fd.append('criteria_json', JSON.stringify(rows));
+    fd.append('unknown_score_cap', $('acqCap').value);
+    fd.append('max_unknown_musts', $('acqLimit').value);
+    fetch(previewUrl, {method: 'POST', body: fd, credentials: 'same-origin'})
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var err = $('acqCritError');
+        if (!d.ok) { err.textContent = d.error; err.hidden = false; return; }
+        err.hidden = true;
+        draw(d.rows);
+        var pts = $('acqPoints');
+        pts.textContent = (Math.round(d.points * 10) / 10).toString();
+        pts.classList.toggle('is-off', Math.abs(d.points - 100) > 0.01);
+        drawPreview(d.preview);
+      })
+      .catch(function () {
+        var err = $('acqCritError');
+        err.textContent = 'The rules could not be checked just now. They will still be saved.';
+        err.hidden = false;
+      });
+  }
+
+  function bandsText(b) {
+    return (b || []).map(function (x) {
+      var range = x.min != null && x.max != null ? x.min + '-' + x.max
+        : (x.min != null ? x.min + '+' : '-' + x.max);
+      return range + ' = ' + x.fraction;
+    }).join('; ');
+  }
+
+  function bandsParse(t) {
+    var out = [];
+    (t || '').split(';').forEach(function (part) {
+      var m = part.split('=');
+      if (m.length !== 2) { return; }
+      var r = m[0].trim(), f = parseFloat(m[1]);
+      if (isNaN(f)) { return; }
+      var band = {fraction: f};
+      if (/\+$/.test(r)) { band.min = parseFloat(r); }
+      else if (/^-/.test(r)) { band.max = parseFloat(r.slice(1)); }
+      else { var mm = r.split('-'); band.min = parseFloat(mm[0]); band.max = parseFloat(mm[1]); }
+      out.push(band);
+    });
+    return out;
+  }
+
+  window.acqRuleShape = function () {
+    var kind = $('rKind').value, op = $('rOp').value;
+    var show = function (name, on) {
+      document.querySelectorAll('[data-shape="' + name + '"]').forEach(function (el) { el.hidden = !on; });
+    };
+    show('factual', !judged);
+    show('judged', judged);
+    show('points', kind !== 'must');
+    show('curve', !judged && kind === 'scoring');
+    show('minmax', !judged && kind !== 'scoring' && ['gte', 'lte', 'between', 'eq'].indexOf(op) >= 0);
+    show('min', ['gte', 'between', 'eq'].indexOf(op) >= 0);
+    show('max', ['lte', 'between'].indexOf(op) >= 0);
+    show('values', !judged && (op === 'in' || op === 'eq'));
+    show('group', kind === 'must');
+  };
+
+  window.acqOpenRule = function (i, isJudged) {
+    editing = i;
+    var r = i >= 0 ? rows[i] : {label: '', field: isJudged ? 'custom' : 'price_incl_vat',
+      kind: 'must', operator: isJudged ? 'judged' : 'lte', points: 0, text_values: [],
+      score_bands: [], group: '', rule_text: ''};
+    judged = isJudged || r.field === 'custom';
+    $('acqRuleTitleText').textContent = i >= 0 ? 'Edit criterion' : (judged ? 'A rule in plain words' : 'Add criterion');
+    $('rLabel').value = r.label || '';
+    $('rKind').value = r.kind || 'must';
+    $('rPoints').value = r.points || '';
+    if (!judged) { $('rField').value = r.field; $('rOp').value = r.operator; }
+    $('rMin').value = r.num_min == null ? '' : r.num_min;
+    $('rMax').value = r.num_max == null ? '' : r.num_max;
+    $('rValues').value = (r.text_values || []).join(', ');
+    $('rFullFrom').value = r.full_from == null ? '' : r.full_from;
+    $('rFullTo').value = r.full_to == null ? '' : r.full_to;
+    $('rZeroBelow').value = r.zero_below == null ? '' : r.zero_below;
+    $('rZeroAbove').value = r.zero_above == null ? '' : r.zero_above;
+    $('rBands').value = bandsText(r.score_bands);
+    $('rText').value = r.rule_text || '';
+    $('rGroup').value = r.group || '';
+    $('rError').hidden = true;
+    acqRuleShape();
+    if (window.jQuery) { window.jQuery('#acqRuleModal').modal('show'); }
+  };
+
+  window.acqSaveRule = function () {
+    var label = $('rLabel').value.trim();
+    var err = $('rError');
+    if (!label) { err.textContent = 'Give the rule a name.'; err.hidden = false; return; }
+    if (judged && !$('rText').value.trim()) { err.textContent = 'Write the rule in plain words.'; err.hidden = false; return; }
+    var val = function (id) { var v = $(id).value.trim(); return v === '' ? null : v; };
+    var r = {
+      id: editing >= 0 ? rows[editing].id : null, label: label,
+      field: judged ? 'custom' : $('rField').value, kind: $('rKind').value,
+      operator: judged ? 'judged' : $('rOp').value,
+      num_min: val('rMin'), num_max: val('rMax'),
+      text_values: $('rValues').value.split(',').map(function (x) { return x.trim(); }).filter(Boolean),
+      points: $('rKind').value === 'must' ? 0 : (val('rPoints') || 0),
+      full_from: val('rFullFrom'), full_to: val('rFullTo'),
+      zero_below: val('rZeroBelow'), zero_above: val('rZeroAbove'),
+      score_bands: bandsParse($('rBands').value), group: $('rGroup').value.trim(),
+      rule_text: $('rText').value.trim()
+    };
+    if (editing >= 0) { rows[editing] = r; } else { rows.push(r); }
+    if (window.jQuery) { window.jQuery('#acqRuleModal').modal('hide'); }
+    refresh();
+  };
+
+  form.addEventListener('submit', function () {
+    $('acqCriteriaJson').value = JSON.stringify(rows);
+  });
+  ['acqCap', 'acqLimit'].forEach(function (id) { $(id).addEventListener('change', refresh); });
+  refresh();
+})();
+</script>
+
+{% render_help_modal "acquisitions" %}
+{% endblock %}

@@ -68,6 +68,10 @@ HEX = re.compile(r'(?<![\w&/#-])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|'
                  r'[0-9a-fA-F]{3,4})(?![\w-])')
 
 CEILING = {
+    # RA19, 23 Nov 2026 - the Acquisitions offer brief: a PDF body handed to
+    # xhtml2pdf, standalone like recipe_pdf, so it cannot read a token and
+    # carries its colours itself.
+    'acquisitions/offer_brief.html': 11,
     'act_expense.html': 26,
     'admin_apms.html': 1,
     'cash_receipt_detail.html': 2,

@@ -116,7 +116,11 @@ sa = alv_tree.standalone()
 # are outside test_amber, test_brights, the four test_colour_* suites,
 # test_cssrules_outside and test_dead_weight. test_lease_sign.py takes
 # the job instead and compares each token value against base.html.
-ok(len(sa) == 18, 'it names %d template(s)' % len(sa), sa)
+# RA19, 23 Nov 2026 - 22 (was 18): the Acquisitions offer-brief PDF and its three
+# partials (_style, _tabs, _run_modal), fragments included into pages that
+# already extend base. test_ra19_acquisitions_screens.py checks the three
+# partials use house tokens only, since the colour censuses skip them.
+ok(len(sa) == 22, 'it names %d template(s)' % len(sa), sa)
 for s in sa:
     print('      %s' % s)
 

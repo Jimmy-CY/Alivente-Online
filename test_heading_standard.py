@@ -313,6 +313,10 @@ OUT_OF_SCOPE = {
     'home.html',                   # the portfolio dashboard
     'map_view.html',                         # the map page
     'tenant_payment_days.html',    # tenant payment behaviour
+    # RA19, 23 Nov 2026 - the Acquisitions offer brief is a PDF body handed
+    # to xhtml2pdf: it heads a sheet of paper, not a screen, so the screen
+    # heading standard does not reach it.
+    'acquisitions/offer_brief.html',
     # LS-1, 27 Oct 2026 - Lease Signing Status wears the same report head
     # as Payment Behaviour (.alv-report-title), so it sits beside it.
     'tenant_lease_signing_status.html',

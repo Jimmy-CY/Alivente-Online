@@ -99,7 +99,11 @@ MAIN_N = 156   # RA15, 23 Nov 2026 - user_activity.html, the Activity page, an o
                # new page: 142 + 1. (was 142)   # RD-1, 19 Oct 2026 - the quick-look dialog adds two:
                # the partial and its shell. (was 140)   # RT-1, 18 Oct 2026 - MN-1 retired four meal-plan screens and the planner replaced them: 143 - 4 + 1. This is the shape of the tree, which is what this file is for.   # (was 143)
 CRS_N = 8
-TOTAL_N = MAIN_N + CRS_N
+# RA19, 23 Nov 2026 - A THIRD ROOT: acquisitions/templates, the Property
+# Acquisitions app, kept beside its code the way CRS is. Fourteen
+# templates, every basename distinct from the other two roots.
+ACQ_N = 14
+TOTAL_N = MAIN_N + CRS_N + ACQ_N
 
 CRS_PAGES = [
     'crs/country_form.html', 'crs/country_list.html', 'crs/fi_form.html',
@@ -230,7 +234,7 @@ print('=' * 74)
 head('1. THE TREE')
 # ==========================================================================
 rts = alv_tree.roots()
-ok(len(rts) == 2, 'alv_tree knows 2 roots', [alv_tree.rel(r) or r for r in rts])
+ok(len(rts) == 3, 'alv_tree knows 3 roots', [alv_tree.rel(r) or r for r in rts])
 for parts, why in alv_tree.TEMPLATE_ROOTS:
     p = os.path.join(ROOT, *parts)
     ok(os.path.isdir(p), '  %-18s exists   (%s)' % ('/'.join(parts), why))

@@ -408,6 +408,9 @@ class ScenarioMatch(models.Model):
 
     # Yours
     your_comments = models.TextField(blank=True)
+    # RA19, 23 Nov 2026 - why you shortlisted or rejected it, in a few
+    # words ("separate kitchen"). Shown beside the status everywhere.
+    decision_note = models.CharField(max_length=200, blank=True)
 
     date_found = models.DateField(default=timezone.localdate)
     last_checked = models.DateField(default=timezone.localdate)
@@ -420,10 +423,14 @@ class ScenarioMatch(models.Model):
     def __str__(self):
         return f"{self.property} in {self.scenario}"
 
-    def set_status_by_user(self, status):
+    def set_status_by_user(self, status, note=None):
         self.status = status
         self.status_set_by_user = status in self.USER_STATUSES
-        self.save(update_fields=["status", "status_set_by_user"])
+        fields = ["status", "status_set_by_user"]
+        if note is not None:
+            self.decision_note = note[:200]
+            fields.append("decision_note")
+        self.save(update_fields=fields)
 
 
 class Viewing(models.Model):
@@ -503,3 +510,35 @@ class MarketSnapshot(models.Model):
         constraints = [models.UniqueConstraint(
             fields=["week_start", "area", "property_type", "size_band"],
             name="acq_one_snapshot_per_week_area_type_band")]
+
+
+# --------------------------------------------------------------------------
+# Price watch rules - RA19, 23 Nov 2026
+# --------------------------------------------------------------------------
+class WatchSettings(models.Model):
+    """ONE ROW: what the daily price watch re-checks and when it alerts.
+
+    The Price watch screen edits it; Claude's price-watch task reads it
+    (step 5). get() makes the row on first use, so nothing has to seed it.
+    """
+    SCOPE_CHOICES = [("shortlisted", "Shortlisted listings only"),
+                     ("shortlisted_active", "Shortlisted and active")]
+    DROP_CHOICES = [("any", "Any amount"), ("3", "At least 3%"), ("5", "At least 5%")]
+
+    scope = models.CharField(max_length=20, choices=SCOPE_CHOICES, default="shortlisted_active")
+    drop_alert = models.CharField(max_length=5, choices=DROP_CHOICES, default="any")
+    alert_disappears = models.BooleanField(default=True)
+    alert_rejected_passes = models.BooleanField(default=True)
+    run_time = models.TimeField(default="07:05")
+
+    class Meta:
+        verbose_name = "price watch settings"
+        verbose_name_plural = "price watch settings"
+
+    def __str__(self):
+        return "Price watch settings"
+
+    @classmethod
+    def get(cls):
+        obj = cls.objects.order_by("pk").first()
+        return obj or cls.objects.create()

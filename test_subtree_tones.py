@@ -269,14 +269,16 @@ head('1. THE CENSUS BUG, MADE PERMANENT')
 # CG-1, 13 Nov 2026 - celebration_gifts.html, the My gifts page with the Christmas list, an ordinary pages/templates page that joins every tree-wide count. (was 162 and 136)
 # RA15, 23 Nov 2026 - user_activity.html, the Activity page, joins both
 # counts (was 163 and 137).
-ok(len(tree) == 164, 'a WALK finds 164 templates', len(tree))
+# RA19, 23 Nov 2026 - the Acquisitions templates, 14 of them in a root of
+# their own, all in its acquisitions/ folder (was 164, 26 and 7 folders).
+ok(len(tree) == 178, 'a WALK finds 178 templates', len(tree))
 ok(len(top) == 138, '  a flat listing finds 138 - 120 was what H7 '
    'counted, 122 after MN-1, and RD-1 adds the quick-look pair',
    len(top))
-ok(len(sub) == 26, '  so 26 live in subdirectories and H7 never saw them',
+ok(len(sub) == 40, '  so 40 live in subdirectories and H7 never saw them',
    len(sub))
 folders = sorted({rel.split('/')[0] for rel, _ in sub})
-ok(len(folders) == 7, '  across %d folders: %s' % (len(folders),
+ok(len(folders) == 8, '  across %d folders: %s' % (len(folders),
                                                    ', '.join(folders)),
    folders)
 ok(sum(1 for rel, _ in sub if rel.startswith('projects/')) == 11,

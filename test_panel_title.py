@@ -509,12 +509,38 @@ def interpolated_prefixes(text):
     return out
 
 
+# A SHARED STYLE PARTIAL IS WORN BY THE PAGES THAT INCLUDE IT - RA19,
+# 23 Nov 2026. This scan judges each file alone, so a partial that is
+# only a <style> block - acquisitions/_style.html, included by every
+# Acquisitions page - wears none of its own classes and every rule in it
+# read as an orphan: 49 of them, all worn. So a partial also counts what
+# its includers wear: their markup, their script-built names, their
+# interpolated prefixes. A class no includer wears is still an orphan.
+INCLUDE = re.compile(r'\{%\s*include\s+["\']([^"\']+)["\']')
+WORN_BY, PRES_BY, JS_BY = {}, {}, {}
+for _rel, _src in ALL:
+    for _inc in INCLUDE.findall(_src):
+        WORN_BY.setdefault(_inc, set()).update(classes_used(_src))
+        PRES_BY.setdefault(_inc, []).extend(interpolated_prefixes(_src))
+        _n, _p = script_names(_src)
+        JS_BY.setdefault(_inc, [set(), []])
+        JS_BY[_inc][0].update(_n)
+        JS_BY[_inc][1].extend(_p)
+        JS_BY[_inc].append(' '.join(re.findall(
+            r'<script[^>]*>(.*?)</script>', _src, re.S)))
+
 mine, debt = [], []
 for rel, src in ALL:
-    used = classes_used(src)
-    pres = interpolated_prefixes(src)
-    scripts = ' '.join(re.findall(r'<script[^>]*>(.*?)</script>', src, re.S))
+    key = rel.replace(os.sep, '/')
+    used = classes_used(src) | WORN_BY.get(key, set())
+    pres = interpolated_prefixes(src) + PRES_BY.get(key, [])
+    scripts = ' '.join([' '.join(re.findall(r'<script[^>]*>(.*?)</script>',
+                                            src, re.S))]
+                       + JS_BY.get(key, [None, None])[2:])
     jsnames, jspres = script_names(src)
+    if key in JS_BY:
+        jsnames = set(jsnames) | JS_BY[key][0]
+        jspres = list(jspres) + JS_BY[key][1]
     for name, sels in sorted(classes_styled(src).items()):
         if name in used or name in classes_used(BASE_SRC):
             continue

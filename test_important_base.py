@@ -278,7 +278,11 @@ ok(not any(d[0] == 'manual_pdf.html' for d in drift),
 # FIVE SUITES PIN THIS NUMBER AND ES-4 FIRST FOUND ONE. The sweep
 # turned up the other four one at a time, which is the register
 # working: a count nobody checks is a count that drifts.
-ok(len(stand) == 18, '  eighteen templates are standalone',
+# RA19, 23 Nov 2026 - 22 (was 18): the Acquisitions offer-brief PDF and its three
+# partials (_style, _tabs, _run_modal), fragments included into pages that
+# already extend base. test_ra19_acquisitions_screens.py checks the three
+# partials use house tokens only, since the colour censuses skip them.
+ok(len(stand) == 22, '  twenty-two templates are standalone',
    sorted(stand))
 
 # (b) a grouped selector is one declaration, not two

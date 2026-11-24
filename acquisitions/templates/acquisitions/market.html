@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load help_modal_tags acq %}
+{# 8. MARKET SNAPSHOT - RA19, 23 Nov 2026. Asking prices, not sale prices. #}
+
+{% block title %}Acquisitions — Market snapshot{% endblock %}
+
+{% block content %}
+{% include 'acquisitions/_style.html' %}
+
+<h2 class="page-title-h2">MARKET SNAPSHOT</h2>
+<p class="acq-sub">Recorded every Monday from the listings seen that week. These are asking prices, not sale prices.</p>
+
+<div class="page-action-buttons">
+  <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#acquisitionsHelpModal" aria-label="Help"><i class="fas fa-question-circle"></i> Help</button>
+  <a href="{% url 'acquisitions:overview' %}" class="btn action-back" role="button" aria-label="Back to the overview"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+
+{% include 'acquisitions/_tabs.html' %}
+
+{% if types %}
+<form method="get" class="d-flex flex-wrap align-items-end mb-3" style="gap: 12px">
+  <div><label for="acqKind" class="mb-1"><strong>Property type</strong></label>
+    <select id="acqKind" name="type" class="form-control" onchange="this.form.submit()">{% for k, l in types %}<option value="{{ k }}" {% if kind == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div><label for="acqPeriod" class="mb-1"><strong>Period</strong></label>
+    <select id="acqPeriod" name="period" class="form-control" onchange="this.form.submit()">{% for k, v in periods.items %}<option value="{{ k }}" {% if period == k %}selected{% endif %}>{{ v.0 }}</option>{% endfor %}</select></div>
+</form>
+
+<div class="acq-two mb-3">
+  <div class="alv-card">
+    <div class="alv-card-head"><span class="alv-card-title">Median asking price per m&sup2;</span></div>
+    <div class="alv-card-body">
+      {% if chart %}
+      <svg class="acq-chart" viewBox="0 0 {{ chart.w }} {{ chart.h }}" role="img" aria-label="Median asking price per square metre by area">
+        <line class="axis" x1="{{ chart.pad }}" y1="{{ chart.h|add:'-30' }}" x2="{{ chart.w|add:'-10' }}" y2="{{ chart.h|add:'-30' }}"></line>
+        {% for l in chart.lines %}<polyline class="line s{{ l.series }}" points="{{ l.points }}"></polyline>{% endfor %}
+        <text x="4" y="18">{{ chart.hi|euros }}</text><text x="4" y="{{ chart.h|add:'-34' }}">{{ chart.lo|euros }}</text>
+        <text x="{{ chart.pad }}" y="{{ chart.h|add:'-12' }}">{{ chart.first|date:"j M" }}</text><text x="{{ chart.w|add:'-60' }}" y="{{ chart.h|add:'-12' }}">{{ chart.last|date:"j M" }}</text>
+      </svg>
+      <p class="mb-0">{% for l in chart.lines %}<span class="mr-3"><span class="acq-key s{{ l.series }}"></span>{{ l.area.name }}</span>{% endfor %}</p>
+      {% else %}
+      <p class="acq-muted mb-0">The chart needs two weeks of snapshots.</p>
+      {% endif %}
+    </div>
+  </div>
+  <div class="alv-card">
+    <div class="alv-card-head"><span class="alv-card-title">What this tells you</span></div>
+    <div class="alv-card-body">
+      {% if commentary %}<p class="mb-2">{{ commentary|linebreaksbr }}</p><p class="acq-muted mb-0">Written by Claude each Monday from the numbers here.</p>
+      {% else %}<p class="acq-muted mb-0">Claude writes a short commentary here each Monday, from the numbers on this page.</p>{% endif %}
+    </div>
+  </div>
+</div>
+
+<h3 class="acq-section-h">By area{% if latest_week %} &middot; week of {{ latest_week|date:"j M" }}{% endif %}</h3>
+<div class="table-container">
+  <table class="table alv-table">
+    <thead><tr><th style="text-align: left; width: 22%">Area</th><th style="width: 11%">For sale</th><th style="width: 12%">New this week</th><th style="width: 14%">Median &euro;/m&sup2;</th><th style="width: 13%">Change over the period</th><th style="width: 13%">Median days listed</th><th style="width: 15%">Median price</th></tr></thead>
+    <tbody>
+      {% for r in table %}
+      <tr>
+        <td data-label="Area" style="text-align: left"><strong>{{ r.area.name }}</strong></td>
+        <td data-label="For sale">{{ r.s.listings_for_sale }}</td>
+        <td data-label="New this week">{{ r.s.new_this_week }}</td>
+        <td data-label="Median €/m²">{{ r.s.median_price_per_m2|euros }}</td>
+        <td data-label="Change">{{ r.change|signed }}</td>
+        <td data-label="Median days listed">{{ r.s.median_days_listed|default_if_none:"—" }}</td>
+        <td data-label="Median price">{{ r.s.median_price|euros }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="alv-empty">
+  <i class="fas fa-chart-bar"></i>
+  <div class="alv-empty-title">No market snapshot yet</div>
+  <div class="alv-empty-hint">Every Monday, the market snapshot records, for each area and size band, the listings for sale, the new ones, the median &euro;/m&sup2;, the median price and how long they have been listed.</div>
+</div>
+{% endif %}
+
+{% render_help_modal "acquisitions" %}
+{% endblock %}

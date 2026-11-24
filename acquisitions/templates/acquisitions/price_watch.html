@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load help_modal_tags acq %}
+{# 7. PRICE WATCH - RA19, 23 Nov 2026. #}
+
+{% block title %}Acquisitions — Price watch{% endblock %}
+
+{% block content %}
+{% include 'acquisitions/_style.html' %}
+
+<h2 class="page-title-h2">PRICE WATCH</h2>
+<p class="acq-sub">Every check records the price, so you can see how long something has been for sale and how often it&rsquo;s been cut.</p>
+
+<div class="page-action-buttons">
+  <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#acquisitionsHelpModal" aria-label="Help"><i class="fas fa-question-circle"></i> Help</button>
+  <a href="{% url 'acquisitions:overview' %}" class="btn action-back" role="button" aria-label="Back to the overview"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+
+{% include 'acquisitions/_tabs.html' %}
+
+<div class="acq-two mb-3">
+  <div class="alv-card">
+    <div class="alv-card-head"><span class="alv-card-title">{% if latest %}Price drop &middot; {{ latest.b.observed_on|date:"D j M" }}{% else %}Latest price drop{% endif %}</span></div>
+    <div class="alv-card-body">
+      {% if latest %}
+      <p class="mb-2">{% if latest.m %}<span class="acq-muted">{{ latest.m.scenario.name }}</span><br>{% endif %}<a href="{% url 'acquisitions:property' latest.p.pk %}"><strong>{{ latest.p.title }}</strong></a>: {{ latest.a.asking_price|euros }} &rarr; {{ latest.b.asking_price|euros }} <strong class="acq-ok">({{ latest.pct|signed }})</strong></p>
+      <svg class="acq-chart" viewBox="0 0 {{ latest.chart.w }} {{ latest.chart.h }}" role="img" aria-label="Price steps">
+        <line class="axis" x1="0" y1="{{ latest.chart.h|add:'-24' }}" x2="{{ latest.chart.w }}" y2="{{ latest.chart.h|add:'-24' }}"></line>
+        <path class="line" d="{{ latest.chart.path }}"></path>
+        {% for pt in latest.chart.points %}<circle class="dot" cx="{{ pt.x }}" cy="{{ pt.y }}" r="4"></circle><text x="{{ pt.x }}" y="{{ latest.chart.h|add:'-6' }}" text-anchor="middle">{{ pt.label|date:"j M" }} &middot; {{ pt.price|euros_k }}</text>{% endfor %}
+      </svg>
+      <div class="acq-card-figs">
+        <div class="acq-fig"><strong>{{ latest.days|default_if_none:"?" }}</strong><span>days on the market</span></div>
+        <div class="acq-fig"><strong>{{ latest.cuts }}</strong><span>price cut{{ latest.cuts|pluralize }}</span></div>
+      </div>
+      {% else %}
+      <p class="acq-muted mb-0">No price has dropped in the last 30 days.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <form class="alv-card" method="post">{% csrf_token %}
+    <div class="alv-card-head"><span class="alv-card-title">Watch rules</span></div>
+    <div class="alv-card-body">
+      <p class="mb-1"><strong>What to re-check daily</strong></p>
+      {% for k, l in rules.SCOPE_CHOICES %}<label class="d-block"><input type="radio" name="scope" value="{{ k }}" {% if rules.scope == k %}checked{% endif %} {% if not can_edit %}disabled{% endif %}> {{ l }}</label>{% endfor %}
+      <p class="mb-1 mt-2"><strong>Alert me when the price falls by</strong></p>
+      {% for k, l in rules.DROP_CHOICES %}<label class="d-block"><input type="radio" name="drop_alert" value="{{ k }}" {% if rules.drop_alert == k %}checked{% endif %} {% if not can_edit %}disabled{% endif %}> {{ l }}</label>{% endfor %}
+      <label class="d-block mt-2"><input type="checkbox" name="alert_disappears" {% if rules.alert_disappears %}checked{% endif %} {% if not can_edit %}disabled{% endif %}> Alert when a watched listing disappears</label>
+      <label class="d-block"><input type="checkbox" name="alert_rejected_passes" {% if rules.alert_rejected_passes %}checked{% endif %} {% if not can_edit %}disabled{% endif %}> Alert when a price cut makes a rejected listing pass</label>
+      <p class="acq-muted mt-2">Runs at {{ rules.run_time|time:"H:i" }} every day as its own light task: it only opens the watched pages.</p>
+      {% if can_edit %}<button type="submit" class="btn action-primary">Save watch rules</button>{% endif %}
+    </div>
+  </form>
+</div>
+
+<h3 class="acq-section-h">Watched listings</h3>
+<div class="table-container">
+  <table class="table alv-table">
+    <thead><tr><th style="text-align: left; width: 24%">Property</th><th style="width: 12%">Scenario</th><th style="width: 11%">First seen at</th><th style="width: 11%">Price now</th><th style="width: 8%">Change</th><th style="width: 13%">Trend</th><th style="width: 7%">Days listed</th><th style="width: 5%">Cuts</th><th style="width: 9%">Last checked</th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td data-label="Property" style="text-align: left"><a href="{% url 'acquisitions:property' r.p.pk %}{% if r.m %}?s={{ r.m.scenario_id }}{% endif %}">{{ r.p.title }}</a></td>
+        <td data-label="Scenario">{{ r.m.scenario.name|default:"—" }}</td>
+        <td data-label="First seen at">{{ r.first|euros }}</td>
+        <td data-label="Price now">{{ r.now|euros }}</td>
+        <td data-label="Change">{% if r.change %}<span class="{% if r.change < 0 %}acq-ok{% else %}acq-bad{% endif %}">{{ r.change|signed }}</span>{% else %}&mdash;{% endif %}</td>
+        <td data-label="Trend"><svg class="acq-spark" viewBox="0 0 110 26" role="img" aria-label="Price trend"><polyline points="{{ r.spark }}"></polyline></svg></td>
+        <td data-label="Days listed">{{ r.days|default_if_none:"—" }}</td>
+        <td data-label="Cuts">{{ r.cuts }}</td>
+        <td data-label="Last checked">{{ r.checked|date:"D j M" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if not rows %}<div class="alv-empty"><i class="fas fa-chart-line"></i><div class="alv-empty-title">Nothing watched yet</div><div class="alv-empty-hint">Shortlist a listing{% if rules.scope == 'shortlisted_active' %}, or let a search find an active one,{% endif %} and its price is checked every day.</div></div>{% endif %}
+</div>
+
+{% render_help_modal "acquisitions" %}
+{% endblock %}

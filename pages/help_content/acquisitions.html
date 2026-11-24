@@ -1,0 +1,85 @@
+<!--
+  RA19, 23 Nov 2026 - Help for Property Acquisitions (Property Operations).
+
+  One modal for the whole module, slug: acquisitions. Every Acquisitions
+  page has a Help button that opens it.
+
+  Parsed by:  pages/services/help_renderer.py
+  Each <section data-module-slug="..."> becomes one help modal.
+  Each <article data-tab-slug="...">    becomes one tab in that modal.
+-->
+
+<section data-module-slug="acquisitions"
+         data-module-group="Property Operations"
+         data-module-permission="can_access_acquisitions"
+         data-module-name="Acquisitions"
+         data-module-icon="fa-search-location"
+         data-module-category="Operational"
+         data-module-subtitle="Searches for property to buy, scored against your own rules">
+
+  <article data-tab-slug="acqOverview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-search-location"></i> What is Acquisitions?</h6>
+    <p>Acquisitions keeps the property searches you run &mdash; the flat to renovate, the building plot &mdash; and every listing they find, scored against your own rules. Open it from <strong>Property Operations &rarr; Acquisitions</strong>.</p>
+    <p><strong>Claude does the searching; the app keeps the results and does the scoring.</strong> The property sites block searches from a data centre like the one Alivente Online runs in, so the searches are Claude&rsquo;s scheduled tasks. They write what they find here; the app never searches itself.</p>
+    <p>The tabs across the top of every page are the module&rsquo;s pages: <strong>Overview</strong>, <strong>Scenarios</strong>, <strong>Price watch</strong>, <strong>Market snapshot</strong>, <strong>Auctions &amp; off-market</strong> and <strong>Search runs</strong>. A number on a tab is something new: new listings on Scenarios, price drops this week on Price watch.</p>
+    <p><strong>The Overview</strong> shows the week at a glance &mdash; new listings, your shortlist, price drops and how the last search went &mdash; a card for each scenario, the latest activity, and which sites the last search could and could not search.</p>
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
+      <i class="fas fa-play"></i> <strong>Run search now</strong> explains how to start a search from the Claude app, until Claude is connected to the app; then the button starts it itself.
+    </div>
+  </article>
+
+  <article data-tab-slug="acqScenarios"
+           data-tab-name="Scenarios &amp; rules"
+           data-tab-icon="fa-sliders-h">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-sliders-h"></i> Scenarios and their rules</h6>
+    <p>A <strong>scenario</strong> is one search: what to look for, where (areas and websites), how often, and how listings are scored. <strong>New scenario</strong> starts an empty one; the four cards under the list start one from a template (home to renovate, development plot, buy-to-let, auction &amp; bank-owned). Nothing is saved until you press <strong>Save scenario</strong>.</p>
+    <p><strong>Each rule is one of three types:</strong></p>
+    <ul>
+      <li><strong>Must</strong> &mdash; a listing that clearly fails it is rejected.</li>
+      <li><strong>Preferred</strong> &mdash; its points if met, none if not.</li>
+      <li><strong>Scoring</strong> &mdash; points on a sliding scale: full inside a window and falling to nothing at the outer values, or in bands (full from 1995, half for 1985&ndash;94). A scenario&rsquo;s points add up to 100.</li>
+    </ul>
+    <p><strong>Checked by</strong> says who answers it: the app compares facts itself; Claude judges only what the listing text alone can tell (open plan, condition, or a rule you write in plain words with <strong>Add a rule in plain words</strong>).</p>
+    <p><strong>Unknown is never &ldquo;no&rdquo;.</strong> A Must the listing does not answer caps the score (60 unless you change it). A listing with more unknown Musts than the limit (4 unless you change it) is not added. Musts in the same group &mdash; bathrooms, guest WC and en-suite &mdash; count once.</p>
+    <p><strong>Live preview.</strong> As you change the rules, the editor shows how the listings already tracked would score. Saving re-scores every listing at once: no new search is needed, because the facts and the scores are kept apart.</p>
+  </article>
+
+  <article data-tab-slug="acqResults"
+           data-tab-name="Results &amp; a property"
+           data-tab-icon="fa-building">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-building"></i> A scenario&rsquo;s results, and one property</h6>
+    <p>Open a scenario to see its latest written summary, its key numbers, <strong>what&rsquo;s holding listings back</strong> (the Musts most often failed or unconfirmed), and every listing it has found, with chips to show one status and a choice of order. <strong>Export CSV</strong> downloads the list. A plot scenario shows each plot&rsquo;s <strong>&euro; per buildable m&sup2;</strong> &mdash; the price divided by the plot size times the building density &mdash; because a plot is judged on what you can build.</p>
+    <p><strong>A property</strong> has its scorecard rule by rule (&#10003; met, &#10007; failed, ? unknown), its price history, the questions to ask the agent (built from the unconfirmed Musts &mdash; <strong>Copy questions</strong> puts them on the clipboard; Claude never contacts agents), its facts, how its price compares with the area median, its sources and agents, and your notes and viewings.</p>
+    <p><strong>Shortlist</strong> and <strong>Reject&hellip;</strong> are your decisions, with a few words of why. A search or a re-score never changes a status you set; <strong>Clear my decision</strong> gives it back to the rules. Shortlisted listings are price-checked every day.</p>
+    <p><strong>Build offer brief</strong> opens a one-page A4 PDF: the asking price, the comparable listings and their median &euro;/m&sup2;, the price history and the questions to confirm. The suggested offer range and the points for and against appear once Claude has written them.</p>
+  </article>
+
+  <article data-tab-slug="acqWatch"
+           data-tab-name="Price watch &amp; market"
+           data-tab-icon="fa-chart-line">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-chart-line"></i> Price watch and the market snapshot</h6>
+    <p><strong>Price watch</strong> records every price seen, so you can see how long a property has been for sale and how often it has been cut. <strong>Watch rules</strong> choose what is re-checked daily (your shortlist, or your shortlist and the active listings) and when you are alerted: a fall of any size or of at least 3% or 5%, a watched listing that disappears, or a cut that makes a rejected listing pass.</p>
+    <p><strong>Market snapshot</strong> is recorded every Monday from the listings seen that week: for each area and size band, the listings for sale, the new ones, the median asking price per m&sup2;, the median price and the median days listed, with a line chart and a short commentary from Claude. These are asking prices, not sale prices.</p>
+  </article>
+
+  <article data-tab-slug="acqRuns"
+           data-tab-name="Auctions &amp; runs"
+           data-tab-icon="fa-history">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-history"></i> Auctions, off-market, and the search runs</h6>
+    <p><strong>Auctions &amp; off-market</strong> lists bank-owned and auction property (REMU, Altamira, Gordian and published auction notices) &mdash; the ones that match a scenario, or everything in your target areas &mdash; with the viewings, offer deadlines and auctions of the next 30 days at the top.</p>
+    <p><strong>Search runs</strong> lists every search: where it ran (the cloud or your PC), how long it took, the sites searched, the listings checked and added, and whether it was complete. Choose one to see each site&rsquo;s result, the summary it sent, and any PC search that finished it.</p>
+    <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
+      <i class="fas fa-desktop"></i> <strong>Sites that block the cloud</strong> &mdash; Bazaraki, Spitogatos and DOM, marked <strong>PC</strong> &mdash; are searched from your computer when you ask: open the session from the daily email and type <strong>PC</strong>, with the Claude desktop app open and the laptop awake. A listing is only marked Removed when its page actually loaded and showed it gone, never because a site was blocked.
+    </div>
+  </article>
+
+  <article data-tab-slug="acqAccess"
+           data-tab-name="Who can do what"
+           data-tab-icon="fa-user-lock">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-user-lock"></i> Who can do what</h6>
+    <p><strong>Can access Acquisitions</strong> opens every page: the scenarios, the listings, the market, the runs, and the offer brief. <strong>Can edit Acquisitions</strong> also creates and edits scenarios, shortlists and rejects, writes notes, logs viewings and sets the watch rules. Both are set per user in <strong>User Administration &rarr; Permissions</strong>.</p>
+    <p>Changes to scenarios, rules, your decisions on a listing and viewings are recorded in the activity log. The automatic re-scoring is not.</p>
+  </article>
+</section>

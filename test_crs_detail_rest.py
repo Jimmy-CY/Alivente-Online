@@ -386,8 +386,9 @@ ok(len(alv_tree.CRS_HOUSE) == len(alv_tree.crs_pages()),
    [len(alv_tree.CRS_HOUSE), len(alv_tree.crs_pages())])
 
 # THE THING THAT STARTED IT.
-ok(len(alv_tree.roots()) == 2,
-   'CONTROL: and the module is still in the second root, which is where '
+# RA19, 23 Nov 2026 - three roots (was 2): Acquisitions has its own, as CRS does.
+ok(len(alv_tree.roots()) == 3,
+   'CONTROL: and the module is still in a root of its own, which is where '
    'no gate could see it eleven rounds ago',
    [os.path.basename(os.path.dirname(r)) + '/' + os.path.basename(r)
     for r in alv_tree.roots()])

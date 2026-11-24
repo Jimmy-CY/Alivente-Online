@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% load help_modal_tags acq %}
+{# 5. PROPERTY - RA19, 23 Nov 2026. One property, scored against one     #}
+{# scenario (?s=); the facts are the property's, whatever the scenario.  #}
+
+{% block title %}Acquisitions — {{ p.title }}{% endblock %}
+
+{% block content %}
+{% include 'acquisitions/_style.html' %}
+
+<h2 class="page-title-h2">SCENARIOS</h2>
+<h4 class="page-subtitle-h4">PROPERTY &mdash; {{ p.title }}</h4>
+<p class="acq-sub">{% if m %}{{ m.status|pill }} {% endif %}{% if p.floor_level %}{{ p.floor_level }} floor &middot; {% endif %}{% if p.year_built %}built {{ p.year_built }} &middot; {% endif %}{% if m %}found {{ m.date_found|date:"j M" }}, checked {{ m.last_checked|date:"j M" }}{% endif %}</p>
+
+<div class="page-action-buttons">
+  {% if can_edit and m %}
+  <button type="button" class="btn action-primary" data-toggle="modal" data-target="#acqDecideModal" onclick="acqDecide('shortlist')"><i class="fas fa-star"></i> Shortlist</button>
+  <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#acqDecideModal" onclick="acqDecide('reject')"><i class="fas fa-times-circle"></i> Reject&hellip;</button>
+  {% endif %}
+  <a href="{% url 'acquisitions:offer_brief' p.pk %}{% if m %}?s={{ m.scenario_id }}{% endif %}" class="btn action-secondary" role="button" target="_blank" rel="noopener"><i class="fas fa-file-pdf"></i> Build offer brief</a>
+  {% if can_edit %}
+  <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#acqViewingModal"><i class="fas fa-walking"></i> Log a viewing</button>
+  {% endif %}
+  {% with src=p.sources.all.0 %}{% if src %}<a href="{{ src.url }}" class="btn action-secondary" role="button" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt"></i> Open listing</a>{% endif %}{% endwith %}
+  <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#acquisitionsHelpModal" aria-label="Help"><i class="fas fa-question-circle"></i> Help</button>
+  <!-- Phone: the secondaries above move into More (house rule, base.html). -->
+  <div class="action-more-wrapper" data-menu>
+    <button type="button" class="btn action-more-btn" data-menu-toggle aria-label="More actions" aria-expanded="false" aria-haspopup="true"><i class="fas fa-ellipsis-v"></i></button>
+    <div class="action-more-menu" data-menu-panel role="menu" hidden>
+      {% if can_edit and m %}
+      <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#acqDecideModal" onclick="acqDecide('reject')"><i class="fas fa-times-circle"></i> Reject&hellip;</button>
+      {% endif %}
+      <a href="{% url 'acquisitions:offer_brief' p.pk %}{% if m %}?s={{ m.scenario_id }}{% endif %}" class="action-more-item" role="menuitem" target="_blank" rel="noopener"><i class="fas fa-file-pdf"></i> Build offer brief</a>
+      {% if can_edit %}
+      <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#acqViewingModal"><i class="fas fa-walking"></i> Log a viewing</button>
+      {% endif %}
+      {% with src=p.sources.all.0 %}{% if src %}<a href="{{ src.url }}" class="action-more-item" role="menuitem" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt"></i> Open listing</a>{% endif %}{% endwith %}
+      <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#acquisitionsHelpModal"><i class="fas fa-question-circle"></i> Help</button>
+    </div>
+  </div>
+  <a href="{% if m %}{% url 'acquisitions:scenario' m.scenario_id %}{% else %}{% url 'acquisitions:overview' %}{% endif %}" class="btn action-back" role="button" aria-label="Back to the scenario"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
+</div>
+
+{% include 'acquisitions/_tabs.html' %}
+
+{% if matches|length > 1 %}
+<div class="acq-chips">{% for x in matches %}<a class="acq-chip {% if m and x.pk == m.pk %}is-on{% endif %}" href="?s={{ x.scenario_id }}">{{ x.scenario.name }}</a>{% endfor %}</div>
+{% endif %}
+
+<div class="acq-two">
+<div>
+  <div class="alv-stats is-3up mb-3">
+    <div class="alv-stat"><div class="alv-stat-value">{{ p.price_incl_vat|euros }}</div><div class="alv-stat-label">{% if p.vat_status == 'plus_vat' %}incl. 19% VAT on {{ p.asking_price|euros }}{% elif p.vat_status == 'none' %}resale, no VAT{% else %}VAT {{ p.get_vat_status_display|lower }}{% endif %}</div></div>
+    <div class="alv-stat"><div class="alv-stat-value">{{ p.price_per_m2|euros }}</div><div class="alv-stat-label">per m&sup2; {% if p.property_type == 'plot' %}of land{% else %}internal{% endif %}</div></div>
+    <div class="alv-stat"><div class="alv-stat-value">{% if m %}{{ m.score|n }}{% else %}&ndash;{% endif %}</div><div class="alv-stat-label">{% if m %}score / 100{% if m.is_capped %} &middot; capped{% endif %}{% else %}not in a scenario{% endif %}</div></div>
+  </div>
+
+  {% if m %}
+  <div class="alv-card mb-3">
+    <div class="alv-card-head"><span class="alv-card-title">Scorecard</span><span class="ml-auto acq-muted">{% if m.is_capped %}capped at {{ m.scenario.unknown_score_cap }} ({{ m.unknown_musts|length }} Must{{ m.unknown_musts|length|pluralize }} unconfirmed){% elif not m.passes_musts %}fails {{ m.failed_musts|length }} Must{{ m.failed_musts|length|pluralize }}{% else %}every Must met{% endif %}</span></div>
+    <div class="alv-card-body">
+      <ul class="acq-card-list">
+        {% for b in card %}
+        <li>
+          <span class="acq-mark {{ b.mark }}" aria-label="{{ b.outcome }}">{% if b.mark == 'met' %}&#10003;{% elif b.mark == 'failed' %}&#10007;{% elif b.mark == 'partial' %}&#9680;{% else %}?{% endif %}</span>
+          <span><strong>{{ b.label }}</strong><br><span class="acq-muted">{% if b.value %}{{ b.value }}{% else %}not stated in the listing{% endif %}</span></span>
+          <span class="acq-muted">{% if b.kind == 'must' %}Must{% elif b.points %}+{{ b.points|n }}{% else %}0{% endif %}</span>
+        </li>
+        {% empty %}<li><span></span><span class="acq-muted">Not scored yet.</span><span></span></li>
+        {% endfor %}
+      </ul>
+      {% if m.status_set_by_user %}
+      <p class="acq-muted mt-2 mb-0">{{ m.get_status_display }} by you{% if m.decision_note %} &ndash; {{ m.decision_note }}{% endif %}. Searches never change this.
+        {% if can_edit %}<form method="post" action="{% url 'acquisitions:property_status' p.pk %}" class="d-inline">{% csrf_token %}<input type="hidden" name="s" value="{{ m.scenario_id }}"><input type="hidden" name="action" value="clear"><button type="submit" class="btn action-secondary btn-sm ml-1">Clear my decision</button></form>{% endif %}</p>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="alv-card mb-3">
+    <div class="alv-card-head"><span class="alv-card-title">Price history</span><span class="ml-auto acq-muted">{{ history|length }} check{{ history|length|pluralize }} &middot; {% if cuts %}{{ cuts }} cut{{ cuts|pluralize }}{% else %}no change{% endif %}{% if days is not None %} &middot; {{ days }} day{{ days|pluralize }} on market{% endif %}</span></div>
+    <div class="alv-card-body">
+      {% if chart.points %}
+      <svg class="acq-chart" viewBox="0 0 {{ chart.w }} {{ chart.h }}" role="img" aria-label="Price history">
+        <line class="axis" x1="0" y1="{{ chart.h|add:'-24' }}" x2="{{ chart.w }}" y2="{{ chart.h|add:'-24' }}"></line>
+        <path class="line" d="{{ chart.path }}"></path>
+        {% for pt in chart.points %}<circle class="dot" cx="{{ pt.x }}" cy="{{ pt.y }}" r="4"></circle><text x="{{ pt.x }}" y="{{ chart.h|add:'-6' }}" text-anchor="middle">{{ pt.label|date:"j M" }} &middot; {{ pt.price|euros_k }}</text>{% endfor %}
+      </svg>
+      {% else %}<p class="acq-muted mb-0">No price recorded yet.</p>{% endif %}
+    </div>
+  </div>
+
+  {% if questions %}
+  <div class="alv-card mb-3">
+    <div class="alv-card-head"><span class="alv-card-title">Questions to ask the agent</span>
+      <button type="button" class="btn action-secondary btn-sm ml-auto" onclick="acqCopyQuestions(this)"><i class="fas fa-copy"></i> Copy questions</button></div>
+    <div class="alv-card-body">
+      <p class="acq-muted">Built from the unconfirmed Musts. Copy them into a call or an email; Claude never contacts agents.</p>
+      <ol id="acqQuestions" class="mb-0">{% for q in questions %}<li>{{ q }}</li>{% endfor %}</ol>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<div>
+  <div class="alv-card mb-3">
+    <div class="alv-card-head"><span class="alv-card-title">Facts</span></div>
+    <div class="alv-card-body">
+      <dl class="acq-facts">
+        {% if p.property_type == 'plot' %}
+        <dt>Plot</dt><dd>{{ p.plot_m2|n }} m&sup2;</dd>
+        <dt>Density</dt><dd>{% if p.building_density_pct %}{{ p.building_density_pct|n }}%{% else %}?{% endif %}</dd>
+        <dt>Buildable</dt><dd>{{ p.buildable_m2|n }} m&sup2; &middot; {{ p.price_per_buildable_m2|euros }}/m&sup2;</dd>
+        <dt>Zone</dt><dd>{{ p.planning_zone|default:"?" }}</dd>
+        <dt>Road access</dt><dd>{{ p.road_frontages|default_if_none:"?" }}</dd>
+        {% else %}
+        <dt>Internal</dt><dd>{% if p.internal_m2 %}{{ p.internal_m2|n }} m&sup2;{% if not p.internal_m2_confirmed %} <span class="acq-warn">(unconfirmed)</span>{% endif %}{% else %}?{% endif %}</dd>
+        <dt>Verandas</dt><dd>{% if p.covered_balcony_m2 is not None %}{{ p.covered_balcony_m2|n }} m&sup2;{% else %}?{% endif %}</dd>
+        <dt>Bedrooms</dt><dd>{{ p.bedrooms|default_if_none:"?" }}</dd>
+        <dt>Bathrooms</dt><dd>{{ p.bathrooms|default_if_none:"?" }}</dd>
+        <dt>Floor</dt><dd>{{ p.floor_level|default:"?" }}</dd>
+        <dt>Year built</dt><dd>{{ p.year_built|default_if_none:"?" }}</dd>
+        <dt>Parking</dt><dd>{{ p.parking_spaces|default_if_none:"?" }}{% if p.parking_covered %}, covered{% elif p.parking_covered is False %}, uncovered{% endif %}</dd>
+        {% endif %}
+        <dt>Title deeds</dt><dd>{{ p.title_deeds|yesno:"Yes,No,?" }}</dd>
+        <dt>Area</dt><dd>{{ p.area.name|default:p.suburb_text }}</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="alv-card mb-3">
+    <div class="alv-card-head"><span class="alv-card-title">Against the market</span></div>
+    <div class="alv-card-body">
+      {% if vs is not None %}
+      <p class="mb-1"><strong class="{% if vs > 0 %}acq-bad{% else %}acq-ok{% endif %}">{% if vs > 0 %}{{ vs }}% above{% elif vs < 0 %}{{ vs|cut:'-' }}% below{% else %}level with{% endif %}</strong> the {{ snap.area.name }} asking median ({{ snap.median_price_per_m2|euros }}/m&sup2;, week of {{ snap.week_start|date:"j M" }}){% if not p.internal_m2_confirmed %}, if the area given is internal{% endif %}.</p>
+      <a href="{% url 'acquisitions:market' %}">See the market snapshot &rarr;</a>
+      {% else %}
+      <p class="acq-muted mb-0">No market snapshot for {{ p.area.name|default:"this area" }} yet. The weekly snapshot adds one every Monday.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="alv-card mb-3">
+    <div class="alv-card-head"><span class="alv-card-title">Sources &amp; agents</span></div>
+    <div class="alv-card-body">
+      <ul class="acq-sites">
+        {% for src in p.sources.all %}
+        <li><span><a href="{{ src.url }}" target="_blank" rel="noopener noreferrer">{{ src.website.name|default:"Listing" }}{% if src.external_id %} &middot; {{ src.external_id }}{% endif %} <i class="fas fa-external-link-alt" aria-hidden="true"></i></a>{% if src.agent %}<br><span class="acq-muted">{{ src.agent }}{% if src.agent_phone %} &middot; {{ src.agent_phone }}{% endif %}</span>{% endif %}</span>
+          <span class="{% if src.is_live %}acq-ok{% else %}acq-muted{% endif %}">{% if src.is_live %}live {{ src.last_seen|date:"j M" }}{% else %}gone {{ src.last_seen|date:"j M" }}{% endif %}</span></li>
+        {% empty %}<li><span class="acq-muted">No source recorded.</span></li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="alv-card">
+    <div class="alv-card-head"><span class="alv-card-title">Your notes &amp; viewings</span></div>
+    <div class="alv-card-body">
+      {% if m %}
+      <form method="post" action="{% url 'acquisitions:property_notes' p.pk %}">{% csrf_token %}<input type="hidden" name="s" value="{{ m.scenario_id }}">
+        <label for="acqNotes"><strong>Your notes &mdash; never written by a search</strong></label>
+        <textarea id="acqNotes" name="your_comments" class="form-control mb-2" rows="3" {% if not can_edit %}readonly{% endif %}>{{ m.your_comments }}</textarea>
+        {% if can_edit %}<button type="submit" class="btn action-secondary btn-sm">Save notes</button>{% endif %}
+      </form>
+      {% endif %}
+      <ul class="acq-sites mt-2">
+        {% for v in p.viewings.all %}<li><span>{{ v.viewed_on|date:"D j M Y" }}</span><span class="acq-muted">{{ v.notes|default:"" }}</span></li>{% empty %}<li><span class="acq-muted">No viewings logged yet.</span></li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+{% if can_edit and m %}
+<div class="modal fade" id="acqDecideModal" tabindex="-1" role="dialog" aria-labelledby="acqDecideTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content" method="post" action="{% url 'acquisitions:property_status' p.pk %}">{% csrf_token %}
+      <input type="hidden" name="s" value="{{ m.scenario_id }}"><input type="hidden" name="action" id="acqDecideAction" value="shortlist">
+      <div class="modal-header alv-modal-head"><h5 class="modal-title" id="acqDecideTitle"><i class="fas fa-flag"></i> <span id="acqDecideText">Shortlist</span></h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
+      <div class="modal-body">
+        <label for="acqDecideNote"><strong>Why, in a few words</strong> <span class="acq-muted">(optional)</span></label>
+        <input type="text" id="acqDecideNote" name="note" class="form-control" maxlength="200" placeholder="separate kitchen">
+        <p class="acq-muted mt-2 mb-0">Your decision stands: searches and re-scoring never change it.</p>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button><button type="submit" class="btn action-primary" id="acqDecideGo">Shortlist</button></div>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% if can_edit %}
+<div class="modal fade" id="acqViewingModal" tabindex="-1" role="dialog" aria-labelledby="acqViewingTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content" method="post" action="{% url 'acquisitions:property_viewing' p.pk %}">{% csrf_token %}
+      <input type="hidden" name="s" value="{{ m.scenario_id|default:'' }}">
+      <div class="modal-header alv-modal-head"><h5 class="modal-title" id="acqViewingTitle"><i class="fas fa-walking"></i> Log a viewing</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
+      <div class="modal-body">
+        <div class="form-group"><label for="acqViewDay"><strong>Day</strong> <span class="alv-req">*</span></label><input type="date" id="acqViewDay" name="viewed_on" class="form-control" value="{{ today|date:'Y-m-d' }}" required></div>
+        <div class="form-group mb-0"><label for="acqViewNotes"><strong>Notes</strong></label><textarea id="acqViewNotes" name="notes" class="form-control" rows="3"></textarea></div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button><button type="submit" class="btn action-primary">Log viewing</button></div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<script>
+function acqDecide(action) {
+  var label = action === 'reject' ? 'Reject' : 'Shortlist';
+  document.getElementById('acqDecideAction').value = action;
+  document.getElementById('acqDecideText').textContent = label;
+  document.getElementById('acqDecideGo').textContent = label;
+}
+function acqCopyQuestions(btn) {
+  var items = Array.prototype.map.call(document.querySelectorAll('#acqQuestions li'),
+    function (li, i) { return (i + 1) + '. ' + li.textContent; });
+  var done = function () { btn.innerHTML = '<i class="fas fa-check"></i> Copied'; };
+  if (navigator.clipboard) { navigator.clipboard.writeText(items.join('\n')).then(done); }
+}
+</script>
+
+{% render_help_modal "acquisitions" %}
+{% endblock %}

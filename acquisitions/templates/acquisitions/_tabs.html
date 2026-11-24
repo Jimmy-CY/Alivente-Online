@@ -1,0 +1,11 @@
+{# THE MODULE'S PAGES - RA19. One tab bar where the approved mockups drew #}
+{# a second side menu: base.html already has the dark side menu, with     #}
+{# Acquisitions in Property Operations.                                   #}
+<nav class="alv-tabs acq-tabs" aria-label="Acquisitions pages">
+  <a class="alv-tab {% if tab == 'overview' %}active{% endif %}" href="{% url 'acquisitions:overview' %}" {% if tab == 'overview' %}aria-current="page"{% endif %}><i class="fas fa-home" aria-hidden="true"></i> Overview</a>
+  <a class="alv-tab {% if tab == 'scenarios' %}active{% endif %}" href="{% url 'acquisitions:scenarios' %}" {% if tab == 'scenarios' %}aria-current="page"{% endif %}><i class="fas fa-sliders-h" aria-hidden="true"></i> Scenarios{% if badges.new %}<span class="acq-badge" title="{{ badges.new }} new listing{{ badges.new|pluralize }}">{{ badges.new }}</span>{% endif %}</a>
+  <a class="alv-tab {% if tab == 'pricewatch' %}active{% endif %}" href="{% url 'acquisitions:price_watch' %}" {% if tab == 'pricewatch' %}aria-current="page"{% endif %}><i class="fas fa-chart-line" aria-hidden="true"></i> Price watch{% if badges.drops %}<span class="acq-badge" title="{{ badges.drops }} price drop{{ badges.drops|pluralize }} this week">{{ badges.drops }}</span>{% endif %}</a>
+  <a class="alv-tab {% if tab == 'market' %}active{% endif %}" href="{% url 'acquisitions:market' %}" {% if tab == 'market' %}aria-current="page"{% endif %}><i class="fas fa-chart-bar" aria-hidden="true"></i> Market snapshot</a>
+  <a class="alv-tab {% if tab == 'auctions' %}active{% endif %}" href="{% url 'acquisitions:auctions' %}" {% if tab == 'auctions' %}aria-current="page"{% endif %}><i class="fas fa-gavel" aria-hidden="true"></i> Auctions &amp; off-market</a>
+  <a class="alv-tab {% if tab == 'runs' %}active{% endif %}" href="{% url 'acquisitions:runs' %}" {% if tab == 'runs' %}aria-current="page"{% endif %}><i class="fas fa-history" aria-hidden="true"></i> Search runs</a>
+</nav>

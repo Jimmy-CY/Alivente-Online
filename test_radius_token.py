@@ -142,9 +142,12 @@ N_RETIRED = 3
 # carry their own :root - colours and shape alike - which is why the
 # standalone check above asks whether a page DECLARES the token rather
 # than naming pages that may not use it.
-N_ADDED = 3
+# RA19, 23 Nov 2026 - AND ONE MORE: the Acquisitions module's shared
+# stylesheet (acquisitions/_style.html) rounds its cards with the house
+# token. A page that extends base, so the token resolves.
+N_ADDED = 4
 N_TOTAL = N_RADIUS + N_PRE - N_RETIRED + N_ADDED
-N_STYLE, N_ATTR, N_SCRIPT = 158, 4, 9   # ES-4, 24 Oct 2026 - three in the public signing pages' own stylesheet. They DECLARE the token as well as using it, which is why the standalone check above now asks whether a page declares it rather than naming pages.   # (was 156, 4, 9)   # PP-1, 20 Oct 2026 - the printable plan's .pp-week   # (was 155, 4, 9)   # RT-1, 18 Oct 2026 - one <style> rule and two style attributes went with the retired screens   # (was 156, 6, 9)
+N_STYLE, N_ATTR, N_SCRIPT = 159, 4, 9   # RA19, 23 Nov 2026 - one in the Acquisitions stylesheet's <style>.   # (was 158, 4, 9)   # ES-4, 24 Oct 2026 - three in the public signing pages' own stylesheet. They DECLARE the token as well as using it, which is why the standalone check above now asks whether a page declares it rather than naming pages.   # (was 156, 4, 9)   # PP-1, 20 Oct 2026 - the printable plan's .pp-week   # (was 155, 4, 9)   # RT-1, 18 Oct 2026 - one <style> rule and two style attributes went with the retired screens   # (was 156, 6, 9)
 N_CHIP, N_CHIP_PAGES = 5, 4
 
 passed = failed = skipped = 0

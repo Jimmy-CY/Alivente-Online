@@ -1,0 +1,22 @@
+{# HOW A SEARCH IS STARTED, FOR NOW - RA19. The app never searches:     #}
+{# Claude's scheduled tasks do, and write here. Until the connector     #}
+{# (step 3) lets this button start one, it says how to start one.       #}
+<div class="modal fade" id="acqRunModal" tabindex="-1" role="dialog" aria-labelledby="acqRunTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header alv-modal-head">
+        <h5 class="modal-title" id="acqRunTitle"><i class="fas fa-search-location"></i> Running a search</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p>Searches are run by Claude&rsquo;s scheduled tasks, not by Alivente Online &mdash; the property sites block searches from a data centre like the one the app runs in.</p>
+        <p class="mb-2"><strong>To run one now</strong>, open the Claude app, go to <strong>Scheduled tasks</strong> and press <strong>Run now</strong> on &ldquo;Daily Nicosia apartment search&rdquo;.</p>
+        <p class="mb-2"><strong>For the sites that block the cloud</strong> (Bazaraki, Spitogatos, DOM), open the session from the daily email on your computer and type <strong>PC</strong>. Keep the Claude desktop app open and the laptop awake.</p>
+        <p class="acq-muted mb-0">Once Claude is connected to the app, this button will start the search itself.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

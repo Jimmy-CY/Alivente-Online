@@ -1,0 +1,77 @@
+{% load acq %}<!DOCTYPE html>
+{# 11. OFFER BRIEF - RA19, 23 Nov 2026. One A4 page through xhtml2pdf:  #}
+{# tables and plain CSS only. The figures are the app's own; the        #}
+{# suggested range and the points for and against appear only when      #}
+{# Claude has written them - the app never makes one up.                #}
+<html lang="en"><head><meta charset="utf-8"><title>Offer brief - {{ p.title }}</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  body { font-family: Helvetica, Arial, sans-serif; font-size: 9.5pt; color: #1f2d33; }
+  h1 { font-size: 16pt; margin: 0 0 2pt; color: #0b4f55; }
+  h2 { font-size: 11pt; margin: 10pt 0 4pt; color: #0b4f55; border-bottom: 1px solid #c9d3d6; padding-bottom: 2pt; }
+  .muted { color: #55666c; }
+  table { width: 100%; border-collapse: collapse; }
+  td, th { padding: 3pt 4pt; vertical-align: top; text-align: left; }
+  .grid td { border-bottom: 1px solid #e2e8ea; }
+  .grid th { border-bottom: 1px solid #9fb0b5; font-size: 8.5pt; color: #3d4d53; }
+  .num { text-align: right; }
+  .box { border: 1px solid #9fb0b5; padding: 6pt 8pt; }
+  .big { font-size: 14pt; font-weight: bold; color: #0b4f55; }
+  .foot { margin-top: 12pt; font-size: 8pt; color: #55666c; }
+</style></head><body>
+
+<table><tr>
+  <td><span class="muted">Offer brief &middot; Alivente Online</span>
+    <h1>{{ p.title }}</h1>
+    <span class="muted">{% if src %}{{ src.website.name|default:"Listing" }}{% if src.external_id %} ref {{ src.external_id }}{% endif %} &middot; {% endif %}prepared {{ today|date:"j F Y" }}</span></td>
+</tr></table>
+
+<table style="margin-top: 8pt"><tr>
+  <td class="box" style="width: 30%"><span class="muted">Asking</span><br><span class="big">{{ p.price_incl_vat|euros }}</span>{% if p.vat_status == 'plus_vat' %}<br><span class="muted">incl. 19% VAT</span>{% endif %}</td>
+  <td style="width: 2%"></td>
+  <td class="box"><span class="muted">Suggested offer range</span><br>
+    {% if brief.low and brief.high %}<span class="big">{{ brief.low|euros }} &ndash; {{ brief.high|euros }}</span>{% if brief.note %}<br>{{ brief.note }}{% endif %}
+    {% else %}<span class="muted">Not prepared yet. Claude adds the suggested range, with the points for and against, when it builds the brief.</span>{% endif %}</td>
+</tr></table>
+
+<h2>Key facts</h2>
+<table class="grid"><tr>
+  <td><span class="muted">Internal</span><br>{% if p.internal_m2 %}{{ p.internal_m2|n }} m&sup2;{% if not p.internal_m2_confirmed %} (?){% endif %}{% else %}?{% endif %}</td>
+  <td><span class="muted">Verandas</span><br>{% if p.covered_balcony_m2 is not None %}{{ p.covered_balcony_m2|n }} m&sup2;{% else %}?{% endif %}</td>
+  <td><span class="muted">&euro;/m&sup2; asking</span><br>{{ p.price_per_m2|euros }}</td>
+  <td><span class="muted">{% if snap %}{{ snap.area.name }} median{% else %}Area median{% endif %}</span><br>{% if snap %}{{ snap.median_price_per_m2|euros }}{% else %}&ndash;{% endif %}</td>
+  <td><span class="muted">Built</span><br>{{ p.year_built|default_if_none:"?" }}{% if p.floor_level %} &middot; {{ p.floor_level }}{% endif %}</td>
+  <td><span class="muted">On market</span><br>{% if days is not None %}{{ days }} day{{ days|pluralize }} seen{% else %}?{% endif %}</td>
+</tr></table>
+
+<h2>Comparable listings{% if p.area %}, {{ p.area.name }}{% endif %}</h2>
+{% if comps %}
+<table class="grid">
+  <tr><th>Listing</th><th class="num">Internal m&sup2;</th><th class="num">Asking</th><th class="num">&euro;/m&sup2;</th><th class="num">Built</th><th class="num">Days listed</th></tr>
+  {% for c in comps %}
+  <tr><td>{{ c.property.title }}</td><td class="num">{{ c.property.internal_m2|n }}</td><td class="num">{{ c.property.price_incl_vat|euros }}{% if c.property.vat_status == 'plus_vat' %} incl. VAT{% endif %}</td><td class="num">{{ c.ppm|euros }}</td><td class="num">{{ c.property.year_built|default_if_none:"?" }}</td><td class="num">{{ c.days|default_if_none:"?" }}</td></tr>
+  {% endfor %}
+  {% if median %}<tr><td><strong>Median of resale comparables</strong></td><td></td><td></td><td class="num"><strong>{{ median|euros }}</strong></td><td></td><td></td></tr>{% endif %}
+</table>
+{% if worth %}<p>At the resale median of {{ median|euros }}/m&sup2;, {{ p.internal_m2|n }} m&sup2; internal is worth about {{ worth|euros }}.</p>{% endif %}
+{% else %}
+<p class="muted">No comparable listing has been seen yet in this area and size band.</p>
+{% endif %}
+
+{% if brief.for or brief.against %}
+<table style="margin-top: 6pt"><tr>
+  <td style="width: 50%"><h2>Points in your favour</h2><ul>{% for x in brief.for %}<li>{{ x }}</li>{% endfor %}</ul></td>
+  <td style="width: 50%"><h2>Points against</h2><ul>{% for x in brief.against %}<li>{{ x }}</li>{% endfor %}</ul></td>
+</tr></table>
+{% endif %}
+
+{% if history|length > 1 %}
+<h2>Price history</h2>
+<p>{% for d, v in history %}{{ d|date:"j M" }} &middot; {{ v|euros }}{% if not forloop.last %} &rarr; {% endif %}{% endfor %}</p>
+{% endif %}
+
+<h2>Confirm before making an offer</h2>
+<ul>{% for q in questions %}<li>{{ q }}</li>{% endfor %}<li>Common expenses and any building-fund arrears</li></ul>
+
+<p class="foot">Based on asking prices collected by your searches, not on registered sale prices. This is a negotiating aid, not a valuation. Get a surveyor&rsquo;s valuation and a lawyer&rsquo;s title check before signing.</p>
+</body></html>

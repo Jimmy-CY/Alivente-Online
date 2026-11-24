@@ -442,3 +442,12 @@ DATABASES['default'].update({
     }
 })
 """
+
+# RA19, 23 Nov 2026 - ONE SYSTEM-CHECK WARNING SWITCHED OFF, ON PURPOSE.
+# mysql.W003 says MySQL "may not allow" a unique text column longer than
+# 255 characters. acquisitions.ListingSource.url is 500 and unique: a
+# listing link can be long, and one link must never be stored twice.
+# MySQL 8 (InnoDB, DYNAMIC rows, utf8mb4) indexes up to 3,072 bytes and
+# 500 x 4 is 2,000, so the index can exist - RA18's migrate created it
+# on Demetri's machine without complaint. Only this warning is silenced.
+SILENCED_SYSTEM_CHECKS = ["mysql.W003"]

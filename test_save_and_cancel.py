@@ -91,6 +91,10 @@ KEEP_CANCEL = {
     # Back. Same grounds as the five above: data-dismiss="modal"
     # inside a .modal-footer.
     'user_edit.html': 'it dismisses a dialog',
+    # RA19, 23 Nov 2026 - the Acquisitions scenario editor. Its Cancel
+    # closes the rule editor pop-up (data-dismiss="modal" in a
+    # .modal-footer); the screen itself has only Save and Back.
+    'scenario_edit.html': 'it dismisses a dialog',
 }
 
 PASS = FAIL = SKIP = 0

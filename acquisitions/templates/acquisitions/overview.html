@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load help_modal_tags acq %}
+{# 1. OVERVIEW - RA19, 23 Nov 2026. The approved mockup's Main screen. #}
+
+{% block title %}Acquisitions — Overview{% endblock %}
+
+{% block content %}
+{% include 'acquisitions/_style.html' %}
+
+<h2 class="page-title-h2">PROPERTY ACQUISITIONS</h2>
+<p class="acq-sub">{{ today|date:"l j F Y" }} &middot; {{ cards|length }} scenario{{ cards|length|pluralize }}, {{ n_active }} active</p>
+
+<div class="page-action-buttons">
+  {% if can_edit %}
+  <a href="{% url 'acquisitions:scenario_new' %}" class="btn action-primary" role="button"><i class="fas fa-plus"></i> New scenario</a>
+  {% endif %}
+  <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#acqRunModal"><i class="fas fa-play"></i> Run search now</button>
+  <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#acquisitionsHelpModal" aria-label="Help"><i class="fas fa-question-circle"></i> Help</button>
+  <!-- Phone: the secondaries above move into More (house rule, base.html). -->
+  <div class="action-more-wrapper" data-menu>
+    <button type="button" class="btn action-more-btn" data-menu-toggle aria-label="More actions" aria-expanded="false" aria-haspopup="true"><i class="fas fa-ellipsis-v"></i></button>
+    <div class="action-more-menu" data-menu-panel role="menu" hidden>
+      <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#acqRunModal"><i class="fas fa-play"></i> Run search now</button>
+      <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#acquisitionsHelpModal"><i class="fas fa-question-circle"></i> Help</button>
+    </div>
+  </div>
+</div>
+
+{% include 'acquisitions/_tabs.html' %}
+
+<div class="alv-stats">
+  <div class="alv-stat"><div class="alv-stat-value">{{ kpi_new }}</div><div class="alv-stat-label">New this week</div></div>
+  <div class="alv-stat alv-stat-good"><div class="alv-stat-value">{{ kpi_short }}</div><div class="alv-stat-label">Shortlisted</div></div>
+  <div class="alv-stat {% if kpi_price %}alv-stat-attn{% endif %}"><div class="alv-stat-value">{{ kpi_price }}</div><div class="alv-stat-label">Price drops, 7 days</div></div>
+  <div class="alv-stat {% if last and last_outcome != 'All sites searched' %}alv-stat-attn{% endif %}">
+    <div class="alv-stat-value">{% if last %}{{ last.started_at|date:"H:i" }}{% else %}&ndash;{% endif %}</div>
+    <div class="alv-stat-label">{% if last %}Last run &middot; {{ last_outcome }}{% else %}No search has reported yet{% endif %}</div>
+  </div>
+</div>
+
+<h3 class="acq-section-h">Your scenarios</h3>
+{% if cards %}
+<div class="acq-grid">
+  {% for c in cards %}
+  <div class="alv-card">
+    <div class="alv-card-head">
+      <a href="{% url 'acquisitions:scenario' c.s.pk %}" class="alv-card-title">{{ c.s.name }}</a>
+      {% if c.s.is_active %}<span class="alv-pill alv-pill-good">Active</span>{% else %}<span class="alv-pill alv-pill-neutral">Paused</span>{% endif %}
+    </div>
+    <div class="alv-card-body">
+      <div class="acq-muted">{{ c.rules|default:"No rules yet" }} &middot; {{ c.counts.areas }} area{{ c.counts.areas|pluralize }}</div>
+      {% if c.s.is_active %}
+      <div class="acq-card-figs">
+        <div class="acq-fig"><strong>{{ c.tracked }}</strong><span>tracked</span></div>
+        <div class="acq-fig"><strong>{{ c.new }}</strong><span>new</span></div>
+        <div class="acq-fig"><strong>{{ c.active }}</strong><span>active</span></div>
+        {% if c.best_pbm %}<div class="acq-fig"><strong>{{ c.best_pbm|euros }}</strong><span>best &euro;/buildable m&sup2;</span></div>{% endif %}
+        <div class="acq-fig"><strong>{{ c.best|n }}</strong><span>best score</span></div>
+      </div>
+      <div class="acq-muted">{{ c.schedule }}{% if c.last %} &middot; last run {{ c.last.started_at|date:"D j M H:i" }}{% else %} &middot; not run yet{% endif %}</div>
+      {% else %}
+      <p class="acq-muted mt-2 mb-0">No searches run while paused. Resume it, or open it to copy its rules into a new scenario.</p>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="alv-empty">
+  <i class="fas fa-search-location"></i>
+  <div class="alv-empty-title">No scenarios yet</div>
+  <div class="alv-empty-hint">A scenario is one search: what to look for, where, and how listings are scored. Start one from a template on the Scenarios page.</div>
+</div>
+{% endif %}
+
+<div class="acq-two">
+  <div class="alv-card">
+    <div class="alv-card-head"><span class="alv-card-title">Latest activity</span></div>
+    <div class="table-container mb-0">
+      <table class="table alv-table">
+        <thead><tr><th style="width: 16%">When</th><th style="width: 18%">Scenario</th><th style="width: 32%">What happened</th><th style="width: 34%">Property</th></tr></thead>
+        <tbody>
+          {% for e in activity %}
+          <tr>
+            <td data-label="When">{{ e.when|date:"D j M" }}</td>
+            <td data-label="Scenario">{{ e.scenario.name|default:"&mdash;" }}</td>
+            <td data-label="What happened">{{ e.status|pill }} <span class="acq-muted">{{ e.what }}</span></td>
+            <td data-label="Property"><a href="{% url 'acquisitions:property' e.property.pk %}{% if e.scenario %}?s={{ e.scenario.pk }}{% endif %}">{{ e.property.title }}</a>{% if e.property.price_incl_vat %} &middot; {{ e.property.price_incl_vat|euros }}{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if not activity %}<div class="alv-empty"><i class="fas fa-stream"></i><div class="alv-empty-title">Nothing in the last 30 days</div><div class="alv-empty-hint">New listings, price changes, removals and your decisions appear here.</div></div>{% endif %}
+    </div>
+  </div>
+
+  <div class="alv-card">
+    <div class="alv-card-head"><span class="alv-card-title">Last search run</span></div>
+    <div class="alv-card-body">
+      {% if last %}
+      <p class="acq-muted">{{ last.task_name|default:last.scenario.name }} &middot; {{ last.started_at|date:"D j M H:i" }}{% if last.finished_at %}&ndash;{{ last.finished_at|date:"H:i" }}{% endif %} &middot; {{ last.get_where_display }}</p>
+      <ul class="acq-sites">
+        {% for r in last.site_results.all %}
+        <li><span>{{ r.website.name }}</span><span class="{% if r.outcome == 'full' %}acq-ok{% elif r.outcome == 'skipped' %}acq-muted{% else %}acq-bad{% endif %}">{{ r.get_outcome_display }}{% if r.pages_total %} &middot; {{ r.pages_searched|default:0 }} of {{ r.pages_total }} pages{% endif %}</span></li>
+        {% empty %}
+        <li><span class="acq-muted">No site results recorded.</span></li>
+        {% endfor %}
+      </ul>
+      {% if last_outcome != 'All sites searched' %}
+      <button type="button" class="btn action-secondary mt-3" data-toggle="modal" data-target="#acqRunModal"><i class="fas fa-desktop"></i> Search blocked sites on my PC</button>
+      {% endif %}
+      {% else %}
+      <p class="acq-muted mb-0">No search has reported to the app yet. Searches report here once Claude is connected to the app.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% include 'acquisitions/_run_modal.html' %}
+{% render_help_modal "acquisitions" %}
+{% endblock %}
