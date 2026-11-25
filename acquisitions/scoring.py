@@ -203,10 +203,15 @@ def evaluate(scenario, prop, match=None, criteria=None):
                        breakdown=breakdown)
 
 
-def apply_score(match, save=True):
+def apply_score(match, save=True, criteria=None):
     """Score a ScenarioMatch and store the result. Auto-rejects a clear Must
-    failure unless you set the status yourself (then it only records why)."""
-    result = evaluate(match.scenario, match.property, match)
+    failure unless you set the status yourself (then it only records why).
+
+    RA27, 25 Nov 2026 - AND THE RULES CAN BRING ONE BACK. A listing the
+    rules rejected (not you) that passes them again - a rule loosened, a
+    fact confirmed - is back in play: New if it was found today, else
+    Active. "Rejected by you" never changes here."""
+    result = evaluate(match.scenario, match.property, match, criteria=criteria)
     match.score = result.score
     match.raw_score = result.raw_score
     match.is_capped = result.is_capped
@@ -220,6 +225,10 @@ def apply_score(match, save=True):
     ]
     if result.failed_musts and not match.status_set_by_user and match.status != "removed":
         match.status = "rejected"
+    elif (not result.failed_musts and match.status == "rejected"
+          and not match.status_set_by_user):
+        from django.utils import timezone
+        match.status = "new" if match.date_found == timezone.localdate() else "active"
     if save:
         match.save()
     return result

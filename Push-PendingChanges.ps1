@@ -3409,7 +3409,9 @@ $suites = @(
     # RA25, 25 Nov 2026 - the search reports into the app; no template cards.
     'test_ra25_search_intake.py',
     # RA26, 25 Nov 2026 - tick tables, the PC search reports as you, Running, a renewal is not a gap.
-    'test_ra26_ticks_pc_and_renewals.py'
+    'test_ra26_ticks_pc_and_renewals.py',
+    # RA27, 25 Nov 2026 - see what a rule change does, plots with VAT, rejected folded, searches followed.
+    'test_ra27_rules_preview_plots_pc_progress.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

@@ -92,30 +92,27 @@
 
 <div class="table-container">
   <table class="table alv-table">
-    <thead><tr>
-      <th style="width: 9%">Status</th><th style="width: 8%">Score</th><th style="text-align: left; width: 21%">Property</th><th style="width: 10%">Price incl. VAT</th><th style="width: 8%">Internal m&sup2;</th><th style="width: 7%">Balconies</th><th style="width: 7%">Bed / bath</th><th style="width: 6%">Whole floor</th><th style="width: 16%">Open questions</th><th style="width: 8%">Found</th>
-    </tr></thead>
+    <thead>{% include 'acquisitions/_result_head.html' %}</thead>
     <tbody>
-      {% for m in rows %}{% with p=m.property %}
-      <tr>
-        <td data-label="Status">{{ m.status|pill }}{% if m.status_set_by_user %}<div class="acq-muted">by you{% if m.decision_note %} &ndash; {{ m.decision_note }}{% endif %}</div>{% endif %}</td>
-        <td data-label="Score">{{ m.score|scorebar }}{% if m.is_capped %}<div class="acq-muted">capped at {{ s.unknown_score_cap }}</div>{% endif %}</td>
-        <td data-label="Property" style="text-align: left"><a href="{% url 'acquisitions:property' p.pk %}?s={{ s.pk }}"><strong>{{ p.title }}</strong></a><div class="acq-muted">{% if p.floor_level %}{{ p.floor_level }} &middot; {% endif %}{% if p.year_built %}{{ p.year_built }} &middot; {% endif %}{{ p.sources.all|length }} source{{ p.sources.all|length|pluralize }}</div></td>
-        <td data-label="Price incl. VAT">{{ p.price_incl_vat|euros }}{% if p.vat_status == 'none' %}<div class="acq-muted">resale</div>{% elif p.vat_status == 'plus_vat' %}<div class="acq-muted">+ VAT</div>{% endif %}</td>
-        <td data-label="Internal m²">{% if p.internal_m2 %}{{ p.internal_m2|n }}{% if not p.internal_m2_confirmed %} <span class="acq-warn" title="Not confirmed as internal">?</span>{% endif %}{% else %}?{% if p.total_m2 %}<div class="acq-muted">({{ p.total_m2|n }} total)</div>{% endif %}{% endif %}</td>
-        <td data-label="Balconies">{% if p.covered_balcony_m2 is not None %}{{ p.covered_balcony_m2|n }}{% else %}?{% endif %}</td>
-        <td data-label="Bed / bath">{{ p.bedrooms|default_if_none:"?" }} / {{ p.bathrooms|default_if_none:"?" }}</td>
-        <td data-label="Whole floor">{{ p.whole_floor|yesno:"Yes,No,?" }}</td>
-        <td data-label="Open questions"><span class="acq-muted">{% if m.failed_musts %}Fails: {{ m.failed_musts|join:", " }}. {% endif %}{% if m.unknown_musts %}To confirm: {{ m.unknown_musts|join:", " }}{% endif %}{% if not m.failed_musts and not m.unknown_musts %}&mdash;{% endif %}</span></td>
-        <td data-label="Found">{{ m.date_found|date:"j M" }}<div class="acq-muted">checked {{ m.last_checked|date:"j M" }}</div></td>
-      </tr>
-      {% endwith %}{% endfor %}
+      {% for m in rows %}{% include 'acquisitions/_result_row.html' %}{% endfor %}
     </tbody>
   </table>
   {% if not rows %}
-  <div class="alv-empty"><i class="fas fa-building"></i><div class="alv-empty-title">{% if status != 'all' %}None with this status{% else %}No listings yet{% endif %}</div><div class="alv-empty-hint">Listings appear here as the scenario&rsquo;s searches find them.</div></div>
+  <div class="alv-empty"><i class="fas fa-building"></i><div class="alv-empty-title">{% if status != 'all' %}None with this status{% elif rejected_rows %}Every listing here is rejected{% else %}No listings yet{% endif %}</div><div class="alv-empty-hint">{% if rejected_rows %}They are folded below.{% else %}Listings appear here as the scenario&rsquo;s searches find them.{% endif %}</div></div>
   {% endif %}
 </div>
+{# RA27 - "group all rejected at the bottom (collapsed, with the ability to expand)" #}
+{% if rejected_rows %}
+<details class="alv-card acq-fold mt-3">
+  <summary class="alv-card-head"><span class="alv-card-title">Rejected</span><span class="acq-muted ml-2">&middot; {{ rejected_rows|length }}</span><i class="fas fa-chevron-down ml-auto" aria-hidden="true"></i></summary>
+  <div class="table-container">
+    <table class="table alv-table">
+      <thead>{% include 'acquisitions/_result_head.html' %}</thead>
+      <tbody>{% for m in rejected_rows %}{% include 'acquisitions/_result_row.html' %}{% endfor %}</tbody>
+    </table>
+  </div>
+</details>
+{% endif %}
 
 {% include 'acquisitions/_run_modal.html' %}
 {% if ask_run %}{% include 'acquisitions/_after_save.html' %}{% endif %}

@@ -1708,6 +1708,8 @@ ROUNDS = [
     '.bak_ra25',
     # RA26, 25 Nov 2026 - tick tables, the PC search reports as you, Running, a renewal is not a gap.
     '.bak_ra26',
+    # RA27, 25 Nov 2026 - see what a rule change does, plots with VAT, rejected folded, searches followed.
+    '.bak_ra27',
 ]
 
 

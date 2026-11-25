@@ -278,7 +278,9 @@ try:
         run.finished_at = timezone.now()
         run.save()
         o = V.get('/acquisitions/').content.decode()
-        ok(BTN in o and 'href="https://claude.ai/code/routines" target="_blank"' in o,
+        # RA27 - the button opens a pop-up that opens the PC task's own page
+        # in Claude and follows the run. Was: a link to claude.ai/code/routines.
+        ok(BTN in o and 'data-target="#acqPcModal"' in o and 'https://claude.ai/code/routines/' in o,
            '  finished with sites unsearched: Start the PC search, which opens Claude\'s scheduled tasks')
         os.environ['ROUTINE_FIRE_URL'] = 'https://api.anthropic.com/v1/claude_code/routines/trig_TEST/fire'
         os.environ['ROUTINE_FIRE_TOKEN'] = 'test-only-token'

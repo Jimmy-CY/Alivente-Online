@@ -1,0 +1,18 @@
+{# RA27, 25 Nov 2026 - one plot. The area is its own column, the price is incl. VAT (assumed when the ad does not say), and a likely duplicate is named. #}
+{% load acq %}
+{% with p=m.property %}
+<tr>
+  <td data-label="Status">{{ m.status|pill }}{% if m.status_set_by_user %}<div class="acq-muted">by you</div>{% endif %}</td>
+  <td data-label="Score">{% if m.status == 'rejected' and not m.status_set_by_user %}&ndash;{% else %}{{ m.score|scorebar }}{% endif %}</td>
+  <td data-label="Plot" style="text-align: left"><a href="{% url 'acquisitions:property' p.pk %}?s={{ s.pk }}"><strong>{{ p.title }}</strong></a>{% if m.failed_musts %}<div class="acq-muted">fails {{ m.failed_musts|join:", " }}</div>{% endif %}{% if m.dupe_of %}<div class="acq-muted">possibly the same plot as <a href="{% url 'acquisitions:property' m.dupe_of.pk %}?s={{ s.pk }}">{{ m.dupe_of.title }}</a></div>{% endif %}</td>
+  <td data-label="Area" style="text-align: left">{% if p.area %}{{ p.area.name }}{% else %}{{ p.suburb_text|default:"?" }}{% endif %}</td>
+  <td data-label="Price incl. VAT">{{ p.price_incl_vat|euros }}{% if p.vat_assumed %}<div class="acq-muted">VAT assumed</div>{% elif p.vat_status == 'plus_vat' %}<div class="acq-muted">+ VAT</div>{% elif p.vat_status == 'none' %}<div class="acq-muted">no VAT</div>{% endif %}</td>
+  <td data-label="Plot m²">{{ p.plot_m2|n }}</td>
+  <td data-label="€/m²"><strong>{{ p.price_per_m2|euros }}</strong></td>
+  <td data-label="Density">{% if p.building_density_pct %}{{ p.building_density_pct|n }}%{% else %}?{% endif %}</td>
+  <td data-label="Buildable m²">{{ p.buildable_m2|n }}</td>
+  <td data-label="€/buildable m²">{{ p.price_per_buildable_m2|euros }}</td>
+  <td data-label="Road access">{% if p.road_frontages %}{{ p.road_frontages }} road{{ p.road_frontages|pluralize }}{% else %}?{% endif %}</td>
+  <td data-label="Title">{{ p.title_deeds|yesno:"Yes,No,?" }}</td>
+</tr>
+{% endwith %}

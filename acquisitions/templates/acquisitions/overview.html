@@ -109,8 +109,9 @@
       </ul>
       {% if last_outcome != 'All sites searched' and not last.is_running %}
       {# RA26 - the PC search is its own scheduled task, started in Claude. #}
-      <a href="https://claude.ai/code/routines" target="_blank" rel="noopener" class="btn action-secondary mt-3"><i class="fas fa-desktop"></i> Start the PC search</a>
-      <p class="acq-muted mt-2 mb-0">Opens your Claude scheduled tasks: press <strong>Run now</strong> on the PC search, with the Claude desktop app open and the computer awake. It searches the sites marked PC and reports here.</p>
+      {# RA27 - a pop-up opens it in Claude and follows it as it reports. #}
+      {% if can_edit %}<button type="button" class="btn action-secondary mt-3" data-toggle="modal" data-target="#acqPcModal"><i class="fas fa-desktop"></i> Start the PC search</button>
+      <p class="acq-muted mt-2 mb-0">The PC search covers the sites marked PC, from your computer, and reports here; the pop-up follows it as it goes.</p>{% endif %}
       {% endif %}
       {% else %}
       <p class="acq-muted mb-0">No search has reported to the app yet. Searches report here once Claude is connected to the app.</p>

@@ -13,6 +13,14 @@ search only those.
 
 Without the two settings, configured() is False and every Run button shows
 how to start a search in the Claude app instead, as before.
+
+RA27, 25 Nov 2026 - THE PC SEARCH. Its task belongs to Demetri's Claude
+project and to his computer, and such a task offers no API trigger today
+(its Edit shows Schedule only). So Start the PC search opens that task's
+own page in Claude (PC_TASK_URL, or ACQ_PC_TASK_URL on Railway), where he
+presses Run now, and the app follows the run as it reports. Should Claude
+ever offer the trigger there, PC_FIRE_URL and PC_FIRE_TOKEN on Railway make
+the same button start it directly - fire(..., which="pc").
 """
 import json
 import logging
@@ -24,21 +32,34 @@ log = logging.getLogger(__name__)
 
 URL_ENV = "ROUTINE_FIRE_URL"
 TOKEN_ENV = "ROUTINE_FIRE_TOKEN"
+# RA27 - the PC search's own pair, and the page of its task in Claude.
+ENVS = {"cloud": (URL_ENV, TOKEN_ENV), "pc": ("PC_FIRE_URL", "PC_FIRE_TOKEN")}
+PC_TASK_ENV = "ACQ_PC_TASK_URL"
+PC_TASK_URL = "https://claude.ai/code/routines/trig_0177axGHkU4JSNT6suGb7X16"
 # Only Anthropic's own endpoint: a mistyped or planted URL is never sent the token.
 URL_START = "https://api.anthropic.com/v1/claude_code/routines/"
 BETA = "experimental-cc-routine-2026-04-01"
 TIMEOUT = 20
 
 
-def _url():
-    return (os.environ.get(URL_ENV) or "").strip()
+def _url(which="cloud"):
+    return (os.environ.get(ENVS[which][0]) or "").strip()
 
 
-def configured():
+def _token(which="cloud"):
+    return (os.environ.get(ENVS[which][1]) or "").strip()
+
+
+def configured(which="cloud"):
     """Both settings are there, and the URL is Anthropic's fire endpoint."""
-    url = _url()
-    return bool(url.startswith(URL_START) and url.endswith("/fire")
-                and (os.environ.get(TOKEN_ENV) or "").strip())
+    url = _url(which)
+    return bool(url.startswith(URL_START) and url.endswith("/fire") and _token(which))
+
+
+def pc_task_url():
+    """RA27 - where Start the PC search sends him: the task's page in Claude."""
+    url = (os.environ.get(PC_TASK_ENV) or "").strip()
+    return url if url.startswith("https://claude.ai/") else PC_TASK_URL
 
 
 def payload(scenarios):
@@ -53,16 +74,16 @@ def payload(scenarios):
                " (scenario ids %s)" % ids if ids else ""))
 
 
-def fire(scenarios, opener=None):
+def fire(scenarios, opener=None, which="cloud"):
     """Start one run for these scenarios. Returns (ok, words, session_url).
     The words are for the person; the token is never in them, nor logged."""
-    if not configured():
+    if not configured(which):
         return False, "Starting a search from the app is not set up yet.", ""
     if not scenarios:
         return False, "Tick at least one scenario.", ""
     body = json.dumps({"text": payload(scenarios)}).encode("utf-8")
-    req = urllib.request.Request(_url(), data=body, method="POST", headers={
-        "Authorization": "Bearer %s" % os.environ.get(TOKEN_ENV, "").strip(),
+    req = urllib.request.Request(_url(which), data=body, method="POST", headers={
+        "Authorization": "Bearer %s" % _token(which),
         "anthropic-beta": BETA,
         "anthropic-version": "2023-06-01",
         "Content-Type": "application/json",
@@ -74,7 +95,7 @@ def fire(scenarios, opener=None):
         log.warning("Search start refused: HTTP %s", e.code)
         if e.code in (401, 403):
             return False, ("Claude refused the start: the token on Railway is wrong or was "
-                           "regenerated. Generate a new one and update ROUTINE_FIRE_TOKEN."), ""
+                           "regenerated. Generate a new one and update %s." % ENVS[which][1]), ""
         if e.code == 429:
             return False, "Too many starts this hour - try again later.", ""
         return False, "Claude could not start the search just now (error %s)." % e.code, ""

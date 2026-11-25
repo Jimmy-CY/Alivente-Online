@@ -17,7 +17,7 @@ report into the app through api.py (a key, no login); intake.py does it.
 """
 import csv
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone as dt_tz
 from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
@@ -33,6 +33,7 @@ from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
 
 from . import firing, services as S
+from . import signals as SIG                        # RA27 - one re-score per save
 from .models import (Area, Criterion, Deal, MarketSnapshot, Property, PropertyType, Scenario,
                      ScenarioMatch, SearchRun, Viewing, WatchSettings, Website)
 from .scoring import FIELDS, apply_score, evaluate
@@ -47,7 +48,11 @@ def _page(request, template, tab, **ctx):
                 # RA24 - the Run pop-up: can the app start a search, and which
                 # scenarios it offers (the active ones, all ticked).
                 "run_ready": firing.configured(),
-                "run_scenarios": _run_list()})
+                "run_scenarios": _run_list(),
+                # RA27 - the PC search: its task's page in Claude, and
+                # whether the app can start it itself (not today).
+                "pc_ready": firing.configured("pc"),
+                "pc_task_url": firing.pc_task_url()})
     return render(request, "acquisitions/%s" % template, ctx)
 
 
@@ -232,6 +237,37 @@ def _preview(scenario, crit, cap, limit, deal="buy"):
     return out
 
 
+def _effect(scenario, crit, cap, limit, deal="buy"):
+    """RA27 - what saving these rules would do to every listing the
+    scenario tracks: how many the rules would reject, how many they would
+    bring back, how many are re-scored. Your own decisions and removed
+    listings are not touched, so they are not counted.
+    Demetri, 25 Nov: tighten the plot rules and see what goes first."""
+    if scenario is None:
+        return {"reject": 0, "back": 0, "rescore": 0}
+    temp = []
+    for i, c in enumerate(crit):
+        if not c.pk:
+            c.id = -(i + 1)
+        temp.append(c)
+    fake = _Unsaved(cap, limit, deal)
+    reject = back = rescore = 0
+    for m in scenario.matches.select_related("property"):
+        if m.status_set_by_user or m.status == "removed":
+            continue
+        r = evaluate(fake, m.property, m, criteria=temp)
+        if r.failed_musts and m.status != "rejected":
+            reject += 1
+        elif not r.failed_musts and m.status == "rejected":
+            back += 1
+        elif not r.failed_musts:
+            rescore += 1
+    for c in crit:
+        if c.pk and c.pk < 0:
+            c.pk = None
+    return {"reject": reject, "back": back, "rescore": rescore}
+
+
 @login_required
 @permission_required(VIEW, raise_exception=True)
 def scenario_edit(request, pk=None):
@@ -336,25 +372,27 @@ def _save_scenario(request, scenario):
         scenario.websites.set(Website.objects.filter(pk__in=P.getlist("websites")))
         # THE RULES BY ID: an existing rule keeps its row, so Claude's
         # answers to a plain-words rule (judgements, keyed by its id) stay.
+        # RA27 - saved quietly, then re-scored once (rescore_all, below).
         keep = []
         existing = {c.pk: c for c in scenario.criteria.all()}
-        for i, c in enumerate(crit):
-            row = existing.get(c.pk) if c.pk else None
-            if row is None:
-                c.pk = None
-                c.scenario = scenario
-                c.order = i
-                c.save()
-                keep.append(c.pk)
-                continue
-            for f in ("label", "field", "kind", "operator", "num_min", "num_max",
-                      "text_values", "points", "full_from", "full_to", "zero_below",
-                      "zero_above", "score_bands", "group", "rule_text"):
-                setattr(row, f, getattr(c, f))
-            row.order = i
-            row.save()
-            keep.append(row.pk)
-        scenario.criteria.exclude(pk__in=keep).delete()
+        with SIG.quiet():
+            for i, c in enumerate(crit):
+                row = existing.get(c.pk) if c.pk else None
+                if row is None:
+                    c.pk = None
+                    c.scenario = scenario
+                    c.order = i
+                    c.save()
+                    keep.append(c.pk)
+                    continue
+                for f in ("label", "field", "kind", "operator", "num_min", "num_max",
+                          "text_values", "points", "full_from", "full_to", "zero_below",
+                          "zero_above", "score_bands", "group", "rule_text"):
+                    setattr(row, f, getattr(c, f))
+                row.order = i
+                row.save()
+                keep.append(row.pk)
+            scenario.criteria.exclude(pk__in=keep).delete()
         # RA21 - the scenario's areas follow its Location rule; they are no
         # longer chosen under Where to look.
         scenario.areas.set(scenario.target_areas())
@@ -418,7 +456,8 @@ def scenario_preview(request, pk=None):
     rows = [S.criterion_row(c) for c in crit]
     return JsonResponse({"ok": True, "rows": rows,
                          "points": float(sum((c.points or 0) for c in crit)),
-                         "preview": _preview(scenario, crit, cap, limit, deal)})
+                         "preview": _preview(scenario, crit, cap, limit, deal),
+                         "effect": _effect(scenario, crit, cap, limit, deal)})
 
 
 # --------------------------------------------------------------------------
@@ -428,7 +467,47 @@ STATUS_ORDER = ["new", "active", "price_changed", "shortlisted", "rejected", "re
 SORTS = {"score": ("Score, high to low", lambda m: -(m.score or 0)),
          "price": ("Price, low to high", lambda m: m.property.price_incl_vat or 10 ** 12),
          "found": ("Date found, newest first", lambda m: -m.date_found.toordinal()),
-         "status": ("Status", lambda m: STATUS_ORDER.index(m.status))}
+         "status": ("Status", lambda m: STATUS_ORDER.index(m.status)),
+         # RA27 - Demetri: "per m2 price" (a plot's price over its plot m²).
+         "ppm": ("€/m², low to high", lambda m: m.property.price_per_m2 or 10 ** 12)}
+
+
+def _dupes(ms):
+    """RA27 - the same home or plot listed by several agents, at a slightly
+    different price or size, is still one: the same area, within 2% on m²
+    and 5% on price. Marked, never merged - the call is Demetri's."""
+    def size(p):
+        return p.plot_m2 if p.property_type == "plot" else (p.internal_m2 or p.total_m2)
+    groups = {}
+    for m in ms:
+        p = m.property
+        place = p.area_id or (p.suburb_text or "").strip().lower()
+        if place and size(p) and p.price_incl_vat:
+            groups.setdefault((place, p.property_type, p.bedrooms if p.property_type != "plot" else 0),
+                              []).append(m)
+    out = {}
+    for same in groups.values():
+        same.sort(key=lambda m: size(m.property))
+        for i, a in enumerate(same):
+            for b in same[i + 1:]:
+                sa, sb = size(a.property), size(b.property)
+                if sb - sa > sa * Decimal("0.02"):
+                    break
+                pa, pb = a.property.price_incl_vat, b.property.price_incl_vat
+                if abs(pa - pb) <= max(pa, pb) * Decimal("0.05"):
+                    out.setdefault(a.pk, b.property)
+                    out.setdefault(b.pk, a.property)
+    return out
+
+
+def _split(shown, status):
+    """RA27 - the rejected go to the foot of the page, folded (Demetri:
+    "group all rejected at the bottom (collapsed, with the ability to
+    expand)"); the Rejected chip still lists them on their own."""
+    if status != "all":
+        return shown, []
+    return ([m for m in shown if m.status != "rejected"],
+            [m for m in shown if m.status == "rejected"])
 
 
 def _matches(scenario):
@@ -451,19 +530,23 @@ def scenario_results(request, pk):
     live = [m for m in ms if m.status not in ("rejected", "removed")]
     run = S.last_run(s)
     ask_run = request.GET.get("saved") == "1" and request.user.has_perm(EDIT)
-    ctx = dict(s=s, rows=shown, chips=chips, status=status, sort=sort, sorts=SORTS,
+    dup = _dupes(ms)
+    for m in shown:
+        m.dupe_of = dup.get(m.pk)
+    shown, rejected = _split(shown, status)
+    ctx = dict(s=s, rows=shown, rejected_rows=rejected, chips=chips, status=status,
+               sort=sort, sorts=SORTS,
                ask_run=ask_run, schedule=S.schedule_text(s),
                tracked=len(ms), live=live, run=run, holding=S.holding_back(ms),
                summaries=s.runs.exclude(summary="").order_by("-started_at")[:5])
     prices = [m.property.price_incl_vat for m in live if m.property.price_incl_vat]
     ctx["price_lo"], ctx["price_hi"] = (min(prices), max(prices)) if prices else (None, None)
     if S.is_plot(s):
+        # RA27 - no chart (Demetri: "Can we get rid of this graph?"); the
+        # table carries the area, the price incl. VAT and the €/m².
         bars = sorted([m for m in live if m.property.price_per_buildable_m2],
                       key=lambda m: m.property.price_per_buildable_m2)
-        top = max((m.property.price_per_buildable_m2 for m in bars), default=1)
-        ctx.update(bars=[{"m": m, "pct": round(100 * m.property.price_per_buildable_m2 / top)}
-                         for m in bars],
-                   musts_met=sum(1 for m in ms if m.passes_musts),
+        ctx.update(musts_met=sum(1 for m in ms if m.passes_musts),
                    best_pbm=bars[0].property.price_per_buildable_m2 if bars else None,
                    drops=sum(1 for p, _a, _b in S.recent_drops()
                              if any(m.property_id == p.pk for m in ms)))
@@ -768,4 +851,53 @@ def runs(request):
         r.complete = bool(rs) and not part and not bad
     return _page(request, "runs.html", "runs", rows=rows, chosen=chosen,
                  scenarios=Scenario.objects.filter(is_active=True))
+
+
+PC_WAIT_MINUTES = 5
+
+
+@login_required
+@permission_required(VIEW, raise_exception=True)
+def run_progress(request):
+    """RA27 - what the searches started since a moment have reported, for
+    the Run and PC pop-ups, which ask every 15 seconds. ?since= is that
+    moment (milliseconds), ?where= cloud or pc. After five minutes with no
+    run, the answer says so (late), so the pop-up can say what to check."""
+    try:
+        since = datetime.fromtimestamp(int(request.GET.get("since", "0")) / 1000.0,
+                                       tz=dt_tz.utc) - timedelta(seconds=60)
+    except (ValueError, OverflowError, OSError):
+        return JsonResponse({"ok": False}, status=400)
+    where = request.GET.get("where") if request.GET.get("where") in ("cloud", "pc") else "cloud"
+    found = list(SearchRun.objects.filter(where=where, started_at__gte=since)
+                 .select_related("scenario").prefetch_related("site_results__website")
+                 .order_by("started_at")[:10])
+    out = []
+    for r in found:
+        out.append({
+            "scenario": r.scenario.name if r.scenario else "",
+            "started": timezone.localtime(r.started_at).strftime("%H:%M"),
+            "running": r.is_running, "finished": bool(r.finished_at),
+            "added": r.listings_added, "checked": r.listings_checked,
+            "sites": [{"name": x.website.name, "outcome": x.get_outcome_display(),
+                       "ok": x.outcome in ("full", "skipped")} for x in r.site_results.all()],
+            "url": "%s?run=%d" % (reverse("acquisitions:runs"), r.pk)})
+    waited = timezone.now() - (since + timedelta(seconds=60))
+    return JsonResponse({"ok": True, "runs": out,
+                         "late": not out and waited > timedelta(minutes=PC_WAIT_MINUTES),
+                         "done": bool(out) and all(x["finished"] for x in out)})
+
+
+@login_required
+@require_POST
+@permission_required(EDIT, raise_exception=True)
+def run_pc(request):
+    """RA27 - start the PC search from the app, once Claude offers that
+    task an API trigger and PC_FIRE_URL / PC_FIRE_TOKEN are on Railway.
+    Until then the pop-up opens the task's page in Claude instead."""
+    ids = [int(x) for x in request.POST.getlist("scenario") if str(x).isdigit()]
+    chosen = list(Scenario.objects.filter(pk__in=ids, is_active=True).order_by("name"))
+    ok, words, url = firing.fire(chosen, which="pc")
+    return JsonResponse({"ok": ok, "message": words, "session_url": url},
+                        status=200 if ok else 400)
 

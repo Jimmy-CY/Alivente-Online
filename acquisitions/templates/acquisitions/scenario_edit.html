@@ -134,6 +134,8 @@
     <div class="alv-card-head"><span class="alv-card-title">Live preview</span></div>
     <div class="alv-card-body">
       {% if s.pk %}
+      {# RA27 - what saving would do to every listing tracked, before it is saved. #}
+      <p class="mb-2" id="acqEffect" role="status" hidden></p>
       <p class="acq-muted">With these rules, the listings already tracked would score:</p>
       <ul class="acq-sites" id="acqPreview" aria-live="polite"><li><span class="acq-muted">Working it out&hellip;</span></li></ul>
       <p class="acq-muted mt-2 mb-0">Changing a rule re-scores everything at once. No new search is needed: facts and scores are kept apart.</p>
@@ -149,6 +151,28 @@
 </div>
 </div>
 </form>
+
+{# RA27, 25 Nov 2026 - before saving rules that reject or bring back listings. #}
+{% if s.pk %}
+<div class="modal fade" id="acqSaveConfirm" tabindex="-1" role="dialog" aria-labelledby="acqSaveConfirmTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header alv-modal-head">
+        <h5 class="modal-title" id="acqSaveConfirmTitle"><i class="fas fa-save"></i> Save these rules?</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p id="acqSaveConfirmText" class="mb-2"></p>
+        <p class="acq-muted mb-0">Listings you shortlisted or rejected yourself keep your decision. A listing the rules reject comes back by itself if you loosen them again.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn action-primary" onclick="acqSaveSure()"><i class="fas fa-save"></i> Save scenario</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 
 {# ---------------------------------------------------- the rule editor #}
 <div class="modal fade" id="acqRuleModal" tabindex="-1" role="dialog" aria-labelledby="acqRuleTitle" aria-hidden="true">
@@ -293,6 +317,29 @@
     });
   }
 
+  // RA27 - what saving these rules would do, and a question before it does.
+  var effect = null, sure = false;
+  function effectWords(e) {
+    var bits = [];
+    if (e.reject) { bits.push('reject ' + e.reject + ' listing' + (e.reject === 1 ? '' : 's')); }
+    if (e.back) { bits.push('bring back ' + e.back + ' rejected by the rules'); }
+    return bits.length ? 'Saving these rules would ' + bits.join(' and ') + ', and re-score the rest.' : '';
+  }
+  function drawEffect(e) {
+    effect = e || null;
+    var p = $('acqEffect');
+    if (!p) { return; }
+    var words = effect ? effectWords(effect) : '';
+    p.hidden = !words;
+    p.className = 'mb-2 ' + (effect && effect.reject ? 'acq-warn' : 'acq-ok');
+    p.textContent = words;
+  }
+  window.acqSaveSure = function () {
+    sure = true;
+    if (window.jQuery) { window.jQuery('#acqSaveConfirm').modal('hide'); }
+    if (form.requestSubmit) { form.requestSubmit(); } else { $('acqCriteriaJson').value = JSON.stringify(rows); form.submit(); }
+  };
+
   function refresh() {
     // The rules show at once from this page's own data; the preview call
     // only adds the worded rule and the scores, so a failed call never
@@ -323,6 +370,7 @@
         pts.textContent = (Math.round(d.points * 10) / 10).toString();
         pts.classList.toggle('is-off', Math.abs(d.points - 100) > 0.01);
         drawPreview(d.preview);
+        drawEffect(d.effect);
       })
       .catch(function (why) {
         var err = $('acqCritError');
@@ -502,8 +550,15 @@
     refresh();
   };
 
-  form.addEventListener('submit', function () {
+  form.addEventListener('submit', function (ev) {
     $('acqCriteriaJson').value = JSON.stringify(rows);
+    // RA27 - a change that rejects or brings back listings is asked first.
+    var words = effect ? effectWords(effect) : '';
+    if (words && !sure && $('acqSaveConfirm')) {
+      ev.preventDefault();
+      $('acqSaveConfirmText').textContent = words;
+      if (window.jQuery) { window.jQuery('#acqSaveConfirm').modal('show'); } else { return; }
+    }
   });
   ['acqCap', 'acqLimit'].forEach(function (id) { $(id).addEventListener('change', refresh); });
   // RA21 - Day is for Weekly only; "Only when I ask" has no day or time

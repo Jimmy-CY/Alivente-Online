@@ -350,7 +350,10 @@ print('        %d standalone template(s) do not inherit the tab: %s'
 # included into pages that do extend base and so inherit its tab.
 # RA26, 25 Nov 2026 - 20 -> 21. _ticks.html, the script behind every
 # table of ticks, another partial included into pages that extend base.
-check('  the standalone set is small and known', len(_alone) <= 21,
+# RA27, 25 Nov 2026 - 21 -> 25. The four results-table partials
+# (_plot_head, _plot_row, _result_head, _result_row), included into the
+# plot and home results pages, which extend base.
+check('  the standalone set is small and known', len(_alone) <= 25,
       '%d' % len(_alone))
 
 # ===========================================================================

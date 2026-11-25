@@ -25,8 +25,10 @@
           </table>
         </div>
         {% else %}<p class="acq-muted">No scenario is active. Resume one first.</p>{% endif %}
-        <p class="acq-muted mb-0">Sites marked <span class="acq-pc">PC</span> block the cloud &mdash; Bazaraki, Spitogatos, DOM and others. The <strong>PC search</strong> covers them: start it from your Claude scheduled tasks, with the Claude desktop app open (Help, Search runs).</p>
+        <p class="acq-muted mb-0">Sites marked <span class="acq-pc">PC</span> block the cloud &mdash; Bazaraki, Spitogatos, DOM and others. The <strong>PC search</strong> covers them: <strong>Start the PC search</strong> on the Overview or Search runs.</p>
         <p class="mt-2 mb-0" id="acqRunMsg" role="status" hidden></p>
+        {# RA27 - the runs this start made, as each site reports (run_progress). #}
+        <div class="acq-progress mt-2" id="acqRunProgress" aria-live="polite" hidden></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
@@ -46,6 +48,109 @@
     </div>
   </div>
 </div>
+{% if can_edit %}
+{# RA27, 25 Nov 2026 - STARTING THE PC SEARCH, AND FOLLOWING IT. Its task  #}
+{# belongs to Demetri's project and computer and offers no API trigger,    #}
+{# so this opens that task's page in Claude (he presses Run now there),    #}
+{# then follows the PC run as it reports, and says what to check if none   #}
+{# has started after five minutes. With PC_FIRE_URL / PC_FIRE_TOKEN on     #}
+{# Railway it starts the search itself instead (firing.py).                #}
+<div class="modal fade" id="acqPcModal" tabindex="-1" role="dialog" aria-labelledby="acqPcTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header alv-modal-head">
+        <h5 class="modal-title" id="acqPcTitle"><i class="fas fa-desktop"></i> The PC search</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2">It searches the sites marked <span class="acq-pc">PC</span> in the Claude desktop app&rsquo;s browser on your computer, for every active scenario, and reports here as you.</p>
+        <p class="acq-muted mb-2">{% if pc_ready %}Keep the Claude desktop app open, the computer awake, and Alivente Online signed in in its browser.{% else %}This opens the PC search in Claude: press <strong>Run now</strong> there. Keep the Claude desktop app open, the computer awake, and Alivente Online signed in in its browser.{% endif %}</p>
+        <p class="mb-0" id="acqPcMsg" role="status" hidden></p>
+        <div class="acq-progress mt-2" id="acqPcProgress" aria-live="polite" hidden></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn action-primary" id="acqPcGo" onclick="acqPcStart()" data-pc-url="{{ pc_task_url }}" data-pc-ready="{% if pc_ready %}1{% endif %}" data-pc-scenarios="{% for r in run_scenarios %}{{ r.pk }} {% endfor %}"><i class="fas fa-play"></i> {% if pc_ready %}Start the PC search{% else %}Open the PC search in Claude{% endif %}</button>
+      </div>
+    </div>
+  </div>
+</div>
+<form id="acqPcForm" hidden>{% csrf_token %}</form>
+<script>
+(function () {
+  if (window.acqFollow) { return; }
+  var progressUrl = "{% url 'acquisitions:run_progress' %}";
+  var timers = {};
+  function line(parent, cls, text) {
+    var p = document.createElement('div');
+    if (cls) { p.className = cls; }
+    p.textContent = text;
+    parent.appendChild(p);
+    return p;
+  }
+  // Ask every 15 seconds what the runs started since `since` have reported.
+  window.acqFollow = function (where, since, box) {
+    if (timers[where]) { clearInterval(timers[where]); }
+    box.hidden = false;
+    box.textContent = '';
+    line(box, 'acq-muted', where === 'pc' ? 'Waiting for the PC search to start…' : 'Waiting for the search to report…');
+    function ask() {
+      fetch(progressUrl + '?where=' + where + '&since=' + since, {credentials: 'same-origin'})
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d.ok) { return; }
+          box.textContent = '';
+          if (!d.runs.length) {
+            if (d.late) {
+              line(box, 'acq-bad', where === 'pc'
+                ? 'No PC search has started yet. Is the Claude desktop app open and the computer awake? Did you press Run now on the PC search?'
+                : 'No search has reported yet. Open it in Claude to see why.');
+            } else {
+              line(box, 'acq-muted', where === 'pc' ? 'Waiting for the PC search to start…' : 'Waiting for the search to report…');
+            }
+            return;
+          }
+          d.runs.forEach(function (r) {
+            var head = line(box, r.finished ? 'acq-ok' : '', (r.scenario || 'A search') + ' · started ' + r.started + ' · ' +
+              (r.finished ? 'finished: ' + r.added + ' added, ' + r.checked + ' checked' : (r.running ? 'running — ' + r.added + ' added so far' : 'did not finish')));
+            head.style.fontWeight = '600';
+            r.sites.forEach(function (s) { line(box, s.ok ? 'acq-muted' : 'acq-warn', '• ' + s.name + ' — ' + s.outcome); });
+            var a = document.createElement('a');
+            a.href = r.url; a.textContent = 'See this run';
+            box.appendChild(a);
+          });
+          if (d.done) { clearInterval(timers[where]); timers[where] = null; }
+        })
+        .catch(function () { /* the next ask tries again */ });
+    }
+    ask();
+    timers[where] = setInterval(ask, 15000);
+  };
+  window.acqPcStart = function () {
+    var go = document.getElementById('acqPcGo'), msg = document.getElementById('acqPcMsg');
+    var box = document.getElementById('acqPcProgress'), since = Date.now();
+    if (!go.getAttribute('data-pc-ready')) {
+      window.open(go.getAttribute('data-pc-url'), '_blank', 'noopener');
+      window.acqFollow('pc', since, box);
+      return;
+    }
+    var fd = new FormData();
+    fd.append('csrfmiddlewaretoken', document.querySelector('#acqPcForm [name=csrfmiddlewaretoken]').value);
+    go.getAttribute('data-pc-scenarios').trim().split(/\s+/).forEach(function (pk) { if (pk) { fd.append('scenario', pk); } });
+    go.disabled = true;
+    fetch("{% url 'acquisitions:run_pc' %}", {method: 'POST', body: fd, credentials: 'same-origin'})
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        msg.hidden = false;
+        msg.className = (d.ok ? 'acq-ok' : 'acq-bad') + ' mb-0';
+        msg.textContent = d.message;
+        if (d.ok) { window.acqFollow('pc', since, box); } else { go.disabled = false; }
+      })
+      .catch(function () { msg.hidden = false; msg.className = 'acq-bad mb-0'; msg.textContent = 'The PC search could not be started just now.'; go.disabled = false; });
+  };
+})();
+</script>
+{% endif %}
 {% if run_ready and can_edit %}
 <form id="acqRunForm" hidden>{% csrf_token %}</form>
 <script>
@@ -73,6 +178,7 @@
     if (!n) { msg.className = 'acq-bad mt-2 mb-0'; msg.textContent = 'Tick at least one scenario.'; return; }
     fd.append('csrfmiddlewaretoken', document.querySelector('#acqRunForm [name=csrfmiddlewaretoken]').value);
     go.disabled = true;
+    var started = Date.now();
     msg.className = 'acq-muted mt-2 mb-0'; msg.textContent = 'Starting\u2026';
     fetch(runUrl, {method: 'POST', body: fd, credentials: 'same-origin'})
       .then(function (r) {
@@ -81,7 +187,9 @@
       })
       .then(function (d) {
         msg.className = (d.ok ? 'acq-ok' : 'acq-bad') + ' mt-2 mb-0';
-        msg.textContent = d.message + (d.ok ? ' Results appear here as each site reports.' : '');
+        msg.textContent = d.message + (d.ok ? ' Each site appears below as it reports.' : '');
+        // RA27 - follow the runs it started, as each site reports.
+        if (d.ok && window.acqFollow) { window.acqFollow('cloud', started, document.getElementById('acqRunProgress')); }
         if (d.ok && d.session_url) {
           var a = document.createElement('a');
           a.href = d.session_url; a.target = '_blank'; a.rel = 'noopener';

@@ -160,10 +160,12 @@ class Scenario(models.Model):
         return [a for a in Area.objects.all() if a.name.lower() in names]
 
     def rescore_all(self):
-        """Re-score every match after the criteria change. No new search needed."""
+        """Re-score every match after the criteria change. No new search needed.
+        RA27 - the rules are read once, not once a listing."""
         from .scoring import apply_score
-        for match in self.matches.select_related("property"):
-            apply_score(match)
+        rules = list(self.criteria.all())
+        for match in self.matches.select_related("property", "scenario"):
+            apply_score(match, criteria=rules)
 
 
 class Criterion(models.Model):
@@ -329,9 +331,18 @@ class Property(models.Model):
     def compute_price_incl_vat(self):
         if self.asking_price is None:
             return None
-        if self.vat_status == self.VatStatus.PLUS_VAT:
+        if self.vat_status == self.VatStatus.PLUS_VAT or self.vat_assumed:
             return (self.asking_price * (1 + VAT_RATE)).quantize(Decimal("1"), ROUND_HALF_UP)
         return self.asking_price
+
+    @property
+    def vat_assumed(self):
+        """RA27, 25 Nov 2026 - a plot whose ad does not say counts as + VAT
+        (Demetri: "I want the total price including VAT for all plots.
+        Unless they are exempt from tax"). Most plot ads say nothing; VAT
+        on building land turns on who sells, which an ad rarely shows."""
+        return (self.property_type == "plot" and
+                self.vat_status in (self.VatStatus.UNKNOWN, "", None))
 
     @property
     def buildable_m2(self):

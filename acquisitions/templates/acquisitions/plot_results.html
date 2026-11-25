@@ -48,45 +48,38 @@
   </div>
 </div>
 
-<div class="alv-card mb-3">
-  <div class="alv-card-head"><span class="alv-card-title">&euro; per buildable m&sup2;</span><span class="ml-auto acq-muted">price &divide; (plot m&sup2; &times; building density) &middot; lower is better</span></div>
-  <div class="alv-card-body">
-    {% if bars %}
-    <ul class="acq-bars">{% for b in bars %}<li><a href="{% url 'acquisitions:property' b.m.property.pk %}?s={{ s.pk }}">{{ b.m.property.title }}</a><span class="acq-bar"><span style="width: {{ b.pct }}%"></span></span><strong>{{ b.m.property.price_per_buildable_m2|euros }}</strong></li>{% endfor %}</ul>
-    {% else %}<p class="acq-muted mb-0">No live plot has both a size and a building density yet.</p>{% endif %}
-  </div>
-</div>
-
+{# RA27, 25 Nov 2026 - no chart (Demetri: "Can we get rid of this graph?"): #}
+{# the table carries the area, the price incl. VAT and the per-m2 prices.  #}
 <h3 class="acq-section-h">Plots</h3>
-<div class="acq-chips">
-  {% for key, label, count in chips %}<a class="acq-chip {% if status == key %}is-on{% endif %}" href="?status={{ key }}&amp;sort={{ sort }}">{{ label }} {{ count }}</a>{% endfor %}
+<div class="d-flex flex-wrap align-items-center justify-content-between" style="gap: 8px">
+  <div class="acq-chips">
+    {% for key, label, count in chips %}<a class="acq-chip {% if status == key %}is-on{% endif %}" href="?status={{ key }}&amp;sort={{ sort }}">{{ label }} {{ count }}</a>{% endfor %}
+  </div>
+  <form method="get" class="d-flex align-items-center mb-2" style="gap: 8px">
+    <input type="hidden" name="status" value="{{ status }}">
+    <label for="acqSort" class="mb-0"><strong>Sort</strong></label>
+    <select id="acqSort" name="sort" class="form-control" onchange="this.form.submit()">{% for k, v in sorts.items %}<option value="{{ k }}" {% if sort == k %}selected{% endif %}>{{ v.0 }}</option>{% endfor %}</select>
+  </form>
 </div>
 <div class="table-container">
   <table class="table alv-table">
-    <thead><tr>
-      <th style="width: 9%">Status</th><th style="width: 7%">Score</th><th style="text-align: left; width: 18%">Plot</th><th style="width: 9%">Price</th><th style="width: 7%">Plot m&sup2;</th><th style="width: 7%">&euro;/m&sup2;</th><th style="width: 7%">Density</th><th style="width: 8%">Buildable m&sup2;</th><th style="width: 9%">&euro;/buildable m&sup2;</th><th style="width: 7%">Zone</th><th style="width: 6%">Road access</th><th style="width: 6%">Title</th>
-    </tr></thead>
-    <tbody>
-      {% for m in rows %}{% with p=m.property %}
-      <tr>
-        <td data-label="Status">{{ m.status|pill }}</td>
-        <td data-label="Score">{% if m.status == 'rejected' and not m.status_set_by_user %}&ndash;{% else %}{{ m.score|scorebar }}{% endif %}</td>
-        <td data-label="Plot" style="text-align: left"><a href="{% url 'acquisitions:property' p.pk %}?s={{ s.pk }}"><strong>{{ p.title }}</strong></a>{% if m.failed_musts %}<div class="acq-muted">fails {{ m.failed_musts|join:", " }}</div>{% endif %}</td>
-        <td data-label="Price">{{ p.price_incl_vat|euros }}</td>
-        <td data-label="Plot m²">{{ p.plot_m2|n }}</td>
-        <td data-label="€/m²">{{ p.price_per_m2|euros }}</td>
-        <td data-label="Density">{% if p.building_density_pct %}{{ p.building_density_pct|n }}%{% else %}?{% endif %}</td>
-        <td data-label="Buildable m²">{{ p.buildable_m2|n }}</td>
-        <td data-label="€/buildable m²"><strong>{{ p.price_per_buildable_m2|euros }}</strong></td>
-        <td data-label="Zone">{{ p.planning_zone|default:"?" }}</td>
-        <td data-label="Road access">{% if p.road_frontages %}{{ p.road_frontages }} road{{ p.road_frontages|pluralize }}{% else %}?{% endif %}</td>
-        <td data-label="Title">{{ p.title_deeds|yesno:"Yes,No,?" }}</td>
-      </tr>
-      {% endwith %}{% endfor %}
-    </tbody>
+    <thead>{% include 'acquisitions/_plot_head.html' %}</thead>
+    <tbody>{% for m in rows %}{% include 'acquisitions/_plot_row.html' %}{% endfor %}</tbody>
   </table>
-  {% if not rows %}<div class="alv-empty"><i class="fas fa-vector-square"></i><div class="alv-empty-title">No plots yet</div><div class="alv-empty-hint">Plots appear here as the scenario&rsquo;s searches find them.</div></div>{% endif %}
+  {% if not rows %}<div class="alv-empty"><i class="fas fa-vector-square"></i><div class="alv-empty-title">{% if rejected_rows %}Every plot here is rejected{% else %}No plots yet{% endif %}</div><div class="alv-empty-hint">{% if rejected_rows %}They are folded below.{% else %}Plots appear here as the scenario&rsquo;s searches find them.{% endif %}</div></div>{% endif %}
 </div>
+{# RA27 - "group all rejected at the bottom (collapsed, with the ability to expand)" #}
+{% if rejected_rows %}
+<details class="alv-card acq-fold mt-3">
+  <summary class="alv-card-head"><span class="alv-card-title">Rejected</span><span class="acq-muted ml-2">&middot; {{ rejected_rows|length }}</span><i class="fas fa-chevron-down ml-auto" aria-hidden="true"></i></summary>
+  <div class="table-container">
+    <table class="table alv-table">
+      <thead>{% include 'acquisitions/_plot_head.html' %}</thead>
+      <tbody>{% for m in rejected_rows %}{% include 'acquisitions/_plot_row.html' %}{% endfor %}</tbody>
+    </table>
+  </div>
+</details>
+{% endif %}
 
 {% include 'acquisitions/_run_modal.html' %}
 {% if ask_run %}{% include 'acquisitions/_after_save.html' %}{% endif %}

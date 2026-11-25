@@ -531,7 +531,13 @@ def report(run, data):
             out["sites"].append({"outcome": "error", "reason": str(e)})
     run.listings_added += added
     checked = _int(data.get("listings_checked"), "listings_checked")
-    run.listings_checked = max(run.listings_checked + len(items), checked or 0)
+    # RA27 - the search's own count of listing pages it opened, when it
+    # gives one: a listing sent twice (re-sent with a title, say) was not
+    # checked twice (the PC run showed 1,280 for 915 pages opened).
+    if checked is not None:
+        run.listings_checked = max(run.listings_checked, checked)
+    else:
+        run.listings_checked += len(items)
     if data.get("finished") is True:
         run.finished_at = timezone.now()
         run.summary = str(data.get("summary") or "")[:MAX_TEXT]
