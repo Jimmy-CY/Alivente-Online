@@ -125,7 +125,8 @@ def claims(edit, style, hlp):
         'THE EDITOR ASKS BUY OR RENT, and a plot is only bought':
             'id="acqDeal"' in edit and 'acqDealShape' in edit,
         'A NEW, EMPTY SCENARIO OPENS IN THE WIZARD':
-            "{% if can_edit and not s.pk and not preset %}" in edit,
+            # RA25 - no template to wait for. Was: ... and not preset %}
+            "{% if can_edit and not s.pk %}" in edit,
     }
 
 
@@ -155,11 +156,13 @@ ok('auctions' not in read(J(APP, 'urls.py')) and
    'def auctions(' not in read(J(APP, 'views.py')),
    'AUCTIONS & OFF-MARKET IS GONE - its tab, route, view and page (Demetri: '
    '"Not sure what it does")')
-PR = read(J(APP, 'presets.py'))
-ok('"rent": {"title": "Home to rent"' in PR and '"let":' not in PR and
-   '"auction":' not in PR,
-   'THE TEMPLATES: Home to renovate, Development plot, Home to rent - '
-   'Buy-to-let and Auction & bank-owned gone')
+# RA25, 25 Nov 2026 - the templates themselves are gone (Demetri: "due to
+# the fact that we have a Wizard, these templates are not needed"). Was:
+# presets.py holds Home to renovate, Development plot and Home to rent.
+ok(not os.path.isfile(J(APP, 'presets.py')) and
+   'Start from a template' not in read(J(TPL, 'scenarios.html')),
+   'NO TEMPLATES (RA25): Buy-to-let and Auction & bank-owned went in RA22, '
+   'the rest with the wizard')
 M = read(J(APP, 'models.py'))
 SC = read(J(APP, 'scoring.py'))
 ok('class Deal(models.TextChoices)' in M and M.count('choices=Deal.choices') == 2
@@ -252,13 +255,15 @@ if have_db:
             NEWPAGE = r.content.decode('utf-8', 'replace')
             ok(r.status_code == 200 and 'id="acqWizardModal"' in NEWPAGE,
                '  so does a new scenario\'s')
+            # RA25 - no templates: an old ?template=rent link opens an
+            # empty new scenario in the wizard. Was: set to Rent, its rules
+            # ready to change.
             t = E_.get('/acquisitions/scenarios/new/?template=rent'
                        ).content.decode()
-            ok('<option value="rent" selected>' in t and
-               '"field": "monthly_rent"' in t and
-               'data-wizard-open' in t,
-               'HOME TO RENT opens a new scenario set to Rent, its rules '
-               'ready to change')
+            ok('"field": "monthly_rent"' not in t and
+               'data-wizard-open' in t and 'acqWizard()' in t,
+               'AN OLD TEMPLATE LINK opens an empty new scenario, in the '
+               'wizard')
             t = R_.get('/acquisitions/scenarios/%d/edit/'
                        % flat.pk).content.decode()
             ok('acqWizardModal' not in t and 'data-wizard-open' not in t,

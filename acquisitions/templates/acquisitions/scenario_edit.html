@@ -520,7 +520,7 @@
 </script>
 
 {% if can_edit %}{% include 'acquisitions/_rules_wizard.html' %}{% endif %}
-{% if can_edit and not s.pk and not preset %}
+{% if can_edit and not s.pk %}
 <script>
   // RA22 - a new, empty scenario starts in the wizard (Demetri: "If we create
   // a new scenario, obviously then we must go straight to the wizard").

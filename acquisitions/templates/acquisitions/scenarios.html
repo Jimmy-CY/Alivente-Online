@@ -82,22 +82,12 @@
   <div class="alv-empty">
     <i class="fas fa-sliders-h"></i>
     <div class="alv-empty-title">{% if q or show != 'all' %}No scenario matches{% else %}No scenarios yet{% endif %}</div>
-    <div class="alv-empty-hint">{% if q or show != 'all' %}Clear the search or choose All.{% else %}Start one from a template below.{% endif %}</div>
+    <div class="alv-empty-hint">{% if q or show != 'all' %}Clear the search or choose All.{% else %}Press New scenario to build one step by step.{% endif %}</div>
   </div>
   {% endif %}
 </div>
 
-{% if can_edit %}
-<h3 class="acq-section-h mt-4">Start from a template</h3>
-<div class="acq-grid">
-  {% for key, t in templates.items %}
-  <a class="alv-card" href="{% url 'acquisitions:scenario_new' %}?template={{ key }}" style="text-decoration: none">
-    <div class="alv-card-head"><i class="fas {{ t.icon }}" aria-hidden="true"></i> <span class="alv-card-title">{{ t.title }}</span></div>
-    <div class="alv-card-body acq-muted">{{ t.blurb }}</div>
-  </a>
-  {% endfor %}
-</div>
-{% endif %}
+{# RA25, 25 Nov 2026 - no template cards: New scenario opens the wizard. #}
 
 {% render_help_modal "acquisitions" %}
 {% endblock %}

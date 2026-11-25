@@ -768,6 +768,13 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             # personal is served under it; the pages are under travel/m/
             # and keep their check.
             'travel/app/',
+            # RA25, 25 Nov 2026 - ACQUISITIONS' SEARCH DOOR. Claude's search
+            # tasks read the scenarios and report listings here, with no
+            # session - they are machines, not people. The shared key in the
+            # X-Acq-Key header (ACQ_INTAKE_KEY on Railway) is the credential
+            # and acquisitions/api.py checks it. Only this one path: every
+            # screen under acquisitions/ keeps its permission check.
+            'acquisitions/api/',
             'media/',  # Media files
             'static/',  # Static files
             # Removed empty string '' that was matching everything

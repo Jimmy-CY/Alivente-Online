@@ -131,7 +131,9 @@ head('1. THE SOURCE')
 NOW = [read(p) for p in (BASE, URLS, SETTINGS, TREE, MODELS)]
 for m, got in claims(*NOW).items():
     ok(got, m)
-NEW = ['views.py', 'urls.py', 'services.py', 'presets.py',
+# RA25, 25 Nov 2026 - presets.py (the template cards) is gone: the wizard
+# builds a new scenario.
+NEW = ['views.py', 'urls.py', 'services.py',
        'templatetags/__init__.py', 'templatetags/acq.py',
        'migrations/0002_decision_note_watch_settings.py']
 missing = [f for f in NEW if not os.path.isfile(J(APP, f))] + \
@@ -326,7 +328,7 @@ if have_db:
             U = dict(
                 overview='/acquisitions/',
                 scenarios='/acquisitions/scenarios/',
-                scenario_new='/acquisitions/scenarios/new/?template=rent',
+                scenario_new='/acquisitions/scenarios/new/',       # RA25 - no ?template=
                 scenario_edit='/acquisitions/scenarios/%d/edit/' % apt.pk,
                 scenario_results='/acquisitions/scenarios/%d/' % apt.pk,
                 plot_results='/acquisitions/scenarios/%d/' % plot.pk,

@@ -1704,6 +1704,8 @@ ROUNDS = [
     '.bak_ra23',
     # RA24, 25 Nov 2026 - run now, after save, the wizard's Skip, more features.
     '.bak_ra24',
+    # RA25, 25 Nov 2026 - the search reports into the app; no template cards.
+    '.bak_ra25',
 ]
 
 

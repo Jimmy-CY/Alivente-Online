@@ -1,7 +1,7 @@
 """Property Acquisitions - mounted at /acquisitions/ (RA19, 23 Nov 2026)."""
 from django.urls import path
 
-from . import views
+from . import api, views
 
 app_name = "acquisitions"
 
@@ -26,4 +26,8 @@ urlpatterns = [
     path("price-watch/", views.price_watch, name="price_watch"),
     path("market/", views.market, name="market"),
     path("runs/", views.runs, name="runs"),
+    # RA25 - the door Claude's search tasks use (a key, no login: api.py).
+    path("api/scenarios/", api.scenarios, name="api_scenarios"),
+    path("api/runs/", api.run_start, name="api_run_start"),
+    path("api/runs/<int:pk>/report/", api.run_report, name="api_run_report"),
 ]

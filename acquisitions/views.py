@@ -11,6 +11,9 @@ can_edit_acquisitions.
 THE APP NEVER SEARCHES. Claude's scheduled tasks do the searching and
 write here (step 3 adds the connector); until then "Run this search now"
 explains how to start one from Claude.
+
+RA25, 25 Nov 2026 - the connector: the search tasks read the scenarios and
+report into the app through api.py (a key, no login); intake.py does it.
 """
 import csv
 import json
@@ -29,7 +32,7 @@ from django.utils.text import slugify
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
 
-from . import firing, presets, services as S
+from . import firing, services as S
 from .models import (Area, Criterion, Deal, MarketSnapshot, Property, PropertyType, Scenario,
                      ScenarioMatch, SearchRun, Viewing, WatchSettings, Website)
 from .scoring import FIELDS, apply_score, evaluate
@@ -122,8 +125,7 @@ def scenario_list(request):
     return _page(request, "scenarios.html", "scenarios", rows=rows, show=show, q=q,
                  n_all=len(everything),
                  n_active=sum(1 for s in everything if s.is_active),
-                 n_paused=sum(1 for s in everything if not s.is_active),
-                 templates=presets.TEMPLATES)
+                 n_paused=sum(1 for s in everything if not s.is_active))
 
 
 @login_required
@@ -229,7 +231,6 @@ def scenario_edit(request, pk=None):
         if not request.user.has_perm(EDIT):
             return HttpResponse(status=403)
         return _save_scenario(request, scenario)
-    tpl = request.GET.get("template")
     if scenario is not None:
         rows = [dict(S.criterion_row(c), **_raw(c)) for c in scenario.criteria.all()]
         site_ids = set(scenario.websites.values_list("pk", flat=True))
@@ -238,13 +239,9 @@ def scenario_edit(request, pk=None):
                             max_unknown_musts=4, unknown_score_cap=60)
         rows = []
         site_ids = set()
-        if tpl in presets.TEMPLATES:
-            t = presets.TEMPLATES[tpl]
-            scenario.name = t["title"]
-            scenario.property_type = t["property_type"]
-            scenario.deal = t.get("deal", "buy")      # RA22 - Home to rent
-            rows = presets.criteria_dicts(tpl)
-            site_ids = set(Website.objects.filter(is_active=True).values_list("pk", flat=True))
+        # RA25, 25 Nov 2026 - no templates: a new scenario is built in the
+        # wizard (Demetri: "due to the fact that we have a Wizard, these
+        # templates are not needed ... We can remove this section").
         scenario.pk = None
     return _page(request, "scenario_edit.html", "scenarios", s=scenario,
                  rows=rows,
@@ -254,7 +251,7 @@ def scenario_edit(request, pk=None):
                  kinds=Criterion.Kind.choices, operators=Criterion.Operator.choices,
                  types=PropertyType.choices, deals=Deal.choices, cadences=Scenario.CADENCE_CHOICES,
                  weekdays=Scenario.WEEKDAY_CHOICES, blocked=Scenario.BLOCKED_CHOICES,
-                 notify=Scenario.NOTIFY_CHOICES, preset=tpl)
+                 notify=Scenario.NOTIFY_CHOICES)
 
 
 def _raw(c):

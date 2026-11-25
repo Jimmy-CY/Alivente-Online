@@ -45,9 +45,12 @@ def payload(scenarios):
     """The text the run is started with: the scenarios to search, by name
     (the task's prompt searches only the ones named)."""
     names = "; ".join('"%s"' % s.name for s in scenarios)
-    return ("Alivente Online asks for a search now of %d scenario%s: %s. "
+    # RA25 - and by id, for the app's api/scenarios/?only= (intake.py).
+    ids = ",".join(str(s.pk) for s in scenarios if getattr(s, "pk", None))
+    return ("Alivente Online asks for a search now of %d scenario%s: %s%s. "
             "Search only these, then report to the app as usual."
-            % (len(scenarios), "" if len(scenarios) == 1 else "s", names))
+            % (len(scenarios), "" if len(scenarios) == 1 else "s", names,
+               " (scenario ids %s)" % ids if ids else ""))
 
 
 def fire(scenarios, opener=None):
