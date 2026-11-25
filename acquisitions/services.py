@@ -437,6 +437,12 @@ def run_outcome(run):
     """'2 sites blocked' / 'All sites searched' / None."""
     if run is None:
         return None
+    # RA26 - not yet finished is not a fault (Demetri saw "No site results
+    # recorded" in amber while the first search was still working).
+    if run.is_running:
+        return "Still running"
+    if run.did_not_finish:
+        return "Did not finish"
     rs = list(run.site_results.all())
     bad = [r for r in rs if r.outcome in ("blocked", "unreachable", "partial")]
     if not rs:

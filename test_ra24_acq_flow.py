@@ -125,9 +125,12 @@ def claims(edit, wiz, run, over, prop, brief, views, serv, hlp):
             over.count('<details class="alv-card acq-fold">') == 2,
         'THE WIZARD: Skip this step, and Use these rules on a new scenario':
             'id="wzSkip"' in wiz and 'Use these rules' in wiz,
+        # RA26 - the two buttons became a header tick box on a table of
+        # rows (Demetri: "I don't like the Select All Button"). Was:
+        # acqPick('acqSites', true) / acqPick('rAreas', false) / acqPick('wzAreas', true).
         'SELECT ALL / SELECT NONE for websites and areas':
-            "acqPick('acqSites', true)" in edit and "acqPick('rAreas', false)" in edit
-            and "acqPick('wzAreas', true)" in wiz,
+            'id="acqSites"' in edit and 'id="rAreas"' in edit and 'id="wzAreas"' in wiz
+            and edit.count('data-tick-all') + wiz.count('data-tick-all') >= 3,
         'THE THREE BUTTONS AND THE TWO BOXES ARE EXPLAINED':
             '<dl class="acq-explain' in edit and 'id="acqCapHow"' in edit and 'id="acqLimitHow"' in edit,
         'MORE FEATURES, IN GROUPS; parking and year are yours to set':
@@ -351,9 +354,9 @@ else:
         wizard(pg)
         ok(pg.evaluate("document.getElementById('wzSkip').hidden"), 'NO SKIP on the first step')
         pg.click('#wzNext')
-        pg.click('#acqWizardModal .acq-pick button:nth-child(1)')
+        pg.click('#acqWizardModal [data-tick-all]')   # RA26 - was .acq-pick button:nth-child(1)
         n_all = pg.evaluate("[...document.querySelectorAll('#wzAreas input')].filter(c => c.checked).length")
-        pg.click('#acqWizardModal .acq-pick button:nth-child(2)')
+        pg.click('#acqWizardModal [data-tick-all]')   # RA26 - was .acq-pick button:nth-child(2)
         n_none = pg.evaluate("[...document.querySelectorAll('#wzAreas input')].filter(c => c.checked).length")
         ok(n_all >= 10 and n_none == 0, 'SELECT ALL ticks every area, SELECT NONE clears them', (n_all, n_none))
         ok(not pg.evaluate("document.getElementById('wzSkip').hidden"), 'SKIP is offered from step 2')

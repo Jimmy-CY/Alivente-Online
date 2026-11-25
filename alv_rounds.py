@@ -1706,6 +1706,8 @@ ROUNDS = [
     '.bak_ra24',
     # RA25, 25 Nov 2026 - the search reports into the app; no template cards.
     '.bak_ra25',
+    # RA26, 25 Nov 2026 - tick tables, the PC search reports as you, Running, a renewal is not a gap.
+    '.bak_ra26',
 ]
 
 

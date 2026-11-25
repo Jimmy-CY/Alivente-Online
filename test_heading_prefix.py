@@ -348,7 +348,9 @@ print('        %d standalone template(s) do not inherit the tab: %s'
 # RA19, 23 Nov 2026 - 16 -> 20. Acquisitions adds four: its offer-brief
 # PDF body, which never reaches a browser tab, and three partials
 # included into pages that do extend base and so inherit its tab.
-check('  the standalone set is small and known', len(_alone) <= 20,
+# RA26, 25 Nov 2026 - 20 -> 21. _ticks.html, the script behind every
+# table of ticks, another partial included into pages that extend base.
+check('  the standalone set is small and known', len(_alone) <= 21,
       '%d' % len(_alone))
 
 # ===========================================================================

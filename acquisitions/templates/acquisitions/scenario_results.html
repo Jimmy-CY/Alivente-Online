@@ -60,7 +60,8 @@
       {% endif %}
       <div class="alv-stats mt-3">
         <div class="alv-stat"><div class="alv-stat-value">{{ tracked }}</div><div class="alv-stat-label">Tracked</div></div>
-        <div class="alv-stat"><div class="alv-stat-value">{% if price_lo %}{{ price_lo|euros_k }}{% if price_hi != price_lo %}&ndash;{{ price_hi|euros_k }}{% endif %}{% else %}&ndash;{% endif %}</div><div class="alv-stat-label">Price range (live)</div></div>
+        {# RA26 - a range may break after its dash (Demetri: "This is cutting off"). #}
+        <div class="alv-stat acq-stat-range"><div class="alv-stat-value">{% if price_lo %}{{ price_lo|euros_k }}{% if price_hi != price_lo %}&ndash;<wbr>{{ price_hi|euros_k }}{% endif %}{% else %}&ndash;{% endif %}</div><div class="alv-stat-label">Price range (live)</div></div>
         <div class="alv-stat"><div class="alv-stat-value">{{ median_ppm|euros }}</div><div class="alv-stat-label">Live median &euro;/m&sup2;</div></div>
         <div class="alv-stat"><div class="alv-stat-value">{% if area_median %}{{ area_median.median_price_per_m2|euros }}{% else %}&ndash;{% endif %}</div><div class="alv-stat-label">{% if area_median %}{{ area_median.area.name }} asking median{% else %}Area median (no snapshot yet){% endif %}</div></div>
       </div>

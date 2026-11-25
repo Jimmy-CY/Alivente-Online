@@ -32,7 +32,7 @@
   <div class="alv-stat"><div class="alv-stat-value">{{ kpi_new }}</div><div class="alv-stat-label">New this week</div></div>
   <div class="alv-stat alv-stat-good"><div class="alv-stat-value">{{ kpi_short }}</div><div class="alv-stat-label">Shortlisted</div></div>
   <div class="alv-stat {% if kpi_price %}alv-stat-attn{% endif %}"><div class="alv-stat-value">{{ kpi_price }}</div><div class="alv-stat-label">Price drops, 7 days</div></div>
-  <div class="alv-stat {% if last and last_outcome != 'All sites searched' %}alv-stat-attn{% endif %}">
+  <div class="alv-stat {% if last and last_outcome != 'All sites searched' and not last.is_running %}alv-stat-attn{% endif %}">
     <div class="alv-stat-value">{% if last %}{{ last.started_at|date:"H:i" }}{% else %}&ndash;{% endif %}</div>
     <div class="alv-stat-label">{% if last %}Last run &middot; {{ last_outcome }}{% else %}No search has reported yet{% endif %}</div>
   </div>
@@ -104,11 +104,13 @@
         {% for r in last.site_results.all %}
         <li><span>{{ r.website.name }}</span><span class="{% if r.outcome == 'full' %}acq-ok{% elif r.outcome == 'skipped' %}acq-muted{% else %}acq-bad{% endif %}">{{ r.get_outcome_display }}{% if r.pages_total %} &middot; {{ r.pages_searched|default:0 }} of {{ r.pages_total }} pages{% endif %}</span></li>
         {% empty %}
-        <li><span class="acq-muted">No site results recorded.</span></li>
+        <li><span class="acq-muted">{% if last.is_running %}Still running &mdash; each site appears here as the search reports it.{% else %}No site results recorded.{% endif %}</span></li>
         {% endfor %}
       </ul>
-      {% if last_outcome != 'All sites searched' %}
-      <button type="button" class="btn action-secondary mt-3" data-toggle="modal" data-target="#acqRunModal"><i class="fas fa-desktop"></i> Search blocked sites on my PC</button>
+      {% if last_outcome != 'All sites searched' and not last.is_running %}
+      {# RA26 - the PC search is its own scheduled task, started in Claude. #}
+      <a href="https://claude.ai/code/routines" target="_blank" rel="noopener" class="btn action-secondary mt-3"><i class="fas fa-desktop"></i> Start the PC search</a>
+      <p class="acq-muted mt-2 mb-0">Opens your Claude scheduled tasks: press <strong>Run now</strong> on the PC search, with the Claude desktop app open and the computer awake. It searches the sites marked PC and reports here.</p>
       {% endif %}
       {% else %}
       <p class="acq-muted mb-0">No search has reported to the app yet. Searches report here once Claude is connected to the app.</p>

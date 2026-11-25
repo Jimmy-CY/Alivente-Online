@@ -199,6 +199,14 @@ def period_gaps(period_first):
     lease lapses or a renewal is left blank, and goes quiet once the
     tenant is genuinely gone, because there is no invoice last period
     either.
+
+    RA26, 25 Nov 2026 - A RENEWAL IS A NEW ROW. Each lease is its own
+    tenant record, so November's invoice belongs to the lease ending 30
+    November and December's draft to the renewal starting 1 December.
+    Matching by row reported Assetworth as "lease ended 30 Nov 2026" in
+    the same email that listed its December draft (PR-0185). The tenant
+    is covered when ANOTHER lease of the same tenant on the same property
+    is invoiced this period or covers it.
     """
     prev = _previous_period(period_first)
     had = (PhysicalInvoice.objects
@@ -210,11 +218,21 @@ def period_gaps(period_first):
                           period_month=period_first.month,
                           tenant__isnull=False)
                   .values_list("tenant_id", flat=True))
-    covering = {t.pk for t in leases_for_period(period_first)}
+    leases = list(leases_for_period(period_first))
+    covering = {t.pk for t in leases}
+
+    def same(t):
+        name = (t.tenant_name or "").strip().lower()
+        return (name, t.prop_id) if name else None    # no name: no match
+
+    # RA26 - the same tenant on the same property, by any of its leases.
+    held = {same(t) for t in leases} | {
+        same(t) for t in Tenant.objects.filter(pk__in=now_ids)}
     rows = []
     for pi in had:
         t = pi.tenant
-        if t.pk in now_ids or t.pk in covering:
+        if t.pk in now_ids or t.pk in covering or (
+                same(t) is not None and same(t) in held):
             continue
         if not t.tenant_physical_invoice_required:
             why = "no longer flagged for physical invoicing"

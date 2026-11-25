@@ -103,7 +103,8 @@ CRS_N = 8
 # Acquisitions app, kept beside its code the way CRS is. Fourteen
 # templates, every basename distinct from the other two roots.
 # RA24, 25 Nov 2026 - fifteen: _after_save.html (was 14).
-ACQ_N = 15
+# RA26, 25 Nov 2026 - sixteen: _ticks.html (was 15).
+ACQ_N = 16
 TOTAL_N = MAIN_N + CRS_N + ACQ_N
 
 CRS_PAGES = [

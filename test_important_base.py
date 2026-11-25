@@ -286,7 +286,8 @@ ok(not any(d[0] == 'manual_pdf.html' for d in drift),
 # _rules_wizard.html, included into the scenario editor. test_ra22_rules_
 # wizard.py checks it holds no colour and no style attribute.
 # RA24, 25 Nov 2026 - 24 (was 23): _after_save.html, the Run it now or wait question after Save scenario, a partial with no colour of its own.
-ok(len(stand) == 24, '  twenty-four templates are standalone',
+# RA26, 25 Nov 2026 - 25 (was 24): _ticks.html, the script behind every table of ticks (the header's tick box), a partial with no colour of its own.
+ok(len(stand) == 25, '  twenty-five templates are standalone',
    sorted(stand))
 
 # (b) a grouped selector is one declaration, not two

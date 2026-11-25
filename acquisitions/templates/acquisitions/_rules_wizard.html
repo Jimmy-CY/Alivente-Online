@@ -36,8 +36,13 @@
         <section data-wz-step="where" hidden>
           <p class="acq-wz-q">Where must it be?</p>
           <p class="acq-muted">Tick the areas. A listing anywhere else is rejected. This becomes the Location rule.</p>
-          <div class="acq-pick" data-pick-for="wzAreas"><button type="button" class="btn action-secondary" onclick="acqPick('wzAreas', true)">Select all</button> <button type="button" class="btn action-secondary" onclick="acqPick('wzAreas', false)">Select none</button></div>
-          <div class="acq-check-list mb-2" id="wzAreas">{% for a in areas %}<label><input type="checkbox" value="{{ a.name }}" data-wz-area> {{ a.name }}</label>{% endfor %}</div>
+          {# RA26 - one area a row; the header's tick box ticks or clears them all (_ticks.html). #}
+          <div class="table-container acq-tick-wrap">
+            <table class="table alv-table acq-tick-table">
+              <thead><tr><th><label class="acq-tick"><input type="checkbox" data-tick-all aria-label="Tick or clear every area"> Area</label></th><th>Other spellings</th></tr></thead>
+              <tbody id="wzAreas">{% for a in areas %}<tr><td data-label="Area"><label class="acq-tick"><input type="checkbox" value="{{ a.name }}" data-wz-area> {{ a.name }}</label></td><td data-label="Other spellings" class="acq-muted">{{ a.aliases|join:", " }}</td></tr>{% endfor %}</tbody>
+            </table>
+          </div>
           {% if can_edit %}<div class="acq-add-area">
             <p class="acq-muted mb-1">Not in the list? Add it:</p>
             <div class="form-row align-items-end">
@@ -254,6 +259,7 @@
     r = null;
     now.forEach(function (x) { if (!r && x.field === 'area' && x.kind === 'must') { r = x; } });
     (r ? r.text_values || [] : []).forEach(function (v) { tick(String(v).trim(), true); });
+    if (window.acqTicksSync) { window.acqTicksSync(); }
     r = find(function (x) { return x.field === priceField() && x.kind === 'must'; });
     put('wzPriceMax', r ? r.num_max : null);
     r = find(function (x) { return x.field === priceField() && x.kind === 'scoring'; });
@@ -294,13 +300,21 @@
     if (!name) { return null; }
     box.querySelectorAll('[data-wz-area]').forEach(function (cb) { if (cb.value.toLowerCase() === want) { found = cb; } });
     if (!found) {
-      var lab = document.createElement('label');
+      // RA26 - a row of the areas table, as the page draws them.
+      var tr = document.createElement('tr'), td = document.createElement('td'),
+          lab = document.createElement('label'), aka = document.createElement('td');
+      td.setAttribute('data-label', 'Area');
+      aka.setAttribute('data-label', 'Other spellings');
+      aka.className = 'acq-muted';
+      lab.className = 'acq-tick';
       found = document.createElement('input');
       found.type = 'checkbox'; found.value = name; found.setAttribute('data-wz-area', '');
       lab.appendChild(found); lab.appendChild(document.createTextNode(' ' + name));
-      box.appendChild(lab);
+      td.appendChild(lab); tr.appendChild(td); tr.appendChild(aka);
+      box.appendChild(tr);
     }
     found.checked = on;
+    if (window.acqTicksSync) { window.acqTicksSync(); }
     return found;
   }
   function ticked() {

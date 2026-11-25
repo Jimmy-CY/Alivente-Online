@@ -32,7 +32,7 @@
           <td data-label="Sites">{{ r.sites_text }}</td>
           <td data-label="Checked">{{ r.listings_checked }}</td>
           <td data-label="New">{{ r.listings_added }}</td>
-          <td data-label="Result">{% if r.complete %}<span class="alv-pill alv-pill-good">Complete</span>{% else %}<span class="alv-pill alv-pill-attn">Incomplete</span>{% endif %}</td>
+          <td data-label="Result">{% if r.is_running %}<span class="alv-pill alv-pill-info">Running</span>{% elif r.did_not_finish %}<span class="alv-pill alv-pill-bad">Did not finish</span>{% elif r.complete %}<span class="alv-pill alv-pill-good">Complete</span>{% else %}<span class="alv-pill alv-pill-attn">Incomplete</span>{% endif %}</td>
           <td class="desktop-action-cell cell-actions"><span class="row-actions"><a href="?run={{ r.pk }}" class="icon-action-btn icon-view" title="Show this run"><i class="fas fa-eye"></i></a></span></td>
           <td class="mobile-action-bar"><a href="?run={{ r.pk }}" class="mobile-action-btn"><i class="fas fa-eye mobile-action-icon icon-color-view"></i><span class="mobile-action-label">Show</span></a></td>
         </tr>
@@ -49,14 +49,18 @@
       <ul class="acq-sites">
         {% for s in chosen.site_results.all %}
         <li><span>{{ s.website.name }}</span><span class="{% if s.outcome == 'full' %}acq-ok{% elif s.outcome == 'skipped' %}acq-muted{% else %}acq-bad{% endif %}">{{ s.get_outcome_display }}{% if s.pages_total %} &middot; {{ s.pages_searched|default:0 }} of {{ s.pages_total }} pages{% endif %}{% if s.listings_opened %} &middot; {{ s.listings_opened }} opened{% endif %}{% if s.notes %} &middot; {{ s.notes }}{% endif %}</span></li>
-        {% empty %}<li><span class="acq-muted">No site results recorded.</span></li>{% endfor %}
+        {% empty %}<li><span class="acq-muted">{% if chosen.is_running %}Still running &mdash; each site appears here as the search reports it.{% else %}No site results recorded.{% endif %}</span></li>{% endfor %}
       </ul>
       {% if chosen.summary %}<p class="mt-3 mb-1"><strong>Summary sent:</strong></p><p class="acq-quote">{{ chosen.summary|linebreaksbr }}</p>{% endif %}
       {% for f in chosen.follow_ups.all %}
       <p class="mt-3 mb-0"><strong>Follow-up:</strong> <span class="acq-ok">&#10003;</span> {{ f.get_where_display }} search started {{ f.started_at|date:"H:i" }}{% if f.finished_at %}, completed {{ f.finished_at|date:"H:i" }}{% endif %}.</p>
       {% endfor %}
       {% if chosen.follow_up_of %}<p class="acq-muted mt-3 mb-0">Finishes the {{ chosen.follow_up_of.started_at|date:"H:i" }} cloud run.</p>{% endif %}
-      <button type="button" class="btn action-secondary mt-3" data-toggle="modal" data-target="#acqRunModal"><i class="fas fa-desktop"></i> Search blocked sites on my PC again</button>
+      {# RA26 - the PC search is its own scheduled task, started in Claude. #}
+      {% if not chosen.is_running and not chosen.complete %}
+      <a href="https://claude.ai/code/routines" target="_blank" rel="noopener" class="btn action-secondary mt-3"><i class="fas fa-desktop"></i> Start the PC search</a>
+      <p class="acq-muted mt-2 mb-0">Opens your Claude scheduled tasks: press <strong>Run now</strong> on the PC search, with the Claude desktop app open and the computer awake. It searches the sites marked PC and reports here.</p>
+      {% endif %}
     </div>
   </div>
   {% endif %}

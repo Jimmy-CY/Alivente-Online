@@ -272,11 +272,12 @@ head('1. THE CENSUS BUG, MADE PERMANENT')
 # RA19, 23 Nov 2026 - the Acquisitions templates, 14 of them in a root of
 # their own, all in its acquisitions/ folder (was 164, 26 and 7 folders).
 # RA24, 25 Nov 2026 - _after_save.html, in acquisitions/ (was 178 and 40).
-ok(len(tree) == 179, 'a WALK finds 179 templates', len(tree))
+# RA26, 25 Nov 2026 - _ticks.html, in acquisitions/ (was 179 and 41).
+ok(len(tree) == 180, 'a WALK finds 180 templates', len(tree))
 ok(len(top) == 138, '  a flat listing finds 138 - 120 was what H7 '
    'counted, 122 after MN-1, and RD-1 adds the quick-look pair',
    len(top))
-ok(len(sub) == 41, '  so 41 live in subdirectories and H7 never saw them',
+ok(len(sub) == 42, '  so 42 live in subdirectories and H7 never saw them',
    len(sub))
 folders = sorted({rel.split('/')[0] for rel, _ in sub})
 ok(len(folders) == 8, '  across %d folders: %s' % (len(folders),

@@ -16,9 +16,16 @@
       {% if run_ready and can_edit %}
       <div class="modal-body">
         <p class="mb-2">Claude searches the ticked scenarios now, on every site that does not block the cloud. Untick any you do not want this time.</p>
-        <div class="acq-pick"><button type="button" class="btn action-secondary" onclick="acqPickRun(true)">Select all</button> <button type="button" class="btn action-secondary" onclick="acqPickRun(false)">Select none</button></div>
-        <div class="acq-check-list mb-2" id="acqRunList">{% for r in run_scenarios %}<label><input type="checkbox" value="{{ r.pk }}" data-run-scenario checked> {{ r.name }}</label>{% empty %}<span class="acq-muted">No scenario is active. Resume one first.</span>{% endfor %}</div>
-        <p class="acq-muted mb-0">Bazaraki, Spitogatos and DOM block the cloud: they are searched from your computer when you type <strong>PC</strong> in the session from the daily email.</p>
+        {# RA26 - one scenario a row; the header's tick box ticks or clears them all (_ticks.html). #}
+        {% if run_scenarios %}
+        <div class="table-container acq-tick-wrap">
+          <table class="table alv-table acq-tick-table">
+            <thead><tr><th><label class="acq-tick"><input type="checkbox" data-tick-all checked aria-label="Tick or clear every scenario"> Scenario</label></th><th>Type</th><th>Schedule</th></tr></thead>
+            <tbody id="acqRunList">{% for r in run_scenarios %}<tr><td data-label="Scenario"><label class="acq-tick"><input type="checkbox" value="{{ r.pk }}" data-run-scenario checked> {{ r.name }}</label></td><td data-label="Type">{{ r.get_property_type_display }}{% if r.property_type != 'plot' %} &middot; {{ r.get_deal_display }}{% endif %}</td><td data-label="Schedule">{{ r.schedule_words }}</td></tr>{% endfor %}</tbody>
+          </table>
+        </div>
+        {% else %}<p class="acq-muted">No scenario is active. Resume one first.</p>{% endif %}
+        <p class="acq-muted mb-0">Sites marked <span class="acq-pc">PC</span> block the cloud &mdash; Bazaraki, Spitogatos, DOM and others. The <strong>PC search</strong> covers them: start it from your Claude scheduled tasks, with the Claude desktop app open (Help, Search runs).</p>
         <p class="mt-2 mb-0" id="acqRunMsg" role="status" hidden></p>
       </div>
       <div class="modal-footer">
@@ -28,8 +35,8 @@
       {% else %}
       <div class="modal-body">
         <p>Searches are run by Claude&rsquo;s scheduled tasks, not by Alivente Online &mdash; the property sites block searches from a data centre like the one the app runs in.</p>
-        <p class="mb-2"><strong>To run one now</strong>, open the Claude app, go to <strong>Scheduled tasks</strong> and press <strong>Run now</strong> on &ldquo;Daily Nicosia apartment search&rdquo;.</p>
-        <p class="mb-2"><strong>For the sites that block the cloud</strong> (Bazaraki, Spitogatos, DOM), open the session from the daily email on your computer and type <strong>PC</strong>. Keep the Claude desktop app open and the laptop awake.</p>
+        <p class="mb-2"><strong>To run one now</strong>, open your Claude scheduled tasks (claude.ai/code/routines) and press <strong>Run now</strong> on &ldquo;Alivente property search &ndash; cloud&rdquo;.</p>
+        <p class="mb-2"><strong>For the sites that block the cloud</strong> (marked <span class="acq-pc">PC</span>), press <strong>Run now</strong> on the PC search there instead, with the Claude desktop app open and the computer awake.</p>
         <p class="acq-muted mb-0">{% if can_edit %}To start a search from this button, give the search task an API trigger and put its Fire URL and token on Railway &mdash; Help, Search runs, says how.{% else %}Someone who can edit Acquisitions can start a search from here.{% endif %}</p>
       </div>
       <div class="modal-footer">
@@ -45,10 +52,10 @@
 (function () {
   var runUrl = "{% url 'acquisitions:run_now' %}";
   var boxes = function () { return document.querySelectorAll('#acqRunList [data-run-scenario]'); };
-  window.acqPickRun = function (on) { boxes().forEach(function (cb) { cb.checked = on; }); };
   // Open with all ticked, or only the one a button names.
   window.acqRunOpen = function (only) {
     boxes().forEach(function (cb) { cb.checked = !only || cb.value === String(only); });
+    if (window.acqTicksSync) { window.acqTicksSync(document.getElementById('acqRunModal')); }
     var msg = document.getElementById('acqRunMsg');
     msg.hidden = true; msg.textContent = '';
     document.getElementById('acqRunGo').disabled = false;

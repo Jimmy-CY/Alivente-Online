@@ -14,6 +14,15 @@ setting every call answers 503, so nothing can be written until he sets it;
 a key shorter than 32 characters counts as not set. The key is never
 echoed back, and a wrong one is answered without saying why.
 
+RA26, 25 Nov 2026 - OR SIGNED IN. The PC search runs in the Claude app's
+own browser on Demetri's computer, which cannot carry the key; it reports
+from a page of the app instead, signed in as him. So a request with no key
+header comes in when its session belongs to someone who may see
+Acquisitions (reading) or edit it (a run or a report) - and a POST must
+carry the session's CSRF token, exactly as a form in the app does, so no
+other site can post a report in his name. A request WITH a key header is
+judged on the key alone.
+
 Everything else is in intake.py.
 """
 import hmac
@@ -21,6 +30,7 @@ import json
 import os
 
 from django.http import JsonResponse
+from django.middleware.csrf import CsrfViewMiddleware
 from django.views.decorators.csrf import csrf_exempt
 
 from . import intake
@@ -30,6 +40,8 @@ KEY_ENV = "ACQ_INTAKE_KEY"
 HEADER = "X-Acq-Key"
 MIN_KEY = 32
 MAX_BODY = 2 * 1024 * 1024
+VIEW = "auth.can_access_acquisitions"       # as views.py
+EDIT = "auth.can_edit_acquisitions"
 
 
 def configured():
@@ -44,10 +56,19 @@ def _door(request, method):
     """None when the request may come in; otherwise the answer to give."""
     if request.method != method:
         return _refuse("use %s" % method, 405)
+    given = (request.headers.get(HEADER) or "").strip().encode()
+    user = getattr(request, "user", None)
+    if not given and user is not None and user.is_authenticated:
+        # RA26 - signed in: the PC search, from the app's own page.
+        if not user.has_perm(EDIT if method == "POST" else VIEW):
+            return _refuse("permission", 403)
+        if method == "POST" and CsrfViewMiddleware(
+                lambda r: None).process_view(request, None, (), {}) is not None:
+            return _refuse("csrf", 403)
+        return None
     if not configured():
         return _refuse("not configured", 503)
     key = (os.environ.get(KEY_ENV) or "").strip().encode()
-    given = (request.headers.get(HEADER) or "").strip().encode()
     if not hmac.compare_digest(key, given):
         return _refuse("key", 401)
     return None

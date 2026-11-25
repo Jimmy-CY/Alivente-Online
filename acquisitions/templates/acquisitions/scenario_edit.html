@@ -52,12 +52,16 @@
     {# RA21, 24 Nov 2026 - the websites only. The areas are the Location rule's (Demetri: "Areas must come out of Where to look"). #}
     <div>
       <p class="mb-1"><strong>Websites</strong> <span class="acq-muted">&mdash; the area a property must be in is the <strong>Location</strong> rule under Criteria.</span></p>
-      {# RA24 - Select all / Select none (Demetri). #}
-      <div class="acq-pick"><button type="button" class="btn action-secondary" onclick="acqPick('acqSites', true)">Select all</button> <button type="button" class="btn action-secondary" onclick="acqPick('acqSites', false)">Select none</button></div>
-      <div class="acq-check-list" id="acqSites">
-        {% for w in sites %}<label><input type="checkbox" name="websites" value="{{ w.pk }}" {% if w.pk in site_ids %}checked{% endif %}> {{ w.name }}{% if w.needs_pc %}<span class="acq-pc" title="This site blocks the cloud, so it is searched from your computer when you ask">PC</span>{% endif %}</label>{% endfor %}
+      {# RA26 - one website a row; the header's tick box ticks or clears them all (Demetri: "in some sort of table on top of each other"). #}
+      <div class="table-container acq-tick-wrap">
+        <table class="table alv-table acq-tick-table">
+          <thead><tr><th><label class="acq-tick"><input type="checkbox" data-tick-all aria-label="Tick or clear every website"> Website</label></th><th>Kind</th><th>Searched from</th></tr></thead>
+          <tbody id="acqSites">
+            {% for w in sites %}<tr><td data-label="Website"><label class="acq-tick"><input type="checkbox" name="websites" value="{{ w.pk }}" {% if w.pk in site_ids %}checked{% endif %}> {{ w.name }}</label></td><td data-label="Kind">{{ w.get_kind_display }}</td><td data-label="Searched from">{% if w.needs_pc %}<span class="acq-pc" title="This site blocks the cloud, so the PC search covers it">PC</span>{% else %}Cloud{% endif %}</td></tr>{% endfor %}
+          </tbody>
+        </table>
       </div>
-      <p class="acq-muted mt-2 mb-0"><span class="acq-pc">PC</span> = this site blocks the cloud, so it&rsquo;s searched from your computer when you ask.</p>
+      <p class="acq-muted mt-2 mb-0"><span class="acq-pc">PC</span> = this site blocks the cloud, so the PC search covers it, from your computer.</p>
     </div>
   </div>
 
@@ -172,8 +176,12 @@
         {# RA21 - the Location rule: tick the areas; add one that is missing. #}
         <div data-shape="areas">
           <p class="mb-1"><strong>Areas</strong> <span class="acq-muted">(a listing must be in one of these)</span></p>
-          <div class="acq-pick"><button type="button" class="btn action-secondary" onclick="acqPick('rAreas', true)">Select all</button> <button type="button" class="btn action-secondary" onclick="acqPick('rAreas', false)">Select none</button></div>
-          <div class="acq-check-list mb-2" id="rAreas">{% for a in areas %}<label><input type="checkbox" value="{{ a.name }}" data-area> {{ a.name }}</label>{% endfor %}</div>
+          <div class="table-container acq-tick-wrap">
+            <table class="table alv-table acq-tick-table">
+              <thead><tr><th><label class="acq-tick"><input type="checkbox" data-tick-all aria-label="Tick or clear every area"> Area</label></th><th>Other spellings</th></tr></thead>
+              <tbody id="rAreas">{% for a in areas %}<tr><td data-label="Area"><label class="acq-tick"><input type="checkbox" value="{{ a.name }}" data-area> {{ a.name }}</label></td><td data-label="Other spellings" class="acq-muted">{{ a.aliases|join:", " }}</td></tr>{% endfor %}</tbody>
+            </table>
+          </div>
           {% if can_edit %}<div class="acq-add-area" data-area-add>
             <p class="acq-muted mb-1">Not in the list? Add it:</p>
             <div class="form-row">
@@ -354,18 +362,27 @@
     var box = $('rAreas'), want = name.toLowerCase(), found = null;
     box.querySelectorAll('[data-area]').forEach(function (cb) { if (cb.value.toLowerCase() === want) { found = cb; } });
     if (!found) {
-      var lab = document.createElement('label');
+      // RA26 - a row of the areas table, as the page draws them.
+      var tr = document.createElement('tr'), td = document.createElement('td'),
+          lab = document.createElement('label'), aka = document.createElement('td');
+      td.setAttribute('data-label', 'Area');
+      aka.setAttribute('data-label', 'Other spellings');
+      aka.className = 'acq-muted';
+      lab.className = 'acq-tick';
       found = document.createElement('input');
       found.type = 'checkbox'; found.value = name; found.setAttribute('data-area', '');
       lab.appendChild(found); lab.appendChild(document.createTextNode(' ' + name));
-      box.appendChild(lab);
+      td.appendChild(lab); tr.appendChild(td); tr.appendChild(aka);
+      box.appendChild(tr);
     }
     found.checked = on;
+    if (window.acqTicksSync) { window.acqTicksSync(); }
     return found;
   }
   function setAreas(values) {
     $('rAreas').querySelectorAll('[data-area]').forEach(function (cb) { cb.checked = false; });
     (values || []).forEach(function (v) { if (String(v).trim()) { areaBox(String(v).trim(), true); } });
+    if (window.acqTicksSync) { window.acqTicksSync(); }
   }
   function tickedAreas() {
     var out = [];
@@ -472,12 +489,6 @@
   };
 
   // RA22 - the wizard reads the rules on the page and writes its own back.
-  // RA24 - Select all / Select none for a list of ticks.
-  window.acqPick = function (id, on) {
-    document.querySelectorAll('#' + id + ' input[type=checkbox]').forEach(function (cb) {
-      if (cb.checked !== on) { cb.checked = on; cb.dispatchEvent(new Event('change', {bubbles: true})); }
-    });
-  };
   window.acqRulesNow = function () { return JSON.parse(JSON.stringify(rows)); };
   window.acqRulesType = function () { return $('acqType').value; };
   window.acqRulesDeal = function () { return $('acqDeal').value; };

@@ -3407,7 +3407,9 @@ $suites = @(
     # RA24, 25 Nov 2026 - run now, after save, the wizard's Skip, more features.
     'test_ra24_acq_flow.py',
     # RA25, 25 Nov 2026 - the search reports into the app; no template cards.
-    'test_ra25_search_intake.py'
+    'test_ra25_search_intake.py',
+    # RA26, 25 Nov 2026 - tick tables, the PC search reports as you, Running, a renewal is not a gap.
+    'test_ra26_ticks_pc_and_renewals.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

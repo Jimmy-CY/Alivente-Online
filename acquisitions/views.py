@@ -47,8 +47,17 @@ def _page(request, template, tab, **ctx):
                 # RA24 - the Run pop-up: can the app start a search, and which
                 # scenarios it offers (the active ones, all ticked).
                 "run_ready": firing.configured(),
-                "run_scenarios": Scenario.objects.filter(is_active=True).order_by("name")})
+                "run_scenarios": _run_list()})
     return render(request, "acquisitions/%s" % template, ctx)
+
+
+def _run_list():
+    """RA26 - the Run pop-up's table: each active scenario with its type
+    and schedule, one a row."""
+    out = list(Scenario.objects.filter(is_active=True).order_by("name"))
+    for s in out:
+        s.schedule_words = S.schedule_text(s)
+    return out
 
 
 def _dec(raw):

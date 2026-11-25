@@ -15,6 +15,9 @@ class AreaAdmin(admin.ModelAdmin):
 @admin.register(Website)
 class WebsiteAdmin(admin.ModelAdmin):
     list_display = ("name", "kind", "needs_pc", "is_active", "url")
+    # RA26, 25 Nov 2026 - tick "needs PC" for several sites and save once
+    # (the first cloud run found seven more that block it or need a browser).
+    list_editable = ("needs_pc", "is_active")
     list_filter = ("kind", "needs_pc", "is_active")
     search_fields = ("name",)
 

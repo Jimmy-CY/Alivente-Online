@@ -1,0 +1,39 @@
+{# A LIST OF TICKS IS A TABLE - RA26, 25 Nov 2026.                       #}
+{# Demetri, 25 Nov, on Select all / Select none: "I don't like the       #}
+{# Select All Button nor the Select None Button ... the list ... should  #}
+{# be in some sort of table on top of each other". So a list of ticks is #}
+{# a house table, one item a row, and the tick box in its header row     #}
+{# ticks or clears them all (half-ticked when only some are). Any        #}
+{# table.acq-tick-table works: the rows' tick boxes are in its tbody and #}
+{# the header's carries data-tick-all. A script that ticks rows itself   #}
+{# calls acqTicksSync() so the header follows.                           #}
+<script>
+(function () {
+  if (window.acqTicksSync) { return; }
+  function sync(t) {
+    var head = t.querySelector('thead [data-tick-all]');
+    if (!head) { return; }
+    var boxes = t.querySelectorAll('tbody input[type=checkbox]'), n = 0;
+    boxes.forEach(function (c) { if (c.checked) { n += 1; } });
+    head.checked = boxes.length > 0 && n === boxes.length;
+    head.indeterminate = n > 0 && n < boxes.length;
+  }
+  window.acqTicksSync = function (root) {
+    (root || document).querySelectorAll('table.acq-tick-table').forEach(sync);
+  };
+  document.addEventListener('change', function (e) {
+    var el = e.target;
+    if (!el || el.type !== 'checkbox' || !el.closest) { return; }
+    var t = el.closest('table.acq-tick-table');
+    if (!t) { return; }
+    if (el.hasAttribute('data-tick-all')) {
+      var on = el.checked;
+      t.querySelectorAll('tbody input[type=checkbox]').forEach(function (c) {
+        if (c.checked !== on) { c.checked = on; c.dispatchEvent(new Event('change', {bubbles: true})); }
+      });
+    }
+    sync(t);
+  });
+  document.addEventListener('DOMContentLoaded', function () { window.acqTicksSync(); });
+})();
+</script>

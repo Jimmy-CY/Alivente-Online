@@ -498,6 +498,21 @@ class SearchRun(models.Model):
     def is_complete(self):
         return not self.site_results.exclude(outcome="full").exclude(outcome="skipped").exists()
 
+    # RA26, 25 Nov 2026 - a run that has not reported its finish is still
+    # running for a few hours; after that it is a run that did not finish
+    # (a search session that stopped), not one that runs for ever.
+    RUNNING_HOURS = 3
+
+    @property
+    def is_running(self):
+        from datetime import timedelta
+        return (self.finished_at is None and
+                self.started_at >= timezone.now() - timedelta(hours=self.RUNNING_HOURS))
+
+    @property
+    def did_not_finish(self):
+        return self.finished_at is None and not self.is_running
+
 
 class SiteResult(models.Model):
     OUTCOME_CHOICES = [
