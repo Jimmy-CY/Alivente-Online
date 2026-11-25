@@ -3399,7 +3399,9 @@ $suites = @(
     # RA20, 24 Nov 2026 - Good to know shows Good to know; why pages can come with no sign-in.
     'test_ra20_travel_info_tab.py',
     # RA21, 24 Nov 2026 - the areas are the Location rule's; add an area.
-    'test_ra21_location_areas.py'
+    'test_ra21_location_areas.py',
+    # RA22, 24 Nov 2026 - Build rules step by step: apartment, house or plot first.
+    'test_ra22_rules_wizard.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

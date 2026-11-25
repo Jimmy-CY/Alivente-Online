@@ -282,7 +282,10 @@ ok(not any(d[0] == 'manual_pdf.html' for d in drift),
 # partials (_style, _tabs, _run_modal), fragments included into pages that
 # already extend base. test_ra19_acquisitions_screens.py checks the three
 # partials use house tokens only, since the colour censuses skip them.
-ok(len(stand) == 22, '  twenty-two templates are standalone',
+# RA22, 24 Nov 2026 - 23 (was 22): the Build rules step by step partial,
+# _rules_wizard.html, included into the scenario editor. test_ra22_rules_
+# wizard.py checks it holds no colour and no style attribute.
+ok(len(stand) == 23, '  twenty-three templates are standalone',
    sorted(stand))
 
 # (b) a grouped selector is one declaration, not two

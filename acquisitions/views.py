@@ -20,7 +20,7 @@ from decimal import Decimal, InvalidOperation
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -29,7 +29,7 @@ from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 
 from . import presets, services as S
-from .models import (Area, Criterion, MarketSnapshot, Property, PropertyType, Scenario,
+from .models import (Area, Criterion, Deal, MarketSnapshot, Property, PropertyType, Scenario,
                      ScenarioMatch, SearchRun, Viewing, WatchSettings, Website)
 from .scoring import FIELDS, apply_score, evaluate
 
@@ -188,12 +188,13 @@ def _criteria_from_json(raw):
 class _Unsaved:
     """What evaluate() needs of a scenario, without saving one."""
 
-    def __init__(self, cap, limit):
+    def __init__(self, cap, limit, deal="buy"):
         self.unknown_score_cap = cap
         self.max_unknown_musts = limit
+        self.deal = deal                 # RA22 - buy or rent, as the editor has it
 
 
-def _preview(scenario, crit, cap, limit):
+def _preview(scenario, crit, cap, limit, deal="buy"):
     """How the listings already tracked would score under these rules."""
     if scenario is None:
         return []
@@ -202,7 +203,7 @@ def _preview(scenario, crit, cap, limit):
         if not c.pk:
             c.id = -(i + 1)          # a group key and a judgement key that is no real row's
         temp.append(c)
-    fake = _Unsaved(cap, limit)
+    fake = _Unsaved(cap, limit, deal)
     out = []
     for m in scenario.matches.select_related("property").order_by("-score")[:12]:
         r = evaluate(fake, m.property, m, criteria=temp)
@@ -236,6 +237,7 @@ def scenario_edit(request, pk=None):
             t = presets.TEMPLATES[tpl]
             scenario.name = t["title"]
             scenario.property_type = t["property_type"]
+            scenario.deal = t.get("deal", "buy")      # RA22 - Home to rent
             rows = presets.criteria_dicts(tpl)
             site_ids = set(Website.objects.filter(is_active=True).values_list("pk", flat=True))
         scenario.pk = None
@@ -245,7 +247,7 @@ def scenario_edit(request, pk=None):
                  sites=Website.objects.filter(is_active=True), site_ids=site_ids,
                  field_choices=[(k, v["label"]) for k, v in FIELDS.items()],
                  kinds=Criterion.Kind.choices, operators=Criterion.Operator.choices,
-                 types=PropertyType.choices, cadences=Scenario.CADENCE_CHOICES,
+                 types=PropertyType.choices, deals=Deal.choices, cadences=Scenario.CADENCE_CHOICES,
                  weekdays=Scenario.WEEKDAY_CHOICES, blocked=Scenario.BLOCKED_CHOICES,
                  notify=Scenario.NOTIFY_CHOICES, preset=tpl)
 
@@ -263,6 +265,14 @@ def _int(raw, default, lo=0, hi=100):
         return max(lo, min(hi, int(raw)))
     except (TypeError, ValueError):
         return default
+
+
+def _deal(P, default="buy"):
+    """RA22 - Buy or rent, from the form. A plot is only ever bought
+    (Demetri: "Plots are only for Buying")."""
+    if P.get("property_type") == "plot":
+        return "buy"
+    return P.get("deal") if P.get("deal") in dict(Deal.choices) else default
 
 
 def _save_scenario(request, scenario):
@@ -289,6 +299,7 @@ def _save_scenario(request, scenario):
         scenario.purpose = (P.get("purpose") or "")[:300]
         scenario.property_type = P.get("property_type") if P.get("property_type") in \
             dict(PropertyType.choices) else "apartment"
+        scenario.deal = _deal(P)
         scenario.is_active = P.get("is_active") != "0"
         scenario.unknown_score_cap = _int(P.get("unknown_score_cap"), 60)
         scenario.max_unknown_musts = _int(P.get("max_unknown_musts"), 4, 0, 30)
@@ -377,10 +388,11 @@ def scenario_preview(request, pk=None):
         return JsonResponse({"ok": False, "error": str(e)}, status=400)
     cap = _int(request.POST.get("unknown_score_cap"), 60)
     limit = _int(request.POST.get("max_unknown_musts"), 4, 0, 30)
+    deal = _deal(request.POST, scenario.deal if scenario else "buy")
     rows = [S.criterion_row(c) for c in crit]
     return JsonResponse({"ok": True, "rows": rows,
                          "points": float(sum((c.points or 0) for c in crit)),
-                         "preview": _preview(scenario, crit, cap, limit)})
+                         "preview": _preview(scenario, crit, cap, limit, deal)})
 
 
 # --------------------------------------------------------------------------
@@ -698,46 +710,9 @@ def _market_chart(by_area, weeks, w=620, h=220, pad=44):
             "first": weeks[0], "last": weeks[-1], "pad": pad}
 
 
-# --------------------------------------------------------------------------
-# 9. Auctions & off-market
-# --------------------------------------------------------------------------
-@login_required
-@permission_required(VIEW, raise_exception=True)
-def auctions(request):
-    show = request.GET.get("show", "matches")
-    today = timezone.localdate()
-    qs = (Property.objects.filter(Q(is_auction=True) | Q(sources__website__kind="bank"))
-          .distinct().select_related("area")
-          .prefetch_related("sources__website", "matches__scenario"))
-    # RA21 - the target areas are each active scenario's Location rule.
-    target = {a.pk for sc in Scenario.objects.filter(is_active=True).prefetch_related("criteria")
-              for a in sc.target_areas()}
-    rows = []
-    for p in qs:
-        ms = [m for m in p.matches.all() if m.status not in ("rejected", "removed")]
-        if show == "matches" and not ms:
-            continue
-        if show == "areas" and p.area_id not in target:
-            continue
-        snap = S.latest_median(p.area, p.property_type) if p.area else None
-        vs = (round(100 * (p.price_per_m2 - snap.median_price_per_m2)
-                    / snap.median_price_per_m2) if snap and p.price_per_m2 else None)
-        rows.append({"p": p, "m": ms[0] if ms else None, "vs": vs,
-                     "src": next(iter(p.sources.all()), None)})
-    dates = []
-    for r in rows:
-        p = r["p"]
-        for label, d in (("Viewing", p.viewing_date), ("Offer deadline", p.offer_deadline),
-                         ("Auction", p.auction_date)):
-            if d and today <= d <= today + timedelta(days=30):
-                dates.append({"day": d, "in": (d - today).days, "what": label, "p": p,
-                              "src": r["src"]})
-    dates.sort(key=lambda x: x["day"])
-    n_matches = sum(1 for p in qs if any(m.status not in ("rejected", "removed")
-                                         for m in p.matches.all()))
-    n_areas = sum(1 for p in qs if p.area_id in target)
-    return _page(request, "auctions.html", "auctions", rows=rows, dates=dates, show=show,
-                 n_matches=n_matches, n_areas=n_areas)
+# 9. Auctions & off-market - RA22, 24 Nov 2026: taken out (Demetri: "Let's
+# also remove the Auction & Off-Market section. Not sure what it does").
+# A listing keeps its auction fields; nothing shows them as a page now.
 
 
 # --------------------------------------------------------------------------

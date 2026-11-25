@@ -184,7 +184,10 @@ STAND = set(alv_tree.standalone())
 # partials (_style, _tabs, _run_modal), fragments included into pages that
 # already extend base. test_ra19_acquisitions_screens.py checks the three
 # partials use house tokens only, since the colour censuses skip them.
-ok(len(STAND) == 22, '%d standalone template(s)' % len(STAND), sorted(STAND))
+# RA22, 24 Nov 2026 - 23 (was 22): the Build rules step by step partial,
+# _rules_wizard.html, included into the scenario editor. test_ra22_rules_
+# wizard.py checks it holds no colour and no style attribute.
+ok(len(STAND) == 23, '%d standalone template(s)' % len(STAND), sorted(STAND))
 BYNAME = {alv_tree.rel(q).replace(os.sep, '/'): q
           for q in alv_tree.templates()}
 for s in sorted(STAND):

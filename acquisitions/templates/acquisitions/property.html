@@ -121,6 +121,11 @@
         <dt>Floor</dt><dd>{{ p.floor_level|default:"?" }}</dd>
         <dt>Year built</dt><dd>{{ p.year_built|default_if_none:"?" }}</dd>
         <dt>Parking</dt><dd>{{ p.parking_spaces|default_if_none:"?" }}{% if p.parking_covered %}, covered{% elif p.parking_covered is False %}, uncovered{% endif %}</dd>
+        {% if p.deal == 'rent' %}{# RA22 - a rental #}
+        <dt>Rent</dt><dd>{% if p.monthly_rent %}{{ p.monthly_rent|euros }} a month{% else %}?{% endif %}</dd>
+        <dt>Furnished</dt><dd>{{ p.furnished|yesno:"Yes,No,?" }}</dd>
+        <dt>Pets</dt><dd>{{ p.pets_allowed|yesno:"Allowed,Not allowed,?" }}</dd>
+        {% endif %}
         {% endif %}
         <dt>Title deeds</dt><dd>{{ p.title_deeds|yesno:"Yes,No,?" }}</dd>
         <dt>Area</dt><dd>{{ p.area.name|default:p.suburb_text }}</dd>

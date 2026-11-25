@@ -23,7 +23,7 @@
     <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-search-location"></i> What is Acquisitions?</h6>
     <p>Acquisitions keeps the property searches you run &mdash; the flat to renovate, the building plot &mdash; and every listing they find, scored against your own rules. Open it from <strong>Property Operations &rarr; Acquisitions</strong>.</p>
     <p><strong>Claude does the searching; the app keeps the results and does the scoring.</strong> The property sites block searches from a data centre like the one Alivente Online runs in, so the searches are Claude&rsquo;s scheduled tasks. They write what they find here; the app never searches itself.</p>
-    <p>The tabs across the top of every page are the module&rsquo;s pages: <strong>Overview</strong>, <strong>Scenarios</strong>, <strong>Price watch</strong>, <strong>Market snapshot</strong>, <strong>Auctions &amp; off-market</strong> and <strong>Search runs</strong>. A number on a tab is something new: new listings on Scenarios, price drops this week on Price watch.</p>
+    <p>The tabs across the top of every page are the module&rsquo;s pages: <strong>Overview</strong>, <strong>Scenarios</strong>, <strong>Price watch</strong>, <strong>Market snapshot</strong> and <strong>Search runs</strong>. A number on a tab is something new: new listings on Scenarios, price drops this week on Price watch.</p>
     <p><strong>The Overview</strong> shows the week at a glance &mdash; new listings, your shortlist, price drops and how the last search went &mdash; a card for each scenario, the latest activity, and which sites the last search could and could not search.</p>
     <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
       <i class="fas fa-play"></i> <strong>Run search now</strong> explains how to start a search from the Claude app, until Claude is connected to the app; then the button starts it itself.
@@ -34,7 +34,7 @@
            data-tab-name="Scenarios &amp; rules"
            data-tab-icon="fa-sliders-h">
     <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-sliders-h"></i> Scenarios and their rules</h6>
-    <p>A <strong>scenario</strong> is one search: what to look for, which websites to search (<strong>Where to look</strong>), how often, and how listings are scored. <strong>New scenario</strong> starts an empty one; the four cards under the list start one from a template (home to renovate, development plot, buy-to-let, auction &amp; bank-owned). Nothing is saved until you press <strong>Save scenario</strong>.</p>
+    <p>A <strong>scenario</strong> is one search: what to look for, which websites to search (<strong>Where to look</strong>), how often, and how listings are scored. <strong>New scenario</strong> starts an empty one, in <strong>Build rules step by step</strong>; the three cards under the list start one from a template (home to renovate, development plot, home to rent). Nothing is saved until you press <strong>Save scenario</strong>.</p>
     <p><strong>Each rule is one of three types:</strong></p>
     <ul>
       <li><strong>Must</strong> &mdash; a listing that clearly fails it is rejected.</li>
@@ -42,9 +42,41 @@
       <li><strong>Scoring</strong> &mdash; points on a sliding scale: full inside a window and falling to nothing at the outer values, or in bands (full from 1995, half for 1985&ndash;94). A scenario&rsquo;s points add up to 100.</li>
     </ul>
     <p><strong>Checked by</strong> says who answers it: the app compares facts itself; Claude judges only what the listing text alone can tell (open plan, condition, or a rule you write in plain words with <strong>Add a rule in plain words</strong>).</p>
-    <p><strong>Where the property must be is the Location rule.</strong> Open it with the pencil and tick the areas; a listing anywhere else is rejected. An area that is not in the list can be added there: its name, the district, and any other spellings the sites use (Egkomi, &Epsilon;&gamma;&kappa;&omega;&mu;&eta;), which help match listings to it. The same areas are the scenario&rsquo;s target areas everywhere else &mdash; the overview, the market comparison and Auctions.</p>
+    <p><strong>Where the property must be is the Location rule.</strong> Open it with the pencil and tick the areas; a listing anywhere else is rejected. An area that is not in the list can be added there: its name, the district, and any other spellings the sites use (Egkomi, &Epsilon;&gamma;&kappa;&omega;&mu;&eta;), which help match listings to it. The same areas are the scenario&rsquo;s target areas everywhere else &mdash; the overview and the market comparison.</p>
+    <p><strong>Buy or rent.</strong> An apartment or a house can be bought or rented; a plot is only bought. A rent scenario searches rental listings, its budget is the rent a month (no VAT), and a listing for sale cannot pass it &mdash; nor a rental a Buy scenario.</p>
+    <p><strong>Build rules step by step</strong> asks you questions and writes the rules for you &mdash; see its own tab. A new, empty scenario opens in it.</p>
     <p><strong>Unknown is never &ldquo;no&rdquo;.</strong> A Must the listing does not answer caps the score (60 unless you change it). A listing with more unknown Musts than the limit (4 unless you change it) is not added. Musts in the same group &mdash; bathrooms, guest WC and en-suite &mdash; count once.</p>
     <p><strong>Live preview.</strong> As you change the rules, the editor shows how the listings already tracked would score. Saving re-scores every listing at once: no new search is needed, because the facts and the scores are kept apart.</p>
+  </article>
+
+  <article data-tab-slug="acqWizard"
+           data-tab-name="Building rules"
+           data-tab-icon="fa-magic">
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-magic"></i> Build rules step by step</h6>
+    <p>Under <strong>Criteria</strong> in the scenario editor, <strong>Build rules step by step</strong> asks what you want and writes the rules for you, with a short explanation at each step. A new, empty scenario opens straight in it. It starts from the rules already in the table, so you can run it again to adjust them. Nothing is saved until you press <strong>Save scenario</strong>, and every rule it writes can be changed afterwards with the pencil.</p>
+    <p><strong>1. What are you looking for?</strong> An <strong>apartment</strong>, a <strong>house</strong> or a <strong>plot</strong>. For an apartment or a house, also <strong>Buy</strong> or <strong>Rent</strong>; a plot is only bought. Every question after this follows your answer. Choosing a different type, or Rent instead of Buy, starts that one fresh; the areas you ticked stay.</p>
+    <p><strong>2. Where must it be?</strong> Tick the areas, or add one that is missing. This is the Location rule: a listing anywhere else is rejected.</p>
+    <p><strong>3. Your budget.</strong> The most you would pay is a Must. To buy, that is the price including VAT (a &ldquo;+VAT&rdquo; listing has 19% added); to rent, the rent a month. The price you would love to pay earns points, falling to none at your most.</p>
+    <p><strong>4. For an apartment or a house:</strong></p>
+    <ul>
+      <li><strong>How big</strong> &mdash; the internal area, smallest and largest as Musts and an ideal range for points; covered balconies for an apartment, the plot size for a house.</li>
+      <li><strong>Rooms</strong> &mdash; the fewest bedrooms and bathrooms you would accept, and the most bedrooms if you like.</li>
+    </ul>
+    <p><strong>4. For a plot:</strong></p>
+    <ul>
+      <li><strong>How big a plot</strong> &mdash; smallest and largest as Musts, an ideal range for points. A plot has no rooms and no covered area.</li>
+      <li><strong>What it costs per m&sup2;</strong> &mdash; the most per m&sup2; of land, the least building density, and &euro; per buildable m&sup2; (the price divided by plot size &times; density), which earns points: full at or under one figure, none at or over another.</li>
+    </ul>
+    <p><strong>5. Which features matter?</strong> For each: <strong>Must have</strong> (a listing without it is rejected), <strong>Nice to have</strong> (it earns points) or <strong>Doesn&rsquo;t matter</strong>. The list depends on what you are looking for:</p>
+    <ul>
+      <li><strong>Apartment to buy</strong> &mdash; lift, 2 parking spaces, covered parking, storeroom, whole floor, guest WC, master en-suite, open plan, to renovate, built 1995 or later, title deed.</li>
+      <li><strong>House to buy</strong> &mdash; private garden, swimming pool, parking, covered parking, storeroom, guest WC, en-suite, to renovate, built 1995 or later, title deed.</li>
+      <li><strong>To rent</strong> &mdash; the same without title deed and to renovate, with <strong>furnished</strong> and <strong>pets allowed</strong>.</li>
+      <li><strong>Plot</strong> &mdash; title deed, two or more road frontages, residential planning zone, corner plot, water and electricity at the boundary.</li>
+    </ul>
+    <p>Those marked <em>checked by Claude</em> (garden, pool, open plan, to renovate, planning zone, corner, utilities) are read from the listing text; the app compares the rest itself.</p>
+    <p><strong>6. Share 100 points</strong> between the rules that earn points &mdash; the ideal ranges and the nice-to-haves, so the list is different for a plot and a home. The total turns red until it is 100; <strong>Share evenly</strong> splits them for you.</p>
+    <p><strong>7. Your rules.</strong> Every rule in plain words. <strong>Replace my rules</strong> clears the table and puts these in (a rule that matches one already there keeps it, so Claude&rsquo;s answers to it are kept); <strong>Add to my rules</strong> keeps the table and adds these. It also sets the scenario&rsquo;s property type and Buy or rent.</p>
   </article>
 
   <article data-tab-slug="acqResults"
@@ -66,10 +98,9 @@
   </article>
 
   <article data-tab-slug="acqRuns"
-           data-tab-name="Auctions &amp; runs"
+           data-tab-name="Search runs"
            data-tab-icon="fa-history">
-    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-history"></i> Auctions, off-market, and the search runs</h6>
-    <p><strong>Auctions &amp; off-market</strong> lists bank-owned and auction property (REMU, Altamira, Gordian and published auction notices) &mdash; the ones that match a scenario, or everything in your target areas &mdash; with the viewings, offer deadlines and auctions of the next 30 days at the top.</p>
+    <h6 style="color:#0e7c8b; font-weight:700;"><i class="fas fa-history"></i> The search runs</h6>
     <p><strong>Search runs</strong> lists every search: where it ran (the cloud or your PC), how long it took, the sites searched, the listings checked and added, and whether it was complete. Choose one to see each site&rsquo;s result, the summary it sent, and any PC search that finished it.</p>
     <div class="alert alert-info" style="border-left:4px solid #0e7c8b;">
       <i class="fas fa-desktop"></i> <strong>Sites that block the cloud</strong> &mdash; Bazaraki, Spitogatos and DOM, marked <strong>PC</strong> &mdash; are searched from your computer when you ask: open the session from the daily email and type <strong>PC</strong>, with the Claude desktop app open and the laptop awake. A listing is only marked Removed when its page actually loaded and showed it gone, never because a site was blocked.

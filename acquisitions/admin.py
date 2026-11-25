@@ -29,7 +29,7 @@ class CriterionInline(admin.TabularInline):
 
 @admin.register(Scenario)
 class ScenarioAdmin(admin.ModelAdmin):
-    list_display = ("name", "property_type", "is_active", "cadence", "run_time", "points_used",
+    list_display = ("name", "property_type", "deal", "is_active", "cadence", "run_time", "points_used",
                     "tracked")
     list_filter = ("is_active", "property_type", "cadence")
     prepopulated_fields = {"slug": ("name",)}
@@ -37,7 +37,8 @@ class ScenarioAdmin(admin.ModelAdmin):
     inlines = [CriterionInline]
     actions = ["rescore"]
     fieldsets = (
-        (None, {"fields": ("name", "slug", "purpose", "property_type", "is_active", "owner")}),
+        (None, {"fields": ("name", "slug", "purpose", "property_type", "deal", "is_active",
+                           "owner")}),
         # RA21 - Where to look is the websites; the areas are the Location rule.
         ("Where to look", {"fields": ("websites",)}),
         ("Unknowns", {"fields": ("unknown_score_cap", "max_unknown_musts")}),
@@ -97,14 +98,15 @@ class PropertyAdmin(admin.ModelAdmin):
     readonly_fields = ("price_incl_vat", "price_per_m2", "buildable_m2", "price_per_buildable_m2")
     inlines = [MatchInline, SourceInline, PriceInline, ViewingInline]
     fieldsets = (
-        (None, {"fields": ("property_type", "title", "area", "suburb_text", "street")}),
-        ("Price", {"fields": ("asking_price", "vat_status", "price_incl_vat", "price_per_m2")}),
+        (None, {"fields": ("property_type", "deal", "title", "area", "suburb_text", "street")}),
+        ("Price", {"fields": ("asking_price", "vat_status", "price_incl_vat", "price_per_m2",
+                              "monthly_rent")}),
         ("Size", {"fields": ("internal_m2", "internal_m2_confirmed", "covered_balcony_m2",
                              "total_m2")}),
         ("Apartment", {"classes": ("collapse",), "fields": (
             "bedrooms", "bathrooms", "guest_wc", "master_ensuite", "open_plan", "parking_spaces",
             "parking_covered", "whole_floor", "floor_level", "lift", "storeroom", "year_built",
-            "condition", "title_deeds")}),
+            "condition", "title_deeds", "furnished", "pets_allowed")}),
         ("Plot", {"classes": ("collapse",), "fields": (
             "plot_m2", "building_density_pct", "site_coverage_pct", "floors_allowed",
             "planning_zone", "road_frontages", "buildable_m2", "price_per_buildable_m2")}),

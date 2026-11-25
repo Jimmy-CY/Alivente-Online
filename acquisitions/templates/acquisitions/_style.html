@@ -71,4 +71,29 @@
 /* The editor's section titles carry the points total on the right. */
 .acq-section-title { display: flex; align-items: baseline; gap: 6px; }
 .acq-section-title .ml-auto { font-size: 14px; font-weight: 400; }
+/* RA22 - Build rules step by step. */
+.acq-wz-head { display: flex; justify-content: flex-end; }
+.acq-wz-dots { display: flex; gap: 6px; margin: 6px 0 16px; }
+.acq-wz-dots span { flex: 1; height: 4px; border-radius: 2px; background: var(--alv-line); }
+.acq-wz-dots span.is-on { background: var(--alv-accent); }
+.acq-wz-q { margin: 0 0 4px; font-size: 16px; font-weight: 700; color: var(--alv-ink-strong); }
+.acq-wz-types { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.acq-wz-type { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 0; padding: 16px 8px; border: 1px solid var(--alv-line); border-radius: var(--alv-radius-sm); cursor: pointer; font-weight: 600; }
+.acq-wz-type i { font-size: 22px; color: var(--alv-ink-soft); }
+.acq-wz-two { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; }
+.acq-wz-type:has(input:checked) { border-color: var(--alv-accent-line); background: var(--alv-accent-soft); color: var(--alv-accent-ink); }
+.acq-wz-type:has(input:checked) i { color: var(--alv-accent-ink); }
+.acq-wz-feat { display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); gap: 6px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--alv-line-soft); font-size: 14px; }
+.acq-wz-feat label { display: flex; align-items: center; justify-content: center; gap: 4px; min-height: 36px; margin: 0; font-weight: 400; }
+.acq-wz-feat-head { font-size: 12px; font-weight: 700; color: var(--alv-ink-soft); text-align: center; }
+.acq-wz-feat-say { display: none; }
+.acq-wz-pts { padding: 4px 0; }
+.acq-wz-total { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 8px; }
+.acq-wz-modal .modal-footer { flex-wrap: wrap; row-gap: 8px; }
+@media screen and (max-width: 575px) {
+  .acq-wz-feat { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .acq-wz-feat > span:first-child { grid-column: 1 / -1; }
+  .acq-wz-feat-head { display: none; }
+  .acq-wz-feat-say { display: inline; font-size: 12px; }
+}
 </style>

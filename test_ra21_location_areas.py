@@ -34,7 +34,8 @@ for _stream in (_sys.stdout, _sys.stderr):
         _stream.reconfigure(errors='replace')
     except Exception:
         pass
-# ------------------------------------------------------------------------
+# ------------------------------------------------------------------------
+
 
 
 import io
@@ -117,7 +118,9 @@ def claims(edit, views, models, admin, urls, serv, act, hlp):
             'scenario.areas.set(scenario.target_areas())' in views and
             'P.getlist("areas")' not in views,
         '  Auctions\' target areas too':
-            'sc.target_areas()' in views,
+            # RA22 - or the Auctions page is gone altogether.
+            'sc.target_areas()' in views or
+            ('def auctions(' not in views and 'def area_add(request)' in views),
         'THE ADMIN\'S Where to look is the websites':
             '("Where to look", {"fields": ("websites",)})' in admin,
         'AN ADDED AREA IS IN THE ACTIVITY LOG':
@@ -252,22 +255,29 @@ if have_db:
                'area list is posted any more',
                sorted(a.name for a in plot.areas.all()))
 
-            # ---- Auctions: target areas are the Location rule's
-            mak = Area.objects.get(name='Makedonitissa')
-            p = Property.objects.create(property_type='plot',
-                                        title='RA21 auction plot', area=mak,
-                                        is_auction=True)
-            ListingSource.objects.create(property=p,
-                                         url='https://example.test/ra21')
-            Scenario.objects.exclude(pk=plot.pk).update(is_active=False)
-            t = E_.get('/acquisitions/auctions/?show=areas').content.decode()
-            ok('RA21 auction plot' not in t,
-               'AUCTIONS, everything in the target areas: a plot in an area '
-               'the Location rule does not name is not shown')
-            p.area = Area.objects.get(name='Engomi')
-            p.save()
-            t = E_.get('/acquisitions/auctions/?show=areas').content.decode()
-            ok('RA21 auction plot' in t, '  and one in Engomi is')
+            # ---- Auctions: target areas are the Location rule's.
+            # RA22, 24 Nov 2026 - the Auctions & off-market page is gone
+            # (Demetri: "Not sure what it does"), so these two checks run
+            # only while it is there.
+            if os.path.isfile(J(APP, 'templates', 'acquisitions',
+                                'auctions.html')):
+                mak = Area.objects.get(name='Makedonitissa')
+                p = Property.objects.create(property_type='plot',
+                                            title='RA21 auction plot', area=mak,
+                                            is_auction=True)
+                ListingSource.objects.create(property=p,
+                                             url='https://example.test/ra21')
+                Scenario.objects.exclude(pk=plot.pk).update(is_active=False)
+                t = E_.get('/acquisitions/auctions/?show=areas').content.decode()
+                ok('RA21 auction plot' not in t,
+                   'AUCTIONS, everything in the target areas: a plot in an area '
+                   'the Location rule does not name is not shown')
+                p.area = Area.objects.get(name='Engomi')
+                p.save()
+                t = E_.get('/acquisitions/auctions/?show=areas').content.decode()
+                ok('RA21 auction plot' in t, '  and one in Engomi is')
+            else:
+                skip('Auctions\' target areas', 'the page left in RA22')
             raise Rollback
     except Rollback:
         pass

@@ -1,0 +1,603 @@
+{# BUILD RULES STEP BY STEP - RA22, 24 Nov 2026. A wizard over the       #}
+{# criteria table: it asks what you are looking for first (apartment,   #}
+{# house or plot) and its questions follow the answer (Demetri: "We     #}
+{# need to ask the question first about Plot, House or apartment. Then  #}
+{# the questions need to adjust accordingly"). It only writes rules     #}
+{# into the table on this page; nothing is saved until Save scenario.   #}
+<div class="modal fade acq-wz-modal" id="acqWizardModal" tabindex="-1" role="dialog" aria-labelledby="acqWizardTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header alv-modal-head">
+        <h5 class="modal-title" id="acqWizardTitle"><i class="fas fa-magic"></i> Build rules step by step</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="acq-wz-head"><span id="wzCount" class="acq-muted" aria-live="polite"></span></div>
+        <div class="acq-wz-dots" id="wzDots" aria-hidden="true"></div>
+
+        <section data-wz-step="type">
+          <p class="acq-wz-q">What are you looking for?</p>
+          <p class="acq-muted">The questions that follow change with your answer.</p>
+          <div class="acq-wz-types">
+            <label class="acq-wz-type"><input type="radio" name="wzType" value="apartment"> <i class="fas fa-building"></i> Apartment</label>
+            <label class="acq-wz-type"><input type="radio" name="wzType" value="house"> <i class="fas fa-home"></i> House</label>
+            <label class="acq-wz-type"><input type="radio" name="wzType" value="plot"> <i class="fas fa-vector-square"></i> Plot</label>
+          </div>
+          {# Apartments and houses are bought or rented; a plot is only bought (Demetri). #}
+          <div class="acq-wz-deal" data-wz-for="apartment house">
+            <p class="acq-wz-q mt-3">To buy or to rent?</p>
+            <div class="acq-wz-types acq-wz-two">
+              <label class="acq-wz-type"><input type="radio" name="wzDeal" value="buy"> Buy</label>
+              <label class="acq-wz-type"><input type="radio" name="wzDeal" value="rent"> Rent</label>
+            </div>
+          </div>
+        </section>
+
+        <section data-wz-step="where" hidden>
+          <p class="acq-wz-q">Where must it be?</p>
+          <p class="acq-muted">Tick the areas. A listing anywhere else is rejected. This becomes the Location rule.</p>
+          <div class="acq-check-list mb-2" id="wzAreas">{% for a in areas %}<label><input type="checkbox" value="{{ a.name }}" data-wz-area> {{ a.name }}</label>{% endfor %}</div>
+          {% if can_edit %}<div class="acq-add-area">
+            <p class="acq-muted mb-1">Not in the list? Add it:</p>
+            <div class="form-row align-items-end">
+              <div class="form-group col-md-4"><label for="wzAreaName"><strong>Area</strong></label><input type="text" id="wzAreaName" class="form-control" maxlength="100"></div>
+              <div class="form-group col-md-3"><label for="wzAreaDistrict"><strong>District</strong></label><input type="text" id="wzAreaDistrict" class="form-control" maxlength="100" value="Nicosia"></div>
+              <div class="form-group col-md-5"><label for="wzAreaAka"><strong>Other spellings</strong> <span class="acq-muted">(optional)</span></label><input type="text" id="wzAreaAka" class="form-control"></div>
+            </div>
+            <button type="button" class="btn action-secondary" onclick="acqWizardAddArea()"><i class="fas fa-plus"></i> Add area</button>
+            <span class="acq-muted ml-2" id="wzAreaMsg" role="status"></span>
+          </div>{% endif %}
+        </section>
+
+        <section data-wz-step="budget" hidden>
+          <p class="acq-wz-q">What is your budget?</p>
+          <p class="acq-muted" data-wz-deal="buy">The most you would pay, including VAT, is a Must: a listing above it is rejected. The price you would love to pay earns points, falling to none at your most.</p>
+          <p class="acq-muted" data-wz-deal="rent">The most rent you would pay a month is a Must: a listing above it is rejected. The rent you would love to pay earns points, falling to none at your most.</p>
+          <div class="form-row align-items-end">
+            <div class="form-group col-md-6"><label for="wzPriceMax"><strong><span data-wz-deal="buy">Most I&rsquo;d pay (&euro;, incl. VAT)</span><span data-wz-deal="rent">Most rent a month (&euro;)</span></strong></label><input type="text" inputmode="decimal" id="wzPriceMax" class="form-control"></div>
+            <div class="form-group col-md-6"><label for="wzPriceIdeal"><strong><span data-wz-deal="buy">I&rsquo;d love to pay (&euro;)</span><span data-wz-deal="rent">Rent I&rsquo;d love to pay (&euro;)</span></strong> <span class="acq-muted">(optional)</span></label><input type="text" inputmode="decimal" id="wzPriceIdeal" class="form-control"></div>
+          </div>
+        </section>
+
+        <section data-wz-step="size" data-wz-for="apartment house" hidden>
+          <p class="acq-wz-q">How big?</p>
+          <p class="acq-muted">Internal area, balconies left out. Smallest and largest are Musts; the ideal range earns points. Leave a box empty to skip it.</p>
+          <div class="form-row align-items-end">
+            <div class="form-group col-md-3"><label for="wzSizeMin"><strong>Smallest (m&sup2;)</strong></label><input type="text" inputmode="decimal" id="wzSizeMin" class="form-control"></div>
+            <div class="form-group col-md-3"><label for="wzSizeMax"><strong>Largest (m&sup2;)</strong></label><input type="text" inputmode="decimal" id="wzSizeMax" class="form-control"></div>
+            <div class="form-group col-md-3"><label for="wzSizeFrom"><strong>Ideal from</strong></label><input type="text" inputmode="decimal" id="wzSizeFrom" class="form-control"></div>
+            <div class="form-group col-md-3"><label for="wzSizeTo"><strong>Ideal to</strong></label><input type="text" inputmode="decimal" id="wzSizeTo" class="form-control"></div>
+          </div>
+          <div class="form-row align-items-end" data-wz-for="apartment">
+            <div class="form-group col-md-6"><label for="wzBalcony"><strong>Covered balconies, at least (m&sup2;)</strong></label><input type="text" inputmode="decimal" id="wzBalcony" class="form-control"></div>
+          </div>
+          <div class="form-row align-items-end" data-wz-for="house">
+            <div class="form-group col-md-6"><label for="wzHousePlotMin"><strong>Plot, smallest (m&sup2;)</strong></label><input type="text" inputmode="decimal" id="wzHousePlotMin" class="form-control"></div>
+            <div class="form-group col-md-6"><label for="wzHousePlotMax"><strong>Plot, largest (m&sup2;)</strong></label><input type="text" inputmode="decimal" id="wzHousePlotMax" class="form-control"></div>
+          </div>
+        </section>
+
+        <section data-wz-step="plotsize" data-wz-for="plot" hidden>
+          <p class="acq-wz-q">How big a plot?</p>
+          <p class="acq-muted">Smallest and largest are Musts; the ideal range earns points. Leave a box empty to skip it.</p>
+          <div class="form-row align-items-end">
+            <div class="form-group col-md-3"><label for="wzPlotMin"><strong>Smallest (m&sup2;)</strong></label><input type="text" inputmode="decimal" id="wzPlotMin" class="form-control"></div>
+            <div class="form-group col-md-3"><label for="wzPlotMax"><strong>Largest (m&sup2;)</strong></label><input type="text" inputmode="decimal" id="wzPlotMax" class="form-control"></div>
+            <div class="form-group col-md-3"><label for="wzPlotFrom"><strong>Ideal from</strong></label><input type="text" inputmode="decimal" id="wzPlotFrom" class="form-control"></div>
+            <div class="form-group col-md-3"><label for="wzPlotTo"><strong>Ideal to</strong></label><input type="text" inputmode="decimal" id="wzPlotTo" class="form-control"></div>
+          </div>
+        </section>
+
+        <section data-wz-step="rooms" data-wz-for="apartment house" hidden>
+          <p class="acq-wz-q">Rooms</p>
+          <p class="acq-muted">The fewest you would accept are Musts. Leave a box empty to skip it.</p>
+          <div class="form-row align-items-end">
+            <div class="form-group col-md-4"><label for="wzBedMin"><strong>Bedrooms, at least</strong></label><input type="text" inputmode="numeric" id="wzBedMin" class="form-control"></div>
+            <div class="form-group col-md-4"><label for="wzBedMax"><strong>Bedrooms, at most</strong> <span class="acq-muted">(optional)</span></label><input type="text" inputmode="numeric" id="wzBedMax" class="form-control"></div>
+            <div class="form-group col-md-4"><label for="wzBathMin"><strong>Bathrooms, at least</strong></label><input type="text" inputmode="numeric" id="wzBathMin" class="form-control"></div>
+          </div>
+        </section>
+
+        <section data-wz-step="cost" data-wz-for="plot" hidden>
+          <p class="acq-wz-q">What it costs per m&sup2;</p>
+          <p class="acq-muted">A plot is judged on what you can build on it. &euro; per buildable m&sup2; is the price divided by the plot size times the building density. Leave a box empty to skip it.</p>
+          <div class="form-row align-items-end">
+            <div class="form-group col-md-6"><label for="wzLandMax"><strong>&euro; per m&sup2; of land, at most</strong></label><input type="text" inputmode="decimal" id="wzLandMax" class="form-control"></div>
+            <div class="form-group col-md-6"><label for="wzDensityMin"><strong>Building density, at least (%)</strong></label><input type="text" inputmode="decimal" id="wzDensityMin" class="form-control"></div>
+          </div>
+          <div class="form-row align-items-end">
+            <div class="form-group col-md-6"><label for="wzBuildFull"><strong>&euro; per buildable m&sup2;: full points at or under</strong></label><input type="text" inputmode="decimal" id="wzBuildFull" class="form-control"></div>
+            <div class="form-group col-md-6"><label for="wzBuildZero"><strong>&hellip; no points at or over</strong></label><input type="text" inputmode="decimal" id="wzBuildZero" class="form-control"></div>
+          </div>
+        </section>
+
+        <section data-wz-step="features" hidden>
+          <p class="acq-wz-q">Which features matter?</p>
+          <p class="acq-muted"><strong>Must have</strong> rejects a listing without it. <strong>Nice to have</strong> earns points. Those marked <em>checked by Claude</em> are read from the listing text; the app compares the rest itself.</p>
+          <div id="wzFeatures"></div>
+        </section>
+
+        <section data-wz-step="points" hidden>
+          <p class="acq-wz-q">Share 100 points</p>
+          <p class="acq-muted">Points rank the listings that pass every Must. Give more to what matters most.</p>
+          <div id="wzPoints"></div>
+          <div class="acq-wz-total"><strong>Total: <span class="acq-points" id="wzPointsTotal">0</span> / 100</strong>
+            <button type="button" class="btn action-secondary" onclick="acqWizardEven()"><i class="fas fa-balance-scale"></i> Share evenly</button></div>
+        </section>
+
+        <section data-wz-step="review" hidden>
+          <p class="acq-wz-q">Your rules</p>
+          <p class="acq-muted">These go into the Criteria table. <strong>Replace my rules</strong> clears the table first; <strong>Add to my rules</strong> keeps what is there. Nothing is saved until you press Save scenario.</p>
+          <ul class="acq-sites" id="wzReview"></ul>
+        </section>
+
+        <p class="acq-bad mt-2 mb-0" id="wzError" role="alert" hidden></p>
+      </div>
+      <div class="modal-footer">
+        {# One primary, last: Next, which on the last step is Replace my rules. #}
+        <button type="button" class="btn action-secondary" id="wzBack" onclick="acqWizardGo(-1)"><i class="fas fa-arrow-left"></i> Back</button>
+        <button type="button" class="btn action-secondary" id="wzAdd" onclick="acqWizardApply('add')" hidden><i class="fas fa-plus"></i> Add to my rules</button>
+        <button type="button" class="btn action-primary" id="wzNext" onclick="acqWizardGo(1)">Next <i class="fas fa-arrow-right"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var areaUrl = "{% url 'acquisitions:area_add' %}";
+  var STEPS = {
+    apartment: ['type', 'where', 'budget', 'size', 'rooms', 'features', 'points', 'review'],
+    house: ['type', 'where', 'budget', 'size', 'rooms', 'features', 'points', 'review'],
+    plot: ['type', 'where', 'budget', 'plotsize', 'cost', 'features', 'points', 'review']
+  };
+  // Each feature: what it tests, and how it is shown. 'custom' ones are
+  // plain-words rules Claude answers from the listing text.
+  var F = {
+    lift: {label: 'Lift', field: 'lift', op: 'is_true'},
+    parking2: {label: '2 parking spaces', field: 'parking_spaces', op: 'gte', num_min: 2},
+    covered: {label: 'Covered parking', field: 'parking_covered', op: 'is_true'},
+    storeroom: {label: 'Storeroom', field: 'storeroom', op: 'is_true'},
+    wholefloor: {label: 'Whole floor', field: 'whole_floor', op: 'is_true'},
+    guestwc: {label: 'Guest WC', field: 'guest_wc', op: 'is_true', group: 'bathrooms'},
+    ensuite: {label: 'Master en-suite', field: 'master_ensuite', op: 'is_true', group: 'bathrooms'},
+    openplan: {label: 'Open-plan kitchen, lounge and dining', field: 'open_plan', op: 'is_true', claude: true},
+    renovate: {label: 'Unfinished or unrenovated (to renovate)', field: 'condition', op: 'in', text_values: ['unfinished', 'unrenovated'], claude: true},
+    built: {label: 'Built 1995 or later', field: 'year_built', op: 'gte', num_min: 1995},
+    deeds: {label: 'Title deed issued', field: 'title_deeds', op: 'is_true'},
+    garden: {label: 'Private garden', field: 'custom', op: 'judged', rule_text: 'the house has its own private garden', claude: true},
+    pool: {label: 'Swimming pool', field: 'custom', op: 'judged', rule_text: 'the house has its own swimming pool', claude: true},
+    frontages: {label: 'Two or more road frontages', field: 'road_frontages', op: 'gte', num_min: 2},
+    zone: {label: 'Residential planning zone', field: 'custom', op: 'judged', rule_text: 'the plot is in a residential planning zone', claude: true},
+    corner: {label: 'Corner plot', field: 'custom', op: 'judged', rule_text: 'it is a corner plot', claude: true},
+    utilities: {label: 'Water and electricity at the boundary', field: 'custom', op: 'judged', rule_text: 'water and electricity reach the plot boundary', claude: true},
+    furnished: {label: 'Furnished', field: 'furnished', op: 'is_true'},
+    pets: {label: 'Pets allowed', field: 'pets_allowed', op: 'is_true'}
+  };
+  // Per type: the features asked about, and where they start when the
+  // table has no rules yet (m = Must have, n = Nice to have, x = Doesn't matter).
+  var FEAT = {
+    apartment: [['lift', 'm'], ['parking2', 'm'], ['covered', 'n'], ['storeroom', 'm'], ['wholefloor', 'n'], ['guestwc', 'x'], ['ensuite', 'x'], ['openplan', 'x'], ['renovate', 'x'], ['built', 'x'], ['deeds', 'x']],
+    house: [['garden', 'm'], ['pool', 'n'], ['parking2', 'm'], ['covered', 'n'], ['storeroom', 'x'], ['guestwc', 'x'], ['ensuite', 'x'], ['renovate', 'x'], ['built', 'x'], ['deeds', 'm']],
+    plot: [['deeds', 'm'], ['frontages', 'n'], ['zone', 'x'], ['corner', 'x'], ['utilities', 'x']],
+    // To rent: no title deed and nothing to renovate; furnished and pets instead.
+    apartment_rent: [['lift', 'm'], ['parking2', 'n'], ['covered', 'n'], ['storeroom', 'n'], ['furnished', 'x'], ['pets', 'x'], ['wholefloor', 'x'], ['guestwc', 'x'], ['ensuite', 'x'], ['openplan', 'x'], ['built', 'x']],
+    house_rent: [['garden', 'm'], ['pool', 'n'], ['parking2', 'n'], ['covered', 'n'], ['furnished', 'x'], ['pets', 'x'], ['storeroom', 'x'], ['guestwc', 'x'], ['ensuite', 'x'], ['built', 'x']]
+  };
+  function feats() { return FEAT[type + (deal === 'rent' ? '_rent' : '')]; }
+  // The price a scenario is judged on: the price incl. VAT, or the rent a month.
+  function priceField() { return deal === 'rent' ? 'monthly_rent' : 'price_incl_vat'; }
+  // Where the points start before you share them.
+  var WEIGHT = {headroom: 15, sizefit: 15, plotfit: 10, buildable: 40, feature: 10};
+
+  // now  = the rules in the table; base = the ones the wizard starts from,
+  // which is none when you choose another type, or Buy for Rent.
+  var type = 'apartment', deal = 'buy', at = 0, now = [], base = [], drafts = [], feat = {}, pts = {};
+  var sType = 'apartment', sDeal = 'buy';
+
+  function num(id) {
+    var v = ($(id).value || '').replace(/[,\s€]/g, '');
+    if (v === '') { return null; }
+    var n = parseFloat(v);
+    return isNaN(n) ? NaN : n;
+  }
+  function put(id, v) { $(id).value = v == null || v === '' ? '' : String(parseFloat(v)); }
+  function find(test) { for (var i = 0; i < base.length; i++) { if (test(base[i])) { return base[i]; } } return null; }
+  function same(r, f) {
+    if (r.field !== f.field || r.kind === 'scoring') { return false; }
+    if (f.field === 'custom') { return (r.rule_text || '').trim().toLowerCase() === f.rule_text; }
+    return true;
+  }
+  function money(n) { return '€' + Math.round(n).toLocaleString('en-GB'); }
+  function fmt(n) { return Number(n).toLocaleString('en-GB', {maximumFractionDigits: 2}); }
+
+  // ---------------------------------------------------- filling it in
+  function prefill() {
+    var r;
+    document.querySelectorAll('#wzAreas [data-wz-area]').forEach(function (cb) { cb.checked = false; });
+    // The areas carry over whatever the type: where you want it does not change.
+    r = null;
+    now.forEach(function (x) { if (!r && x.field === 'area' && x.kind === 'must') { r = x; } });
+    (r ? r.text_values || [] : []).forEach(function (v) { tick(String(v).trim(), true); });
+    r = find(function (x) { return x.field === priceField() && x.kind === 'must'; });
+    put('wzPriceMax', r ? r.num_max : null);
+    r = find(function (x) { return x.field === priceField() && x.kind === 'scoring'; });
+    put('wzPriceIdeal', r ? r.full_to : null);
+    r = find(function (x) { return x.field === 'internal_m2' && x.kind === 'must'; });
+    put('wzSizeMin', r ? r.num_min : null); put('wzSizeMax', r ? r.num_max : null);
+    r = find(function (x) { return x.field === 'internal_m2' && x.kind === 'scoring'; });
+    put('wzSizeFrom', r ? r.full_from : null); put('wzSizeTo', r ? r.full_to : null);
+    r = find(function (x) { return x.field === 'covered_balcony_m2' && x.kind === 'must'; });
+    put('wzBalcony', r ? r.num_min : null);
+    r = find(function (x) { return x.field === 'plot_m2' && x.kind === 'must'; });
+    ['wzHousePlotMin', 'wzPlotMin'].forEach(function (id) { put(id, r ? r.num_min : null); });
+    ['wzHousePlotMax', 'wzPlotMax'].forEach(function (id) { put(id, r ? r.num_max : null); });
+    r = find(function (x) { return x.field === 'plot_m2' && x.kind === 'scoring'; });
+    put('wzPlotFrom', r ? r.full_from : null); put('wzPlotTo', r ? r.full_to : null);
+    r = find(function (x) { return x.field === 'bedrooms' && x.kind === 'must'; });
+    put('wzBedMin', r ? r.num_min : null); put('wzBedMax', r && r.operator !== 'gte' ? r.num_max : null);
+    r = find(function (x) { return x.field === 'bathrooms' && x.kind === 'must'; });
+    put('wzBathMin', r ? r.num_min : null);
+    r = find(function (x) { return x.field === 'price_per_m2' && x.kind === 'must'; });
+    put('wzLandMax', r ? r.num_max : null);
+    r = find(function (x) { return x.field === 'building_density_pct' && x.kind === 'must'; });
+    put('wzDensityMin', r ? r.num_min : null);
+    r = find(function (x) { return x.field === 'price_per_buildable_m2' && x.kind === 'scoring'; });
+    put('wzBuildFull', r ? r.full_to : null); put('wzBuildZero', r ? r.zero_above : null);
+    feat = {};
+    pts = {};
+    base.forEach(function (x) {
+      if (x.kind === 'must') { return; }
+      pts[x.field + '|' + x.kind + '|' + (x.rule_text || '').trim().toLowerCase()] = parseFloat(x.points) || 0;
+    });
+  }
+
+  function tick(name, on) {
+    var box = $('wzAreas'), want = name.toLowerCase(), found = null;
+    if (!name) { return null; }
+    box.querySelectorAll('[data-wz-area]').forEach(function (cb) { if (cb.value.toLowerCase() === want) { found = cb; } });
+    if (!found) {
+      var lab = document.createElement('label');
+      found = document.createElement('input');
+      found.type = 'checkbox'; found.value = name; found.setAttribute('data-wz-area', '');
+      lab.appendChild(found); lab.appendChild(document.createTextNode(' ' + name));
+      box.appendChild(lab);
+    }
+    found.checked = on;
+    return found;
+  }
+  function ticked() {
+    var out = [];
+    document.querySelectorAll('#wzAreas [data-wz-area]').forEach(function (cb) { if (cb.checked) { out.push(cb.value); } });
+    return out;
+  }
+
+  window.acqWizardAddArea = function () {
+    var name = $('wzAreaName').value.trim(), msg = $('wzAreaMsg');
+    if (!name) { msg.textContent = 'Type the area first.'; return; }
+    var fd = new FormData();
+    fd.append('name', name);
+    fd.append('district', $('wzAreaDistrict').value.trim());
+    fd.append('aliases', $('wzAreaAka').value.trim());
+    fd.append('csrfmiddlewaretoken', window.acqRulesToken());
+    msg.textContent = 'Adding…';
+    fetch(areaUrl, {method: 'POST', body: fd, credentials: 'same-origin'})
+      .then(function (r) {
+        if (r.redirected && /\/login\//.test(r.url)) { throw 'signed-out'; }
+        return r.json();
+      })
+      .then(function (d) {
+        if (!d.ok) { msg.textContent = d.error || 'Could not add the area.'; return; }
+        tick(d.name, true);
+        $('wzAreaName').value = ''; $('wzAreaAka').value = '';
+        msg.textContent = d.created ? d.name + ' added and ticked.' : d.name + ' was already there - ticked.';
+      })
+      .catch(function (why) { msg.textContent = why === 'signed-out' ? 'You have been signed out - sign in again in another tab, then add it.' : 'Could not add the area just now.'; });
+  };
+
+  // ---------------------------------------------------- the features
+  function drawFeatures() {
+    var box = $('wzFeatures');
+    while (box.firstChild) { box.removeChild(box.firstChild); }
+    var head = document.createElement('div');
+    head.className = 'acq-wz-feat acq-wz-feat-head';
+    head.innerHTML = '<span></span><span>Must have</span><span>Nice to have</span><span>Doesn&rsquo;t matter</span>';
+    box.appendChild(head);
+    var none = base.length === 0;
+    feats().forEach(function (pair) {
+      var key = pair[0], f = F[key];
+      if (!feat[key]) {
+        var r = find(function (x) { return same(x, f); });
+        feat[key] = r ? (r.kind === 'must' ? 'm' : 'n') : (none ? pair[1] : 'x');
+      }
+      var row = document.createElement('div');
+      row.className = 'acq-wz-feat';
+      row.setAttribute('data-wz-feature', key);
+      var name = document.createElement('span');
+      name.textContent = f.label;
+      if (f.claude) { var c = document.createElement('span'); c.className = 'acq-muted ml-1'; c.textContent = '(checked by Claude)'; name.appendChild(c); }
+      row.appendChild(name);
+      [['m', 'Must have'], ['n', 'Nice to have'], ['x', 'Doesn’t matter']].forEach(function (o) {
+        var lab = document.createElement('label');
+        var rb = document.createElement('input');
+        rb.type = 'radio'; rb.name = 'wzf_' + key; rb.value = o[0]; rb.checked = feat[key] === o[0];
+        rb.setAttribute('aria-label', f.label + ': ' + o[1]);
+        rb.onchange = function () { feat[key] = o[0]; };
+        lab.appendChild(rb);
+        var t = document.createElement('span'); t.className = 'acq-wz-feat-say'; t.textContent = ' ' + o[1];
+        lab.appendChild(t);
+        row.appendChild(lab);
+      });
+      box.appendChild(row);
+    });
+  }
+
+  // ---------------------------------------------------- the rules
+  function rule(label, field, kind, op, extra) {
+    var r = {id: null, label: label, field: field, kind: kind, operator: op,
+      num_min: null, num_max: null, text_values: [], points: 0,
+      full_from: null, full_to: null, zero_below: null, zero_above: null,
+      score_bands: [], group: '', rule_text: ''};
+    Object.keys(extra || {}).forEach(function (k) { r[k] = extra[k]; });
+    if (kind !== 'must') {
+      var keep = pts[field + '|' + kind + '|' + (r.rule_text || '').toLowerCase()];
+      r.points = keep != null ? keep : (r.weight || WEIGHT.feature);
+    }
+    delete r.weight;
+    return r;
+  }
+  function range(label, field, lo, hi, unit) {
+    unit = unit || '';
+    if (lo != null && hi != null) { return rule(label + ' ' + fmt(lo) + '–' + fmt(hi) + unit, field, 'must', 'between', {num_min: lo, num_max: hi}); }
+    if (lo != null) { return rule(label + ' at least ' + fmt(lo) + unit, field, 'must', 'gte', {num_min: lo}); }
+    if (hi != null) { return rule(label + ' at most ' + fmt(hi) + unit, field, 'must', 'lte', {num_max: hi}); }
+    return null;
+  }
+  function fit(label, field, lo, hi, from, to, weight) {
+    if (from == null && to == null) { return null; }
+    return rule(label, field, 'scoring', 'between', {full_from: from, full_to: to, zero_below: lo, zero_above: hi, weight: weight});
+  }
+
+  function build() {
+    var out = [], musts = [], earn = [];
+    var add = function (list, r) { if (r) { list.push(r); } };
+    add(musts, rule('Location', 'area', 'must', 'in', {text_values: ticked(), rule: ticked().join(' or ')}));
+    var max = num('wzPriceMax'), ideal = num('wzPriceIdeal');
+    if (deal === 'rent') {
+      add(musts, rule('Rent ≤ ' + money(max) + ' a month', 'monthly_rent', 'must', 'lte', {num_max: max}));
+      if (ideal != null) { add(earn, rule('Rent headroom', 'monthly_rent', 'scoring', 'lte', {full_to: ideal, zero_above: max, weight: WEIGHT.headroom})); }
+    } else {
+      add(musts, rule('Budget ≤ ' + money(max) + ' incl. VAT', 'price_incl_vat', 'must', 'lte', {num_max: max}));
+      if (ideal != null) { add(earn, rule('Price headroom', 'price_incl_vat', 'scoring', 'lte', {full_to: ideal, zero_above: max, weight: WEIGHT.headroom})); }
+    }
+    if (type === 'plot') {
+      var pl = num('wzPlotMin'), ph = num('wzPlotMax');
+      add(musts, range('Plot', 'plot_m2', pl, ph, ' m²'));
+      add(earn, fit('Plot size fit', 'plot_m2', pl, ph, num('wzPlotFrom'), num('wzPlotTo'), WEIGHT.plotfit));
+      var land = num('wzLandMax'), dens = num('wzDensityMin'), bf = num('wzBuildFull'), bz = num('wzBuildZero');
+      if (land != null) { add(musts, rule('≤ €' + fmt(land) + ' per m² of land', 'price_per_m2', 'must', 'lte', {num_max: land})); }
+      if (dens != null) { add(musts, rule('Building density at least ' + fmt(dens) + '%', 'building_density_pct', 'must', 'gte', {num_min: dens})); }
+      if (bf != null) { add(earn, rule('€ per buildable m²', 'price_per_buildable_m2', 'scoring', 'lte', {full_to: bf, zero_above: bz, weight: WEIGHT.buildable})); }
+    } else {
+      var sl = num('wzSizeMin'), sh = num('wzSizeMax');
+      add(musts, range('Internal area', 'internal_m2', sl, sh, ' m²'));
+      add(earn, fit('Internal area fit', 'internal_m2', sl, sh, num('wzSizeFrom'), num('wzSizeTo'), WEIGHT.sizefit));
+      if (type === 'apartment') {
+        var bal = num('wzBalcony');
+        if (bal != null) { add(musts, rule('Covered balconies ≥ ' + fmt(bal) + ' m²', 'covered_balcony_m2', 'must', 'gte', {num_min: bal})); }
+      } else {
+        add(musts, range('Plot', 'plot_m2', num('wzHousePlotMin'), num('wzHousePlotMax'), ' m²'));
+      }
+      var bl = num('wzBedMin'), bh = num('wzBedMax'), ba = num('wzBathMin');
+      add(musts, range('Bedrooms', 'bedrooms', bl, bh));
+      if (ba != null) { add(musts, rule('At least ' + fmt(ba) + ' bathrooms', 'bathrooms', 'must', 'gte', {num_min: ba, group: 'bathrooms'})); }
+    }
+    feats().forEach(function (pair) {
+      var key = pair[0], f = F[key], s = feat[key];
+      if (s !== 'm' && s !== 'n') { return; }
+      var extra = {};
+      ['num_min', 'text_values', 'rule_text'].forEach(function (k) { if (f[k] != null) { extra[k] = f[k]; } });
+      if (s === 'm' && f.group) { extra.group = f.group; }
+      add(s === 'm' ? musts : earn, rule(f.label, f.field, s === 'm' ? 'must' : 'preferred', f.op, extra));
+    });
+    out = musts.concat(earn);
+    return out;
+  }
+
+  function check(step) {
+    var bad = function (ids) { return ids.some(function (id) { var v = num(id); return v !== null && (isNaN(v) || v < 0); }); };
+    var order = function (a, b) { var x = num(a), y = num(b); return x == null || y == null || x <= y; };
+    if (step === 'where' && !ticked().length) { return 'Tick at least one area.'; }
+    if (step === 'budget') {
+      if (num('wzPriceMax') == null || isNaN(num('wzPriceMax'))) { return 'Give the most you would pay.'; }
+      if (bad(['wzPriceIdeal'])) { return 'The price you would love to pay is not a number.'; }
+      if (!order('wzPriceIdeal', 'wzPriceMax')) { return 'The price you would love to pay should be below the most you would pay.'; }
+    }
+    if (step === 'size') {
+      if (bad(['wzSizeMin', 'wzSizeMax', 'wzSizeFrom', 'wzSizeTo', 'wzBalcony', 'wzHousePlotMin', 'wzHousePlotMax'])) { return 'Each box takes a number, or leave it empty.'; }
+      if (!order('wzSizeMin', 'wzSizeMax') || !order('wzSizeFrom', 'wzSizeTo') || !order('wzSizeMin', 'wzSizeFrom') || !order('wzSizeTo', 'wzSizeMax')) { return 'Smallest, ideal and largest should run from low to high.'; }
+      if (!order('wzHousePlotMin', 'wzHousePlotMax')) { return 'The smallest plot should be below the largest.'; }
+    }
+    if (step === 'plotsize') {
+      if (bad(['wzPlotMin', 'wzPlotMax', 'wzPlotFrom', 'wzPlotTo'])) { return 'Each box takes a number, or leave it empty.'; }
+      if (!order('wzPlotMin', 'wzPlotMax') || !order('wzPlotFrom', 'wzPlotTo') || !order('wzPlotMin', 'wzPlotFrom') || !order('wzPlotTo', 'wzPlotMax')) { return 'Smallest, ideal and largest should run from low to high.'; }
+    }
+    if (step === 'rooms') {
+      if (bad(['wzBedMin', 'wzBedMax', 'wzBathMin'])) { return 'Each box takes a number, or leave it empty.'; }
+      if (!order('wzBedMin', 'wzBedMax')) { return 'The fewest bedrooms should be below the most.'; }
+    }
+    if (step === 'cost') {
+      if (bad(['wzLandMax', 'wzDensityMin', 'wzBuildFull', 'wzBuildZero'])) { return 'Each box takes a number, or leave it empty.'; }
+      if (num('wzBuildZero') != null && num('wzBuildFull') == null) { return 'Give the € per buildable m² for full points too.'; }
+      if (!order('wzBuildFull', 'wzBuildZero')) { return 'Full points should come at a lower € per buildable m² than no points.'; }
+    }
+    return '';
+  }
+
+  // ---------------------------------------------------- points and review
+  function drawPoints() {
+    var box = $('wzPoints');
+    while (box.firstChild) { box.removeChild(box.firstChild); }
+    var earn = drafts.filter(function (r) { return r.kind !== 'must'; });
+    if (!earn.length) {
+      box.innerHTML = '<p class="acq-warn mb-0">No rule earns points yet, so every listing that passes the Musts would score 0. Go back and add an ideal range or a nice-to-have.</p>';
+    }
+    earn.forEach(function (r, i) {
+      var row = document.createElement('div');
+      row.className = 'form-row align-items-center acq-wz-pts';
+      var id = 'wzPts' + i;
+      var lab = document.createElement('label');
+      lab.htmlFor = id; lab.className = 'col-8 mb-0'; lab.textContent = r.label;
+      var cellBox = document.createElement('div'); cellBox.className = 'col-4';
+      var inp = document.createElement('input');
+      inp.type = 'number'; inp.min = '0'; inp.max = '100'; inp.step = '1'; inp.id = id;
+      inp.className = 'form-control'; inp.value = Math.round(parseFloat(r.points) || 0);
+      inp.oninput = function () { r.points = parseFloat(inp.value) || 0; total(); };
+      cellBox.appendChild(inp);
+      row.appendChild(lab); row.appendChild(cellBox);
+      box.appendChild(row);
+    });
+    total();
+  }
+  function total() {
+    var t = drafts.reduce(function (n, r) { return n + (r.kind === 'must' ? 0 : (parseFloat(r.points) || 0)); }, 0);
+    $('wzPointsTotal').textContent = Math.round(t * 10) / 10;
+    $('wzPointsTotal').classList.toggle('is-off', Math.abs(t - 100) > 0.01);
+  }
+  // Scale what is there to 100, whole numbers, the remainder to the largest.
+  function scale(even) {
+    var earn = drafts.filter(function (r) { return r.kind !== 'must'; });
+    if (!earn.length) { return; }
+    var w = earn.map(function (r) { return even ? 1 : Math.max(parseFloat(r.points) || 0, 0); });
+    var sum = w.reduce(function (a, b) { return a + b; }, 0) || earn.length;
+    if (!w.some(Boolean)) { w = earn.map(function () { return 1; }); }
+    var got = 0, share = w.map(function (x) { var p = Math.floor(100 * x / sum); got += p; return p; });
+    var order = share.map(function (p, i) { return i; }).sort(function (a, b) { return (100 * w[b] / sum - share[b]) - (100 * w[a] / sum - share[a]); });
+    for (var k = 0; got < 100; k++, got++) { share[order[k % order.length]] += 1; }
+    earn.forEach(function (r, i) { r.points = share[i]; });
+  }
+  window.acqWizardEven = function () { scale(true); drawPoints(); };
+
+  function say(r) {
+    if (r.field === 'area') { return 'in ' + (r.text_values || []).join(' or '); }
+    if (r.field === 'custom') { return 'Claude checks that ' + r.rule_text; }
+    if (r.kind === 'scoring') {
+      if (r.field === 'price_incl_vat') { return 'full points at or under ' + money(r.full_to) + ', none at ' + money(r.zero_above); }
+      if (r.field === 'monthly_rent') { return 'full points at or under ' + money(r.full_to) + ' a month, none at ' + money(r.zero_above); }
+      if (r.field === 'price_per_buildable_m2') { return 'full points at or under €' + fmt(r.full_to) + (r.zero_above != null ? ', none at €' + fmt(r.zero_above) : ''); }
+      return 'full points from ' + (r.full_from != null ? fmt(r.full_from) : 'any') + ' to ' + (r.full_to != null ? fmt(r.full_to) : 'any') + ' m²';
+    }
+    if (r.operator === 'is_true') { return 'yes'; }
+    if (r.operator === 'in') { return (r.text_values || []).join(' or '); }
+    return '';
+  }
+  function drawReview() {
+    var ul = $('wzReview');
+    while (ul.firstChild) { ul.removeChild(ul.firstChild); }
+    drafts.forEach(function (r) {
+      var li = document.createElement('li');
+      var a = document.createElement('span');
+      var b = document.createElement('strong'); b.textContent = r.label;
+      a.appendChild(b);
+      var s = say(r);
+      if (s) { a.appendChild(document.createTextNode(' — ' + s)); }
+      var k = document.createElement('span');
+      k.className = 'acq-muted';
+      k.textContent = r.kind === 'must' ? 'Must' : (Math.round(parseFloat(r.points) || 0) + ' points');
+      li.appendChild(a); li.appendChild(k); ul.appendChild(li);
+    });
+  }
+
+  // ---------------------------------------------------- moving through it
+  function show(n) {
+    var list = STEPS[type];
+    at = Math.max(0, Math.min(list.length - 1, n));
+    var step = list[at];
+    document.querySelectorAll('#acqWizardModal [data-wz-step]').forEach(function (sec) { sec.hidden = sec.getAttribute('data-wz-step') !== step; });
+    document.querySelectorAll('#acqWizardModal [data-wz-for]').forEach(function (el) {
+      if (el.hasAttribute('data-wz-step')) { return; }
+      el.hidden = el.getAttribute('data-wz-for').split(' ').indexOf(type) < 0;
+    });
+    if (step === 'features') { drawFeatures(); }
+    if (step === 'points') { drawPoints(); }
+    if (step === 'review') { drawReview(); }
+    var dots = $('wzDots');
+    while (dots.firstChild) { dots.removeChild(dots.firstChild); }
+    list.forEach(function (x, i) { var d = document.createElement('span'); if (i <= at) { d.className = 'is-on'; } dots.appendChild(d); });
+    document.querySelectorAll('#acqWizardModal [data-wz-deal]').forEach(function (el) { el.hidden = el.getAttribute('data-wz-deal') !== deal; });
+    document.querySelectorAll('#acqWizardModal [name=wzDeal]').forEach(function (rb) { rb.checked = rb.value === deal; });
+    $('wzCount').textContent = {apartment: 'Apartment', house: 'House', plot: 'Plot'}[type] + (deal === 'rent' ? ' to rent' : '') + ' · step ' + (at + 1) + ' of ' + list.length;
+    var last = at === list.length - 1;
+    $('wzBack').hidden = at === 0;
+    $('wzNext').innerHTML = last ? '<i class="fas fa-check"></i> Replace my rules' : 'Next <i class="fas fa-arrow-right"></i>';
+    $('wzAdd').hidden = !last;
+    $('wzError').hidden = true;
+  }
+
+  window.acqWizardGo = function (step) {
+    var err = $('wzError');
+    if (step > 0 && at === STEPS[type].length - 1) { window.acqWizardApply('replace'); return; }
+    if (step > 0) {
+      var why = check(STEPS[type][at]);
+      if (why) { err.textContent = why; err.hidden = false; return; }
+      if (STEPS[type][at + 1] === 'points') {
+        var fresh = drafts.length === 0;
+        // Keep the points already shared when you come back this way.
+        drafts.forEach(function (r) { if (r.kind !== 'must') { pts[r.field + '|' + r.kind + '|' + (r.rule_text || '').toLowerCase()] = parseFloat(r.points) || 0; } });
+        drafts = build();
+        if (fresh && !base.some(function (r) { return r.kind !== 'must'; })) { scale(false); }
+      }
+    }
+    show(at + step);
+  };
+
+  // Replacing: a rule that matches one already in the table keeps that
+  // one's id, so saving updates it and Claude's answers to a plain-words
+  // rule are kept. Adding never reuses an id.
+  function keepIds() {
+    var used = {};
+    drafts.forEach(function (r) {
+      r.id = null;
+      var key = function (x) { return x.field + '|' + x.kind + '|' + (x.field === 'custom' ? (x.rule_text || '').trim().toLowerCase() : ''); };
+      var hit = null;
+      now.forEach(function (x) { if (!hit && x.id && !used[x.id] && key(x) === key(r)) { hit = x; } });
+      if (hit) { r.id = hit.id; used[hit.id] = true; }
+    });
+  }
+
+  window.acqWizardApply = function (mode) {
+    if (mode === 'replace') { keepIds(); } else { drafts.forEach(function (r) { r.id = null; }); }
+    window.acqRulesApply(drafts, mode, type, deal);
+    if (window.jQuery) { window.jQuery('#acqWizardModal').modal('hide'); }
+  };
+
+  // Start from the table's rules only when the type and Buy/Rent are the
+  // scenario's own; another choice starts that one fresh.
+  function startFrom() {
+    if (type === 'plot') { deal = 'buy'; }
+    base = (type === sType && deal === sDeal) ? now : [];
+    drafts = [];
+    prefill();
+  }
+  document.querySelectorAll('#acqWizardModal [name=wzType]').forEach(function (rb) {
+    rb.onchange = function () { type = rb.value; startFrom(); show(0); };
+  });
+  document.querySelectorAll('#acqWizardModal [name=wzDeal]').forEach(function (rb) {
+    rb.onchange = function () { deal = rb.value; startFrom(); show(0); };
+  });
+
+  window.acqWizard = function () {
+    now = window.acqRulesNow();
+    sType = window.acqRulesType();
+    sDeal = window.acqRulesDeal() || 'buy';
+    type = STEPS[sType] ? sType : 'apartment';
+    sDeal = sType === 'plot' ? 'buy' : sDeal;
+    deal = sDeal;
+    document.querySelectorAll('#acqWizardModal [name=wzType]').forEach(function (rb) { rb.checked = rb.value === type; });
+    startFrom();
+    show(0);
+    if (window.jQuery) { window.jQuery('#acqWizardModal').modal('show'); }
+  };
+})();
+</script>

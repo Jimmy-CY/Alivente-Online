@@ -1,38 +1,29 @@
 """
-presets.py - RA19, 23 Nov 2026. The four "Start from a template" cards.
+presets.py - RA19, 23 Nov 2026. The "Start from a template" cards (three
+since RA22: Home to renovate, Development plot, Home to rent).
 
 Each is a starting point for a new scenario: its type, its rules and their
 points. Nothing is saved until you press Save scenario, and every rule can
 be changed in the editor first. The first two are the two scenarios step 1
-seeded; the last two are suggestions, mostly plain-words rules for Claude,
-because yields and auction terms are things only the listing text can tell.
+seeded; Home to rent is a starting point to change before saving.
 """
 from acquisitions.management.commands.seed_acquisitions import (APARTMENT_CRITERIA,
                                                                 PLOT_CRITERIA)
 
-BUY_TO_LET = [
-    ("Budget", "price_incl_vat", "must", "lte", {"num_max": 300000}),
-    ("2 or 3 bedrooms", "bedrooms", "must", "between", {"num_min": 2, "num_max": 3}),
-    ("Gross yield at least 5%", "custom", "must", "judged",
-     {"rule_text": "the gross yield from typical area rents is at least 5%"}),
-    ("Tenant-ready condition", "condition", "preferred", "in",
-     {"points": 30, "text_values": ["good", "renovated", "new"]}),
+# RA22, 24 Nov 2026 - Buy-to-let and Auction & bank-owned are gone; Home to
+# rent takes their place (Demetri: "remove the Start from a template
+# Buy-to-Let and Auction & bank-owned. Add a new one - Home to rent").
+HOME_TO_RENT = [
+    ("Location", "area", "must", "in", {"text_values": ["Engomi", "Makedonitissa", "Strovolos"]}),
+    ("Rent ≤ €2,000 a month", "monthly_rent", "must", "lte", {"num_max": 2000}),
+    ("Bedrooms at least 3", "bedrooms", "must", "gte", {"num_min": 3}),
+    ("At least 2 bathrooms", "bathrooms", "must", "gte", {"num_min": 2, "group": "bathrooms"}),
+    ("Rent headroom", "monthly_rent", "scoring", "lte",
+     {"points": 40, "full_to": 1500, "zero_above": 2000}),
+    ("Covered parking", "parking_covered", "preferred", "is_true", {"points": 20}),
     ("Lift", "lift", "preferred", "is_true", {"points": 15}),
-    ("Covered parking", "parking_covered", "preferred", "is_true", {"points": 15}),
-    ("Price headroom", "price_incl_vat", "scoring", "lte",
-     {"points": 40, "full_to": 220000, "zero_above": 300000}),
-]
-
-AUCTION = [
-    ("Budget (reserve or asking)", "price_incl_vat", "must", "lte", {"num_max": 800000}),
-    ("Sold by a bank or at auction", "custom", "must", "judged",
-     {"rule_text": "the property is bank-owned or offered at a published auction"}),
-    ("Title free of charges", "custom", "preferred", "judged",
-     {"points": 30, "rule_text": "the notice says the title is free of mortgages and charges"}),
-    ("Viewing offered", "custom", "preferred", "judged",
-     {"points": 20, "rule_text": "a viewing date is offered before the deadline"}),
-    ("Price headroom", "price_incl_vat", "scoring", "lte",
-     {"points": 50, "full_to": 600000, "zero_above": 800000}),
+    ("Furnished", "furnished", "preferred", "is_true", {"points": 15}),
+    ("Storeroom", "storeroom", "preferred", "is_true", {"points": 10}),
 ]
 
 TEMPLATES = {
@@ -42,12 +33,9 @@ TEMPLATES = {
     "plot": {"title": "Development plot", "property_type": "plot",
              "blurb": "Zone, density and €/buildable m²",
              "icon": "fa-vector-square", "criteria": PLOT_CRITERIA},
-    "let": {"title": "Buy-to-let", "property_type": "apartment",
-            "blurb": "Gross yield from area rents, tenant-ready condition",
-            "icon": "fa-key", "criteria": BUY_TO_LET},
-    "auction": {"title": "Auction & bank-owned", "property_type": "any",
-                "blurb": "Reserve price, auction date and deposit tracking",
-                "icon": "fa-gavel", "criteria": AUCTION},
+    "rent": {"title": "Home to rent", "property_type": "apartment", "deal": "rent",
+             "blurb": "Rent a month, rooms, furnished and parking",
+             "icon": "fa-key", "criteria": HOME_TO_RENT},
 }
 
 

@@ -123,8 +123,11 @@ N_RULES = 22               # whole .form-group label rules removed
 # this round, so it counts on both sides (was 69 and 67).
 # RA21, 24 Nov 2026 - ONE MORE: Other spellings (optional, e.g. Egkomi), in
 # the Location rule's Add area row. Counted on both sides (was 75 and 73).
-N_HINT = 76                # labels that bold only part of themselves
-N_HINT_WAS = 74            # ... 74 before this round added two
+# RA22, 24 Nov 2026 - THREE MORE, in the new Build rules step by step
+# partial: Other spellings, I'd love to pay and Bedrooms, at most, each a
+# bold name and a plain "(optional)". A new file, so both sides (was 76, 74).
+N_HINT = 79                # labels that bold only part of themselves
+N_HINT_WAS = 77            # ... 77 before this round added two
 
 CRS_PAGES = ('crs/country_form.html', 'crs/fi_form.html',
              'crs/submission_detail.html', 'crs/submission_start.html')

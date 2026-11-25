@@ -34,9 +34,12 @@
     <h3 class="form-section-title acq-section-title"><i class="fas fa-info-circle"></i> 1 &middot; Basics</h3>
     <div>
       <div class="form-row">
-        <div class="form-group col-md-6"><label for="acqName"><strong>Name</strong> <span class="alv-req">*</span></label><input type="text" id="acqName" name="name" class="form-control" maxlength="150" value="{{ s.name }}" required></div>
+        <div class="form-group col-md-4"><label for="acqName"><strong>Name</strong> <span class="alv-req">*</span></label><input type="text" id="acqName" name="name" class="form-control" maxlength="150" value="{{ s.name }}" required></div>
         <div class="form-group col-md-3"><label for="acqType"><strong>Property type</strong></label>
           <select id="acqType" name="property_type" class="form-control">{% for k, l in types %}<option value="{{ k }}" {% if s.property_type == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+        {# RA22 - Buy or rent; a plot is only bought (Demetri: "Plots are only for Buying"). #}
+        <div class="form-group col-md-2"><label for="acqDeal"><strong>Buy or rent</strong></label>
+          <select id="acqDeal" name="deal" class="form-control">{% for k, l in deals %}<option value="{{ k }}" {% if s.deal == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
         <div class="form-group col-md-3"><label for="acqStatus"><strong>Status</strong></label>
           <select id="acqStatus" name="is_active" class="form-control"><option value="1" {% if s.is_active %}selected{% endif %}>Active</option><option value="0" {% if not s.is_active %}selected{% endif %}>Paused</option></select></div>
       </div>
@@ -69,6 +72,8 @@
       </div>
       <p class="acq-bad" id="acqCritError" role="alert" hidden></p>
       {% if can_edit %}
+      {# RA22 - the wizard asks apartment, house or plot first, then the questions for that (_rules_wizard.html). #}
+      <button type="button" class="btn action-secondary" onclick="acqWizard()" data-wizard-open><i class="fas fa-magic"></i> Build rules step by step</button>
       <button type="button" class="btn action-secondary" onclick="acqOpenRule(-1, false)"><i class="fas fa-plus"></i> Add criterion</button>
       <button type="button" class="btn action-secondary" onclick="acqOpenRule(-1, true)"><i class="fas fa-comment-alt"></i> Add a rule in plain words</button>
       {% endif %}
@@ -275,6 +280,8 @@
     fd.append('criteria_json', JSON.stringify(rows));
     fd.append('unknown_score_cap', $('acqCap').value);
     fd.append('max_unknown_musts', $('acqLimit').value);
+    fd.append('property_type', $('acqType').value);
+    fd.append('deal', $('acqDeal').value);
     fetch(previewUrl, {method: 'POST', body: fd, credentials: 'same-origin'})
       .then(function (r) {
         // RA21 - signed out: the request was sent to the login page.
@@ -446,6 +453,20 @@
     refresh();
   };
 
+  // RA22 - the wizard reads the rules on the page and writes its own back.
+  window.acqRulesNow = function () { return JSON.parse(JSON.stringify(rows)); };
+  window.acqRulesType = function () { return $('acqType').value; };
+  window.acqRulesDeal = function () { return $('acqDeal').value; };
+  window.acqRulesToken = function () { return form.querySelector('[name=csrfmiddlewaretoken]').value; };
+  window.acqRulesApply = function (made, mode, type, deal) {
+    if (mode === 'replace') { rows.length = 0; }
+    (made || []).forEach(function (r) { rows.push(r); });
+    if (type) { $('acqType').value = type; }
+    if (deal) { $('acqDeal').value = deal; }
+    acqDealShape();
+    refresh();
+  };
+
   form.addEventListener('submit', function () {
     $('acqCriteriaJson').value = JSON.stringify(rows);
   });
@@ -461,9 +482,27 @@
   }
   $('acqCadence').addEventListener('change', acqCadence);
   acqCadence();
+  // RA22 - a plot is only bought: Buy, greyed out.
+  function acqDealShape() {
+    var plot = $('acqType').value === 'plot';
+    if (plot) { $('acqDeal').value = 'buy'; }
+    $('acqDeal').disabled = plot;
+  }
+  $('acqType').addEventListener('change', function () { acqDealShape(); refresh(); });
+  $('acqDeal').addEventListener('change', refresh);
+  acqDealShape();
   refresh();
 })();
 </script>
+
+{% if can_edit %}{% include 'acquisitions/_rules_wizard.html' %}{% endif %}
+{% if can_edit and not s.pk and not preset %}
+<script>
+  // RA22 - a new, empty scenario starts in the wizard (Demetri: "If we create
+  // a new scenario, obviously then we must go straight to the wizard").
+  window.addEventListener('load', function () { if (window.acqWizard) { window.acqWizard(); } });
+</script>
+{% endif %}
 
 {% render_help_modal "acquisitions" %}
 {% endblock %}

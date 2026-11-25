@@ -97,8 +97,11 @@ def head(t):
 
 print(__doc__.strip().splitlines()[0])
 
+# RA22, 24 Nov 2026 - 'auctions' left the list with its page (Demetri:
+# "remove the Auction & Off-Market section"), and the Buy-to-let template
+# with it - the template opened below is Home to rent.
 PAGES = ['overview', 'scenarios', 'scenario_edit', 'scenario_results',
-         'plot_results', 'property', 'price_watch', 'market', 'auctions',
+         'plot_results', 'property', 'price_watch', 'market',
          'runs']
 
 
@@ -323,7 +326,7 @@ if have_db:
             U = dict(
                 overview='/acquisitions/',
                 scenarios='/acquisitions/scenarios/',
-                scenario_new='/acquisitions/scenarios/new/?template=let',
+                scenario_new='/acquisitions/scenarios/new/?template=rent',
                 scenario_edit='/acquisitions/scenarios/%d/edit/' % apt.pk,
                 scenario_results='/acquisitions/scenarios/%d/' % apt.pk,
                 plot_results='/acquisitions/scenarios/%d/' % plot.pk,
@@ -331,8 +334,6 @@ if have_db:
                 plot_property='/acquisitions/property/%d/' % p3.pk,
                 price_watch='/acquisitions/price-watch/',
                 market='/acquisitions/market/?period=all',
-                auctions='/acquisitions/auctions/',
-                auctions_areas='/acquisitions/auctions/?show=areas',
                 runs='/acquisitions/runs/',
                 run='/acquisitions/runs/?run=%d' % run.pk)
             bad = []

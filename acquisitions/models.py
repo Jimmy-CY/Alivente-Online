@@ -77,6 +77,15 @@ class PropertyType(models.TextChoices):
     ANY = "any", "Any"
 
 
+class Deal(models.TextChoices):
+    """RA22, 24 Nov 2026 - to buy or to rent. Demetri: "we need to have the
+    option to Rent or Buy for Property Types Apartment and House ... Plots
+    are only for Buying." A rent scenario searches rental listings and its
+    budget is the monthly rent."""
+    BUY = "buy", "Buy"
+    RENT = "rent", "Rent"
+
+
 class Scenario(models.Model):
     CADENCE_CHOICES = [("daily", "Daily"), ("weekly", "Weekly"), ("manual", "Only when I ask")]
     WEEKDAY_CHOICES = [(i, d) for i, d in enumerate(
@@ -94,6 +103,8 @@ class Scenario(models.Model):
                                help_text="Shown at the top of every summary.")
     property_type = models.CharField(max_length=20, choices=PropertyType.choices,
                                      default=PropertyType.APARTMENT)
+    deal = models.CharField(max_length=4, choices=Deal.choices, default=Deal.BUY,
+                            help_text="Buy or rent. A plot is always Buy.")
     is_active = models.BooleanField(default=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True,
                               on_delete=models.SET_NULL, related_name="acq_scenarios")
@@ -240,6 +251,8 @@ class Property(models.Model):
 
     property_type = models.CharField(max_length=20, choices=PropertyType.choices,
                                      default=PropertyType.APARTMENT)
+    deal = models.CharField(max_length=4, choices=Deal.choices, default=Deal.BUY,
+                            help_text="For sale or to rent.")
     title = models.CharField(max_length=200, help_text='e.g. "Whole-floor apartment, Engomi"')
     area = models.ForeignKey(Area, null=True, blank=True, on_delete=models.SET_NULL,
                              related_name="properties")
@@ -249,6 +262,10 @@ class Property(models.Model):
 
     # Price
     asking_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    # RA22 - a rental's price is its rent a month (no VAT).
+    monthly_rent = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    furnished = models.BooleanField(null=True, blank=True)
+    pets_allowed = models.BooleanField(null=True, blank=True)
     vat_status = models.CharField(max_length=10, choices=VatStatus.choices,
                                   default=VatStatus.UNKNOWN)
     price_incl_vat = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True,

@@ -24,6 +24,5 @@ urlpatterns = [
     path("property/<int:pk>/offer-brief.pdf", views.offer_brief, name="offer_brief"),
     path("price-watch/", views.price_watch, name="price_watch"),
     path("market/", views.market, name="market"),
-    path("auctions/", views.auctions, name="auctions"),
     path("runs/", views.runs, name="runs"),
 ]

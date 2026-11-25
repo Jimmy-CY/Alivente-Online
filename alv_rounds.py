@@ -1698,6 +1698,8 @@ ROUNDS = [
     '.bak_ra20',
     # RA21, 24 Nov 2026 - the areas are the Location rule's; add an area.
     '.bak_ra21',
+    # RA22, 24 Nov 2026 - Build rules step by step: apartment, house or plot first.
+    '.bak_ra22',
 ]
 
 

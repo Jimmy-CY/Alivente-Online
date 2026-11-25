@@ -23,6 +23,10 @@ from decimal import Decimal
 #   confirmed: optional attribute that must be True for a Must to count as known
 FIELDS = {
     "price_incl_vat": {"label": "Price incl. VAT (€)", "type": "number", "attr": "price_incl_vat"},
+    # RA22 - a rent scenario's price, and two things a renter asks.
+    "monthly_rent": {"label": "Rent a month (€)", "type": "number", "attr": "monthly_rent"},
+    "furnished": {"label": "Furnished", "type": "bool", "attr": "furnished"},
+    "pets_allowed": {"label": "Pets allowed", "type": "bool", "attr": "pets_allowed"},
     "asking_price": {"label": "Asking price (€)", "type": "number", "attr": "asking_price"},
     "price_per_m2": {"label": "€ per m²", "type": "number", "attr": "price_per_m2"},
     "internal_m2": {"label": "Internal m²", "type": "number", "attr": "internal_m2",
@@ -153,6 +157,13 @@ def evaluate(scenario, prop, match=None, criteria=None):
     criteria = list(criteria if criteria is not None else scenario.criteria.all())
     breakdown, failed, unknown_groups, unknown_labels = [], [], set(), []
     raw = Decimal(0)
+    # RA22 - a listing for sale cannot pass a rent scenario, nor the other
+    # way round. Read with defaults, so a scenario or listing from before
+    # the field existed counts as Buy.
+    want = getattr(scenario, "deal", "") or "buy"
+    have = getattr(prop, "deal", "") or "buy"
+    if want != have:
+        failed.append("To rent, not for sale" if want == "rent" else "For sale, not to rent")
 
     for c in criteria:
         is_must = c.kind == "must"
