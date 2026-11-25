@@ -65,7 +65,8 @@
       <p class="acq-muted"><strong>Must</strong> = rejected if clearly failed. <strong>Preferred</strong> = points if met. <strong>Scoring</strong> = points on a sliding scale. <strong>Checked by</strong>: the app compares facts itself; Claude judges only what the listing text alone can tell.</p>
       <div class="table-container mb-2">
         <table class="table alv-table acq-crit-table">
-          <thead><tr><th style="text-align: left; width: 24%">Criterion</th><th style="width: 17%">Field</th><th style="width: 27%">Rule</th><th style="width: 9%">Type</th><th style="width: 7%">Points</th><th style="width: 8%">Checked by</th><th class="desktop-action-cell cell-actions" style="width: 8%">Actions</th></tr></thead>
+          {# RA23 - six columns, fixed widths: the field sits under the criterion's name (Demetri: "Why does the criteria table cut off the right hand information??" - seven columns needed 747px in a 680px card, and the Actions were clipped). #}
+          <thead><tr><th style="text-align: left; width: 29%">Criterion</th><th style="width: 21%">Rule</th><th style="width: 16%">Type</th><th style="width: 10%">Points</th><th style="width: 12%">Checked by</th><th class="desktop-action-cell cell-actions" style="width: 92px">Actions</th></tr></thead>
           <tbody id="acqCritBody"></tbody>
         </table>
         <div class="alv-empty" id="acqCritEmpty" hidden><i class="fas fa-list"></i><div class="alv-empty-title">No rules yet</div><div class="alv-empty-hint">Add the Musts first, then the rules that earn points.</div></div>
@@ -221,7 +222,10 @@
       var tr = document.createElement('tr');
       var first = cell(tr, d.label, 'Criterion');
       first.style.textAlign = 'left';
-      cell(tr, d.field_label || d.field, 'Field');
+      var fld = document.createElement('div');     // RA23 - the field, under the name
+      fld.className = 'acq-crit-field';
+      fld.textContent = d.field_label || d.field;
+      first.appendChild(fld);
       cell(tr, d.rule || '…', 'Rule');
       cell(tr, d.kind_label || d.kind, 'Type');
       cell(tr, (d.kind === 'must' || d.points == null) ? '—' : String(parseFloat(d.points) || 0), 'Points');

@@ -525,10 +525,12 @@ else:
         ok(n == 19 and pts.strip() == '100' and err,
            'THE EDITOR, PREVIEW CALL FAILING: all 19 rules still show, '
            '100 points, and it says so', (n, pts, err))
+        # RA23, 25 Nov 2026 - the Field column went (it sits under the
+        # name now), so the Points cell is found by its label, not its place.
         must = pg.eval_on_selector_all(
-            '#acqCritBody tr:first-child td',
+            '#acqCritBody tr:first-child td[data-label="Points"]',
             "els => els.map(e => e.textContent.trim())")
-        ok(len(must) > 4 and must[4] == '—',
+        ok(must == ['—'],
            '  a Must shows no points ("—"), not 0.00', must)
         pg.close()
         br.close()

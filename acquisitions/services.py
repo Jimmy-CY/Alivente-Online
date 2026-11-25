@@ -47,7 +47,7 @@ def num(v):
 # A criterion in words
 # --------------------------------------------------------------------------
 UNIT = {"price_incl_vat": "€", "asking_price": "€", "price_per_m2": "€",
-        "price_per_buildable_m2": "€"}
+        "price_per_buildable_m2": "€", "monthly_rent": "€"}   # RA23 - the rent too
 
 
 def _v(field, x):
@@ -55,6 +55,8 @@ def _v(field, x):
         return "?"
     if UNIT.get(field) == "€":
         return euros(x)
+    if field == "year_built":       # RA23 - a year is 1995, not 1,995
+        return str(int(x))
     return num(x)
 
 
@@ -117,7 +119,8 @@ def shown_value(field, value):
     kind = FIELDS.get(field, {}).get("type")
     if kind == "bool" or isinstance(value, bool) or value in ("True", "False"):
         return "Yes" if value in (True, "True") else "No"
-    if field in ("price_incl_vat", "asking_price", "price_per_m2", "price_per_buildable_m2"):
+    if field in ("price_incl_vat", "asking_price", "price_per_m2", "price_per_buildable_m2",
+                 "monthly_rent"):
         try:
             return euros(value)
         except Exception:

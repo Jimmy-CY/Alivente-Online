@@ -1700,6 +1700,8 @@ ROUNDS = [
     '.bak_ra21',
     # RA22, 24 Nov 2026 - Build rules step by step: apartment, house or plot first.
     '.bak_ra22',
+    # RA23, 25 Nov 2026 - the criteria table fits its card; a year reads 1995.
+    '.bak_ra23',
 ]
 
 
