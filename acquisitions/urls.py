@@ -12,6 +12,7 @@ urlpatterns = [
     path("scenarios/new/preview/", views.scenario_preview, name="scenario_preview_new"),
     # RA21 - an area added from the Location rule's list.
     path("areas/add/", views.area_add, name="area_add"),
+    path("run/", views.run_now, name="run_now"),          # RA24 - Run search now
     path("scenarios/<int:pk>/", views.scenario_results, name="scenario"),
     path("scenarios/<int:pk>/edit/", views.scenario_edit, name="scenario_edit"),
     path("scenarios/<int:pk>/preview/", views.scenario_preview, name="scenario_preview"),

@@ -180,6 +180,28 @@ QUESTIONS = {
 }
 
 
+# RA24, 25 Nov 2026 - what a lawyer checks before an offer is signed. These
+# are not Musts: a listing rarely says, so as Musts they would hold every
+# listing at the cap (Demetri: "The legal checks can be on the offer brief").
+LEGAL_HOME = [
+    "A separate title deed, with the seller registered as the owner",
+    "A certificate of final approval, and whether it carries notes or restrictions",
+    "No mortgage, memo or prohibition registered against the title",
+    "Nothing built beyond the approved plans (unlicensed additions)",
+    "Communal charges paid up, the building fund, and any arrears",
+]
+LEGAL_PLOT = [
+    "A separate title deed, with the seller registered as the owner",
+    "No mortgage, memo or prohibition registered against the title",
+    "Not Turkish-Cypriot-owned land, which may be refused for purchase",
+    "Legal access from a public road, and the building coefficients on the title",
+]
+
+
+def legal_checks(prop):
+    return list(LEGAL_PLOT if prop.property_type == "plot" else LEGAL_HOME)
+
+
 def agent_questions(match):
     """Built from the unconfirmed Musts. Claude never contacts agents."""
     out, seen = [], set()

@@ -126,8 +126,10 @@ N_RULES = 22               # whole .form-group label rules removed
 # RA22, 24 Nov 2026 - THREE MORE, in the new Build rules step by step
 # partial: Other spellings, I'd love to pay and Bedrooms, at most, each a
 # bold name and a plain "(optional)". A new file, so both sides (was 76, 74).
-N_HINT = 79                # labels that bold only part of themselves
-N_HINT_WAS = 77            # ... 77 before this round added two
+# RA24, 25 Nov 2026 - THREE MORE in the wizard's plot costs: "(a Must)" and
+# two "(earns points)". Counted as measured (was 79 and 77).
+N_HINT = 82                # labels that bold only part of themselves
+N_HINT_WAS = 80            # ... 80 before this round added two
 
 CRS_PAGES = ('crs/country_form.html', 'crs/fi_form.html',
              'crs/submission_detail.html', 'crs/submission_start.html')

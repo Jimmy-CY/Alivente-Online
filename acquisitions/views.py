@@ -26,9 +26,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
 
-from . import presets, services as S
+from . import firing, presets, services as S
 from .models import (Area, Criterion, Deal, MarketSnapshot, Property, PropertyType, Scenario,
                      ScenarioMatch, SearchRun, Viewing, WatchSettings, Website)
 from .scoring import FIELDS, apply_score, evaluate
@@ -39,7 +40,11 @@ EDIT = "auth.can_edit_acquisitions"
 
 def _page(request, template, tab, **ctx):
     ctx.update({"tab": tab, "badges": S.badges(),
-                "can_edit": request.user.has_perm(EDIT)})
+                "can_edit": request.user.has_perm(EDIT),
+                # RA24 - the Run pop-up: can the app start a search, and which
+                # scenarios it offers (the active ones, all ticked).
+                "run_ready": firing.configured(),
+                "run_scenarios": Scenario.objects.filter(is_active=True).order_by("name")})
     return render(request, "acquisitions/%s" % template, ctx)
 
 
@@ -352,7 +357,22 @@ def _save_scenario(request, scenario):
     messages.success(request, 'Saved "%s"%s.' % (
         scenario.name, "" if total == 100 else
         " - its points add up to %s, not 100" % S.num(total)))
-    return redirect("acquisitions:scenario", pk=scenario.pk)
+    # RA24 - the results page then asks: run it now, or wait for its schedule
+    # (Demetri: "it should ask me if I would like to run this scenario now").
+    return redirect("%s?saved=1" % reverse("acquisitions:scenario", args=[scenario.pk]))
+
+
+@login_required
+@require_POST
+@permission_required(EDIT, raise_exception=True)
+def run_now(request):
+    """RA24 - start Claude's search for the ticked active scenarios. The
+    token stays on Railway (firing.py); the answer is JSON for the pop-up."""
+    ids = [int(x) for x in request.POST.getlist("scenario") if str(x).isdigit()]
+    chosen = list(Scenario.objects.filter(pk__in=ids, is_active=True).order_by("name"))
+    ok, words, url = firing.fire(chosen)
+    return JsonResponse({"ok": ok, "message": words, "session_url": url,
+                         "ready": firing.configured()}, status=200 if ok else 400)
 
 
 @login_required
@@ -424,7 +444,9 @@ def scenario_results(request, pk):
         for k in STATUS_ORDER]
     live = [m for m in ms if m.status not in ("rejected", "removed")]
     run = S.last_run(s)
+    ask_run = request.GET.get("saved") == "1" and request.user.has_perm(EDIT)
     ctx = dict(s=s, rows=shown, chips=chips, status=status, sort=sort, sorts=SORTS,
+               ask_run=ask_run, schedule=S.schedule_text(s),
                tracked=len(ms), live=live, run=run, holding=S.holding_back(ms),
                summaries=s.runs.exclude(summary="").order_by("-started_at")[:5])
     prices = [m.property.price_incl_vat for m in live if m.property.price_incl_vat]
@@ -574,6 +596,7 @@ def property_viewing(request, pk):
 # --------------------------------------------------------------------------
 @login_required
 @permission_required(VIEW, raise_exception=True)
+@xframe_options_sameorigin      # RA24 - shown in a pop-up on the app's own page
 def offer_brief(request, pk):
     from pages.utils import render_to_pdf
     prop = get_object_or_404(Property.objects.select_related("area").prefetch_related(
@@ -588,6 +611,7 @@ def offer_brief(request, pk):
         "p": prop, "m": match, "comps": comps, "median": med, "snap": snap,
         "brief": brief, "worth": worth, "history": S.price_history(prop),
         "days": S.days_listed(prop), "questions": S.agent_questions(match) if match else [],
+        "legal": S.legal_checks(prop),     # RA24
         "src": next(iter(prop.sources.all()), None), "today": timezone.localdate()})
     resp["Content-Disposition"] = 'inline; filename="offer-brief-%d.pdf"' % prop.pk
     return resp

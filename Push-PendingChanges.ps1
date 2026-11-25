@@ -3403,7 +3403,9 @@ $suites = @(
     # RA22, 24 Nov 2026 - Build rules step by step: apartment, house or plot first.
     'test_ra22_rules_wizard.py',
     # RA23, 25 Nov 2026 - the criteria table fits its card; a year reads 1995.
-    'test_ra23_criteria_table.py'
+    'test_ra23_criteria_table.py',
+    # RA24, 25 Nov 2026 - run now, after save, the wizard's Skip, more features.
+    'test_ra24_acq_flow.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

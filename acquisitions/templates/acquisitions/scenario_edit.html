@@ -52,7 +52,9 @@
     {# RA21, 24 Nov 2026 - the websites only. The areas are the Location rule's (Demetri: "Areas must come out of Where to look"). #}
     <div>
       <p class="mb-1"><strong>Websites</strong> <span class="acq-muted">&mdash; the area a property must be in is the <strong>Location</strong> rule under Criteria.</span></p>
-      <div class="acq-check-list">
+      {# RA24 - Select all / Select none (Demetri). #}
+      <div class="acq-pick"><button type="button" class="btn action-secondary" onclick="acqPick('acqSites', true)">Select all</button> <button type="button" class="btn action-secondary" onclick="acqPick('acqSites', false)">Select none</button></div>
+      <div class="acq-check-list" id="acqSites">
         {% for w in sites %}<label><input type="checkbox" name="websites" value="{{ w.pk }}" {% if w.pk in site_ids %}checked{% endif %}> {{ w.name }}{% if w.needs_pc %}<span class="acq-pc" title="This site blocks the cloud, so it is searched from your computer when you ask">PC</span>{% endif %}</label>{% endfor %}
       </div>
       <p class="acq-muted mt-2 mb-0"><span class="acq-pc">PC</span> = this site blocks the cloud, so it&rsquo;s searched from your computer when you ask.</p>
@@ -77,11 +79,22 @@
       <button type="button" class="btn action-secondary" onclick="acqWizard()" data-wizard-open><i class="fas fa-magic"></i> Build rules step by step</button>
       <button type="button" class="btn action-secondary" onclick="acqOpenRule(-1, false)"><i class="fas fa-plus"></i> Add criterion</button>
       <button type="button" class="btn action-secondary" onclick="acqOpenRule(-1, true)"><i class="fas fa-comment-alt"></i> Add a rule in plain words</button>
+      {# RA24 - what each button does (Demetri: "We need to be clearer as to what these buttons mean exactly"). #}
+      <dl class="acq-explain mt-2 mb-0">
+        <dt>Build rules step by step</dt><dd>Answers a few questions &mdash; type, where, budget, size, features &mdash; and writes the rules for you. Skip any step you want to set by hand.</dd>
+        <dt>Add criterion</dt><dd>One rule on a fact the app reads from every listing: price, size, rooms, floor, parking, year built and so on. The app checks it itself.</dd>
+        <dt>Add a rule in plain words</dt><dd>A rule no listing field holds, written as a sentence &mdash; &ldquo;a quiet street&rdquo;, &ldquo;a sea view&rdquo;. Claude reads the listing and answers yes, no or can&rsquo;t tell.</dd>
+      </dl>
       {% endif %}
       {# RA21 - one-line labels, bottom-aligned, so the two boxes line up (Demetri: "These two fields don't line up"). #}
       <div class="form-row mt-3 align-items-end">
-        <div class="form-group col-md-6 mb-0"><label for="acqCap"><strong>Score cap if a Must is unconfirmed</strong></label><input type="number" min="0" max="100" id="acqCap" name="unknown_score_cap" class="form-control" value="{{ s.unknown_score_cap }}"></div>
-        <div class="form-group col-md-6 mb-0"><label for="acqLimit"><strong>Most unknown Musts a listing may have</strong></label><input type="number" min="0" max="30" id="acqLimit" name="max_unknown_musts" class="form-control" value="{{ s.max_unknown_musts }}"></div>
+        <div class="form-group col-md-6 mb-0"><label for="acqCap"><strong>Score cap if a Must is unconfirmed</strong></label><input type="number" min="0" max="100" id="acqCap" name="unknown_score_cap" class="form-control" value="{{ s.unknown_score_cap }}" aria-describedby="acqCapHow"></div>
+        <div class="form-group col-md-6 mb-0"><label for="acqLimit"><strong>Most unknown Musts a listing may have</strong></label><input type="number" min="0" max="30" id="acqLimit" name="max_unknown_musts" class="form-control" value="{{ s.max_unknown_musts }}" aria-describedby="acqLimitHow"></div>
+      </div>
+      {# RA24 - what the two boxes do (Demetri: "Let's also be clearer what these fields are and how they work"). #}
+      <div class="form-row">
+        <p class="col-md-6 acq-muted mt-1 mb-0" id="acqCapHow">A listing that does not say whether it meets a Must (no word of a lift, say) is not rejected, but its score cannot go above this number out of 100 until the fact is known. 100 = no cap.</p>
+        <p class="col-md-6 acq-muted mt-1 mb-0" id="acqLimitHow">A listing with more Musts it does not answer than this is too unclear to bother with: it is kept off the shortlist. 0 = every Must must be confirmed.</p>
       </div>
     </div>
   </div>
@@ -159,6 +172,7 @@
         {# RA21 - the Location rule: tick the areas; add one that is missing. #}
         <div data-shape="areas">
           <p class="mb-1"><strong>Areas</strong> <span class="acq-muted">(a listing must be in one of these)</span></p>
+          <div class="acq-pick"><button type="button" class="btn action-secondary" onclick="acqPick('rAreas', true)">Select all</button> <button type="button" class="btn action-secondary" onclick="acqPick('rAreas', false)">Select none</button></div>
           <div class="acq-check-list mb-2" id="rAreas">{% for a in areas %}<label><input type="checkbox" value="{{ a.name }}" data-area> {{ a.name }}</label>{% endfor %}</div>
           {% if can_edit %}<div class="acq-add-area" data-area-add>
             <p class="acq-muted mb-1">Not in the list? Add it:</p>
@@ -458,6 +472,12 @@
   };
 
   // RA22 - the wizard reads the rules on the page and writes its own back.
+  // RA24 - Select all / Select none for a list of ticks.
+  window.acqPick = function (id, on) {
+    document.querySelectorAll('#' + id + ' input[type=checkbox]').forEach(function (cb) {
+      if (cb.checked !== on) { cb.checked = on; cb.dispatchEvent(new Event('change', {bubbles: true})); }
+    });
+  };
   window.acqRulesNow = function () { return JSON.parse(JSON.stringify(rows)); };
   window.acqRulesType = function () { return $('acqType').value; };
   window.acqRulesDeal = function () { return $('acqDeal').value; };

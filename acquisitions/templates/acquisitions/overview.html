@@ -73,9 +73,10 @@
 </div>
 {% endif %}
 
-<div class="acq-two">
-  <div class="alv-card">
-    <div class="alv-card-head"><span class="alv-card-title">Latest activity</span></div>
+{# RA24 - both boxes start folded; a click opens them (Demetri: "Have the Last Activity Run and Last Search Run as boxes that are collapsed and that can be expanded by clicking on them"). #}
+<div class="acq-two acq-folds">
+  <details class="alv-card acq-fold">
+    <summary class="alv-card-head"><span class="alv-card-title">Latest activity</span> <span class="acq-muted">&middot; {{ activity|length }} in 30 days</span><i class="fas fa-chevron-down acq-fold-icon" aria-hidden="true"></i></summary>
     <div class="table-container mb-0">
       <table class="table alv-table">
         <thead><tr><th style="width: 16%">When</th><th style="width: 18%">Scenario</th><th style="width: 32%">What happened</th><th style="width: 34%">Property</th></tr></thead>
@@ -92,10 +93,10 @@
       </table>
       {% if not activity %}<div class="alv-empty"><i class="fas fa-stream"></i><div class="alv-empty-title">Nothing in the last 30 days</div><div class="alv-empty-hint">New listings, price changes, removals and your decisions appear here.</div></div>{% endif %}
     </div>
-  </div>
+  </details>
 
-  <div class="alv-card">
-    <div class="alv-card-head"><span class="alv-card-title">Last search run</span></div>
+  <details class="alv-card acq-fold">
+    <summary class="alv-card-head"><span class="alv-card-title">Last search run</span> <span class="acq-muted">&middot; {% if last %}{{ last.started_at|date:"D j M H:i" }}{% else %}none yet{% endif %}</span><i class="fas fa-chevron-down acq-fold-icon" aria-hidden="true"></i></summary>
     <div class="alv-card-body">
       {% if last %}
       <p class="acq-muted">{{ last.task_name|default:last.scenario.name }} &middot; {{ last.started_at|date:"D j M H:i" }}{% if last.finished_at %}&ndash;{{ last.finished_at|date:"H:i" }}{% endif %} &middot; {{ last.get_where_display }}</p>
@@ -113,7 +114,7 @@
       <p class="acq-muted mb-0">No search has reported to the app yet. Searches report here once Claude is connected to the app.</p>
       {% endif %}
     </div>
-  </div>
+  </details>
 </div>
 
 {% include 'acquisitions/_run_modal.html' %}

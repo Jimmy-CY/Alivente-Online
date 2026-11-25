@@ -1,22 +1,94 @@
-{# HOW A SEARCH IS STARTED, FOR NOW - RA19. The app never searches:     #}
-{# Claude's scheduled tasks do, and write here. Until the connector     #}
-{# (step 3) lets this button start one, it says how to start one.       #}
+{# HOW A SEARCH IS STARTED - RA19; RA24, 25 Nov 2026.                    #}
+{# With ROUTINE_FIRE_URL and ROUTINE_FIRE_TOKEN on Railway (firing.py)   #}
+{# the app starts Claude's search itself: the active scenarios, all      #}
+{# ticked, untick any (Demetri: "Run Search now ... should show a pop up #}
+{# of the current Active scenarios and they should all be ticked"). A    #}
+{# button with data-run-only="<pk>" opens it with just that one ticked.  #}
+{# Without them, or for someone who cannot edit, it says how to start    #}
+{# one in the Claude app, as before.                                     #}
 <div class="modal fade" id="acqRunModal" tabindex="-1" role="dialog" aria-labelledby="acqRunTitle" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header alv-modal-head">
-        <h5 class="modal-title" id="acqRunTitle"><i class="fas fa-search-location"></i> Running a search</h5>
+        <h5 class="modal-title" id="acqRunTitle"><i class="fas fa-search-location"></i> {% if run_ready and can_edit %}Run a search now{% else %}Running a search{% endif %}</h5>
         <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
       </div>
+      {% if run_ready and can_edit %}
+      <div class="modal-body">
+        <p class="mb-2">Claude searches the ticked scenarios now, on every site that does not block the cloud. Untick any you do not want this time.</p>
+        <div class="acq-pick"><button type="button" class="btn action-secondary" onclick="acqPickRun(true)">Select all</button> <button type="button" class="btn action-secondary" onclick="acqPickRun(false)">Select none</button></div>
+        <div class="acq-check-list mb-2" id="acqRunList">{% for r in run_scenarios %}<label><input type="checkbox" value="{{ r.pk }}" data-run-scenario checked> {{ r.name }}</label>{% empty %}<span class="acq-muted">No scenario is active. Resume one first.</span>{% endfor %}</div>
+        <p class="acq-muted mb-0">Bazaraki, Spitogatos and DOM block the cloud: they are searched from your computer when you type <strong>PC</strong> in the session from the daily email.</p>
+        <p class="mt-2 mb-0" id="acqRunMsg" role="status" hidden></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn action-primary" id="acqRunGo" onclick="acqRunNow()"><i class="fas fa-play"></i> Start the search</button>
+      </div>
+      {% else %}
       <div class="modal-body">
         <p>Searches are run by Claude&rsquo;s scheduled tasks, not by Alivente Online &mdash; the property sites block searches from a data centre like the one the app runs in.</p>
         <p class="mb-2"><strong>To run one now</strong>, open the Claude app, go to <strong>Scheduled tasks</strong> and press <strong>Run now</strong> on &ldquo;Daily Nicosia apartment search&rdquo;.</p>
         <p class="mb-2"><strong>For the sites that block the cloud</strong> (Bazaraki, Spitogatos, DOM), open the session from the daily email on your computer and type <strong>PC</strong>. Keep the Claude desktop app open and the laptop awake.</p>
-        <p class="acq-muted mb-0">Once Claude is connected to the app, this button will start the search itself.</p>
+        <p class="acq-muted mb-0">{% if can_edit %}To start a search from this button, give the search task an API trigger and put its Fire URL and token on Railway &mdash; Help, Search runs, says how.{% else %}Someone who can edit Acquisitions can start a search from here.{% endif %}</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
       </div>
+      {% endif %}
     </div>
   </div>
 </div>
+{% if run_ready and can_edit %}
+<form id="acqRunForm" hidden>{% csrf_token %}</form>
+<script>
+(function () {
+  var runUrl = "{% url 'acquisitions:run_now' %}";
+  var boxes = function () { return document.querySelectorAll('#acqRunList [data-run-scenario]'); };
+  window.acqPickRun = function (on) { boxes().forEach(function (cb) { cb.checked = on; }); };
+  // Open with all ticked, or only the one a button names.
+  window.acqRunOpen = function (only) {
+    boxes().forEach(function (cb) { cb.checked = !only || cb.value === String(only); });
+    var msg = document.getElementById('acqRunMsg');
+    msg.hidden = true; msg.textContent = '';
+    document.getElementById('acqRunGo').disabled = false;
+  };
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-target="#acqRunModal"]');
+    if (b) { window.acqRunOpen(b.getAttribute('data-run-only')); }
+  });
+  window.acqRunNow = function () {
+    var msg = document.getElementById('acqRunMsg'), go = document.getElementById('acqRunGo');
+    var fd = new FormData();
+    var n = 0;
+    boxes().forEach(function (cb) { if (cb.checked) { fd.append('scenario', cb.value); n += 1; } });
+    msg.hidden = false;
+    if (!n) { msg.className = 'acq-bad mt-2 mb-0'; msg.textContent = 'Tick at least one scenario.'; return; }
+    fd.append('csrfmiddlewaretoken', document.querySelector('#acqRunForm [name=csrfmiddlewaretoken]').value);
+    go.disabled = true;
+    msg.className = 'acq-muted mt-2 mb-0'; msg.textContent = 'Starting\u2026';
+    fetch(runUrl, {method: 'POST', body: fd, credentials: 'same-origin'})
+      .then(function (r) {
+        if (r.redirected && /\/login\//.test(r.url)) { throw 'signed-out'; }
+        return r.json();
+      })
+      .then(function (d) {
+        msg.className = (d.ok ? 'acq-ok' : 'acq-bad') + ' mt-2 mb-0';
+        msg.textContent = d.message + (d.ok ? ' Results appear here as each site reports.' : '');
+        if (d.ok && d.session_url) {
+          var a = document.createElement('a');
+          a.href = d.session_url; a.target = '_blank'; a.rel = 'noopener';
+          a.textContent = ' Watch it in Claude';
+          msg.appendChild(a);
+        }
+        if (!d.ok) { go.disabled = false; }
+      })
+      .catch(function (why) {
+        msg.className = 'acq-bad mt-2 mb-0';
+        msg.textContent = why === 'signed-out' ? 'You have been signed out - sign in again, then start it.' : 'The search could not be started just now.';
+        go.disabled = false;
+      });
+  };
+})();
+</script>
+{% endif %}

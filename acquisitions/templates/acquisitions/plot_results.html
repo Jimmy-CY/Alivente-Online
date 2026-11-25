@@ -13,7 +13,7 @@
 <p class="acq-sub">{% if s.is_active %}<span class="alv-pill alv-pill-good">Active</span>{% else %}<span class="alv-pill alv-pill-neutral">Paused</span>{% endif %} {{ s.purpose }}</p>
 
 <div class="page-action-buttons">
-  <button type="button" class="btn action-primary" data-toggle="modal" data-target="#acqRunModal"><i class="fas fa-play"></i> Run this search now</button>
+  <button type="button" class="btn action-primary" data-toggle="modal" data-target="#acqRunModal" data-run-only="{{ s.pk }}"><i class="fas fa-play"></i> Run this search now</button>
   {% if can_edit %}
   <a href="{% url 'acquisitions:scenario_edit' s.pk %}" class="btn action-secondary" role="button"><i class="fas fa-sliders-h"></i> Edit criteria</a>
   {% endif %}
@@ -89,5 +89,6 @@
 </div>
 
 {% include 'acquisitions/_run_modal.html' %}
+{% if ask_run %}{% include 'acquisitions/_after_save.html' %}{% endif %}
 {% render_help_modal "acquisitions" %}
 {% endblock %}

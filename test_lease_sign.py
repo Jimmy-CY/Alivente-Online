@@ -893,8 +893,9 @@ sa = T.standalone()
 # RA22, 24 Nov 2026 - 23 (was 22): the Build rules step by step partial,
 # _rules_wizard.html, included into the scenario editor. test_ra22_rules_
 # wizard.py checks it holds no colour and no style attribute.
-ok(len(sa) == 23,
-   'alv_tree counts 23 standalone templates, the five of them included',
+# RA24, 25 Nov 2026 - 24 (was 23): _after_save.html, the Run it now or wait question after Save scenario, a partial with no colour of its own.
+ok(len(sa) == 24,
+   'alv_tree counts 24 standalone templates, the six of them included',
    len(sa))
 for p in (SIGN, DONE, CLOSED, STYLES):
     ok(T.rel(p).replace(os.sep, '/') in sa,

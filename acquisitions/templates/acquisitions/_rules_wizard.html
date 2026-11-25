@@ -36,6 +36,7 @@
         <section data-wz-step="where" hidden>
           <p class="acq-wz-q">Where must it be?</p>
           <p class="acq-muted">Tick the areas. A listing anywhere else is rejected. This becomes the Location rule.</p>
+          <div class="acq-pick" data-pick-for="wzAreas"><button type="button" class="btn action-secondary" onclick="acqPick('wzAreas', true)">Select all</button> <button type="button" class="btn action-secondary" onclick="acqPick('wzAreas', false)">Select none</button></div>
           <div class="acq-check-list mb-2" id="wzAreas">{% for a in areas %}<label><input type="checkbox" value="{{ a.name }}" data-wz-area> {{ a.name }}</label>{% endfor %}</div>
           {% if can_edit %}<div class="acq-add-area">
             <p class="acq-muted mb-1">Not in the list? Add it:</p>
@@ -102,8 +103,12 @@
           <p class="acq-wz-q">What it costs per m&sup2;</p>
           <p class="acq-muted">A plot is judged on what you can build on it. &euro; per buildable m&sup2; is the price divided by the plot size times the building density. Leave a box empty to skip it.</p>
           <div class="form-row align-items-end">
-            <div class="form-group col-md-6"><label for="wzLandMax"><strong>&euro; per m&sup2; of land, at most</strong></label><input type="text" inputmode="decimal" id="wzLandMax" class="form-control"></div>
-            <div class="form-group col-md-6"><label for="wzDensityMin"><strong>Building density, at least (%)</strong></label><input type="text" inputmode="decimal" id="wzDensityMin" class="form-control"></div>
+            <div class="form-group col-md-6"><label for="wzLandMax"><strong>&euro; per m&sup2; of land, at most</strong> <span class="acq-muted">(a Must)</span></label><input type="text" inputmode="decimal" id="wzLandMax" class="form-control"></div>
+          </div>
+          {# RA24 - density and coverage earn points; they no longer reject a plot (Demetri: "as preferred, not a must"). #}
+          <div class="form-row align-items-end">
+            <div class="form-group col-md-6"><label for="wzDensityMin"><strong>Building density, at least (%)</strong> <span class="acq-muted">(earns points)</span></label><input type="text" inputmode="decimal" id="wzDensityMin" class="form-control"></div>
+            <div class="form-group col-md-6"><label for="wzCoverMin"><strong>Site coverage, at least (%)</strong> <span class="acq-muted">(earns points)</span></label><input type="text" inputmode="decimal" id="wzCoverMin" class="form-control"></div>
           </div>
           <div class="form-row align-items-end">
             <div class="form-group col-md-6"><label for="wzBuildFull"><strong>&euro; per buildable m&sup2;: full points at or under</strong></label><input type="text" inputmode="decimal" id="wzBuildFull" class="form-control"></div>
@@ -127,7 +132,8 @@
 
         <section data-wz-step="review" hidden>
           <p class="acq-wz-q">Your rules</p>
-          <p class="acq-muted">These go into the Criteria table. <strong>Replace my rules</strong> clears the table first; <strong>Add to my rules</strong> keeps what is there. Nothing is saved until you press Save scenario.</p>
+          <p class="acq-muted" data-wz-empty="no">These go into the Criteria table. <strong>Replace my rules</strong> clears the table first; <strong>Add to my rules</strong> keeps what is there. Nothing is saved until you press Save scenario.</p>
+          <p class="acq-muted" data-wz-empty="yes">These go into the Criteria table, where you can change any of them or add more by hand. Nothing is saved until you press Save scenario.</p>
           <ul class="acq-sites" id="wzReview"></ul>
         </section>
 
@@ -136,6 +142,7 @@
       <div class="modal-footer">
         {# One primary, last: Next, which on the last step is Replace my rules. #}
         <button type="button" class="btn action-secondary" id="wzBack" onclick="acqWizardGo(-1)"><i class="fas fa-arrow-left"></i> Back</button>
+        <button type="button" class="btn action-secondary" id="wzSkip" onclick="acqWizardGo(1, true)" title="Leave this step out: it writes no rules, and you can add them by hand later" hidden>Skip this step</button>
         <button type="button" class="btn action-secondary" id="wzAdd" onclick="acqWizardApply('add')" hidden><i class="fas fa-plus"></i> Add to my rules</button>
         <button type="button" class="btn action-primary" id="wzNext" onclick="acqWizardGo(1)">Next <i class="fas fa-arrow-right"></i></button>
       </div>
@@ -154,37 +161,64 @@
   };
   // Each feature: what it tests, and how it is shown. 'custom' ones are
   // plain-words rules Claude answers from the listing text.
+  // RA24, 25 Nov 2026 - more features, from what Cyprus buyers are told to
+  // check and what Nicosia listings state (Demetri: "Let's keep all of the
+  // additions"). g = the heading it sits under; num = a number you set
+  // (parking spaces, year built); claude = read from the listing text.
+  // Legal checks are not here: they are on the offer brief (Demetri).
+  var C = function (label, text, g) { return {label: label, field: 'custom', op: 'judged', rule_text: text, claude: true, g: g}; };
   var F = {
-    lift: {label: 'Lift', field: 'lift', op: 'is_true'},
-    parking2: {label: '2 parking spaces', field: 'parking_spaces', op: 'gte', num_min: 2},
-    covered: {label: 'Covered parking', field: 'parking_covered', op: 'is_true'},
-    storeroom: {label: 'Storeroom', field: 'storeroom', op: 'is_true'},
-    wholefloor: {label: 'Whole floor', field: 'whole_floor', op: 'is_true'},
-    guestwc: {label: 'Guest WC', field: 'guest_wc', op: 'is_true', group: 'bathrooms'},
-    ensuite: {label: 'Master en-suite', field: 'master_ensuite', op: 'is_true', group: 'bathrooms'},
-    openplan: {label: 'Open-plan kitchen, lounge and dining', field: 'open_plan', op: 'is_true', claude: true},
-    renovate: {label: 'Unfinished or unrenovated (to renovate)', field: 'condition', op: 'in', text_values: ['unfinished', 'unrenovated'], claude: true},
-    built: {label: 'Built 1995 or later', field: 'year_built', op: 'gte', num_min: 1995},
-    deeds: {label: 'Title deed issued', field: 'title_deeds', op: 'is_true'},
-    garden: {label: 'Private garden', field: 'custom', op: 'judged', rule_text: 'the house has its own private garden', claude: true},
-    pool: {label: 'Swimming pool', field: 'custom', op: 'judged', rule_text: 'the house has its own swimming pool', claude: true},
-    frontages: {label: 'Two or more road frontages', field: 'road_frontages', op: 'gte', num_min: 2},
-    zone: {label: 'Residential planning zone', field: 'custom', op: 'judged', rule_text: 'the plot is in a residential planning zone', claude: true},
-    corner: {label: 'Corner plot', field: 'custom', op: 'judged', rule_text: 'it is a corner plot', claude: true},
-    utilities: {label: 'Water and electricity at the boundary', field: 'custom', op: 'judged', rule_text: 'water and electricity reach the plot boundary', claude: true},
-    furnished: {label: 'Furnished', field: 'furnished', op: 'is_true'},
-    pets: {label: 'Pets allowed', field: 'pets_allowed', op: 'is_true'}
+    lift: {label: 'Lift', field: 'lift', op: 'is_true', g: 'The home'},
+    parking2: {label: 'Parking spaces, at least', say: function (n) { return 'At least ' + n + ' parking space' + (n === 1 ? '' : 's'); }, field: 'parking_spaces', op: 'gte', num: 2, g: 'The home'},
+    covered: {label: 'Covered parking', field: 'parking_covered', op: 'is_true', g: 'The home'},
+    storeroom: {label: 'Storeroom', field: 'storeroom', op: 'is_true', g: 'The home'},
+    wholefloor: {label: 'Whole floor', field: 'whole_floor', op: 'is_true', g: 'The home'},
+    guestwc: {label: 'Guest WC', field: 'guest_wc', op: 'is_true', group: 'bathrooms', g: 'The home'},
+    ensuite: {label: 'Master en-suite', field: 'master_ensuite', op: 'is_true', group: 'bathrooms', g: 'The home'},
+    openplan: {label: 'Open-plan kitchen, lounge and dining', field: 'open_plan', op: 'is_true', claude: true, g: 'The home'},
+    renovate: {label: 'Unfinished or unrenovated (to renovate)', field: 'condition', op: 'in', text_values: ['unfinished', 'unrenovated'], claude: true, g: 'The home'},
+    built: {label: 'Built in or after', say: function (n) { return 'Built ' + n + ' or later'; }, field: 'year_built', op: 'gte', num: 1995, g: 'The home'},
+    deeds: {label: 'Separate title deed', field: 'title_deeds', op: 'is_true', g: 'The home'},
+    garden: C('Private garden', 'the house has its own private garden', 'The home'),
+    pool: C('Swimming pool', 'the house has its own swimming pool', 'The home'),
+    furnished: {label: 'Furnished', field: 'furnished', op: 'is_true', g: 'Renting'},
+    pets: {label: 'Pets allowed', field: 'pets_allowed', op: 'is_true', g: 'Renting'},
+    availnow: C('Available now', 'it is available to move into now', 'Renting'),
+    shortlease: C('Lease of 12 months or less', 'a lease of 12 months or less is accepted', 'Renting'),
+    energy: C('Energy class A or B', 'its energy efficiency class is A or B', 'Comfort and energy'),
+    heating: C('Underfloor or central heating', 'it has underfloor or central heating', 'Comfort and energy'),
+    ac: C('Air conditioning in all rooms', 'it has air conditioning in every room', 'Comfort and energy'),
+    pv: C('Photovoltaics (or provision)', 'it has photovoltaic panels, or provision for them', 'Comfort and energy'),
+    notground: C('Not on the ground floor', 'it is not on the ground floor', 'Position'),
+    topfloor: C('Top floor or penthouse', 'it is on the top floor or is a penthouse', 'Position'),
+    roofgarden: C('Roof garden', 'it has a private roof garden', 'Position'),
+    view: C('A view', 'it has an open or panoramic view', 'Position'),
+    south: C('South-facing', 'its main rooms face south', 'Position'),
+    quiet: C('Quiet street', 'it is on a quiet street', 'Position'),
+    frontages: {label: 'Two or more road frontages', field: 'road_frontages', op: 'gte', num_min: 2, g: 'The plot'},
+    roadaccess: C('Legal, paved road access', 'the plot has legal access from a paved road', 'The plot'),
+    nocross: C('No road, path or river across it', 'no public road, path or river crosses the plot', 'The plot'),
+    flat: C('Flat, regular shape', 'the plot is flat and of a regular shape', 'The plot'),
+    noflood: C('Not in a flood area', 'the plot is not in a flood-prone area', 'The plot'),
+    corner: C('Corner plot', 'it is a corner plot', 'The plot'),
+    utilities: C('Water and electricity at the boundary', 'water and electricity reach the plot boundary', 'The plot')
   };
   // Per type: the features asked about, and where they start when the
   // table has no rules yet (m = Must have, n = Nice to have, x = Doesn't matter).
+  var COMFORT = [['energy', 'x'], ['heating', 'x'], ['ac', 'x'], ['pv', 'x']];
+  var FLAT_POS = [['notground', 'x'], ['topfloor', 'x'], ['roofgarden', 'x'], ['view', 'x'], ['south', 'x'], ['quiet', 'x']];
+  var HOUSE_POS = [['view', 'x'], ['south', 'x'], ['quiet', 'x']];
+  var RENTING = [['furnished', 'x'], ['pets', 'x'], ['availnow', 'x'], ['shortlease', 'x']];
   var FEAT = {
-    apartment: [['lift', 'm'], ['parking2', 'm'], ['covered', 'n'], ['storeroom', 'm'], ['wholefloor', 'n'], ['guestwc', 'x'], ['ensuite', 'x'], ['openplan', 'x'], ['renovate', 'x'], ['built', 'x'], ['deeds', 'x']],
-    house: [['garden', 'm'], ['pool', 'n'], ['parking2', 'm'], ['covered', 'n'], ['storeroom', 'x'], ['guestwc', 'x'], ['ensuite', 'x'], ['renovate', 'x'], ['built', 'x'], ['deeds', 'm']],
-    plot: [['deeds', 'm'], ['frontages', 'n'], ['zone', 'x'], ['corner', 'x'], ['utilities', 'x']],
-    // To rent: no title deed and nothing to renovate; furnished and pets instead.
-    apartment_rent: [['lift', 'm'], ['parking2', 'n'], ['covered', 'n'], ['storeroom', 'n'], ['furnished', 'x'], ['pets', 'x'], ['wholefloor', 'x'], ['guestwc', 'x'], ['ensuite', 'x'], ['openplan', 'x'], ['built', 'x']],
-    house_rent: [['garden', 'm'], ['pool', 'n'], ['parking2', 'n'], ['covered', 'n'], ['furnished', 'x'], ['pets', 'x'], ['storeroom', 'x'], ['guestwc', 'x'], ['ensuite', 'x'], ['built', 'x']]
+    apartment: [['lift', 'm'], ['parking2', 'm'], ['covered', 'n'], ['storeroom', 'm'], ['wholefloor', 'n'], ['guestwc', 'x'], ['ensuite', 'x'], ['openplan', 'x'], ['renovate', 'x'], ['built', 'x'], ['deeds', 'x']].concat(COMFORT, FLAT_POS),
+    house: [['garden', 'm'], ['pool', 'n'], ['parking2', 'm'], ['covered', 'n'], ['storeroom', 'x'], ['guestwc', 'x'], ['ensuite', 'x'], ['renovate', 'x'], ['built', 'x'], ['deeds', 'm']].concat(COMFORT, HOUSE_POS),
+    // A plot: no planning zone question (Demetri: "I don't know the zones. Let's leave that out").
+    plot: [['deeds', 'm'], ['frontages', 'n'], ['roadaccess', 'm'], ['nocross', 'x'], ['flat', 'x'], ['noflood', 'x'], ['corner', 'x'], ['utilities', 'x']],
+    // To rent: no title deed and nothing to renovate; furnished, pets and the lease instead.
+    apartment_rent: [['lift', 'm'], ['parking2', 'n'], ['covered', 'n'], ['storeroom', 'n'], ['wholefloor', 'x'], ['guestwc', 'x'], ['ensuite', 'x'], ['openplan', 'x'], ['built', 'x']].concat(RENTING, COMFORT, FLAT_POS),
+    house_rent: [['garden', 'm'], ['pool', 'n'], ['parking2', 'n'], ['covered', 'n'], ['storeroom', 'x'], ['guestwc', 'x'], ['ensuite', 'x'], ['built', 'x']].concat(RENTING, COMFORT, HOUSE_POS)
   };
+  var featNum = {};
   function feats() { return FEAT[type + (deal === 'rent' ? '_rent' : '')]; }
   // The price a scenario is judged on: the price incl. VAT, or the rent a month.
   function priceField() { return deal === 'rent' ? 'monthly_rent' : 'price_incl_vat'; }
@@ -193,7 +227,7 @@
 
   // now  = the rules in the table; base = the ones the wizard starts from,
   // which is none when you choose another type, or Buy for Rent.
-  var type = 'apartment', deal = 'buy', at = 0, now = [], base = [], drafts = [], feat = {}, pts = {};
+  var type = 'apartment', deal = 'buy', at = 0, now = [], base = [], drafts = [], feat = {}, pts = {}, skipped = {};
   var sType = 'apartment', sDeal = 'buy';
 
   function num(id) {
@@ -241,8 +275,10 @@
     put('wzBathMin', r ? r.num_min : null);
     r = find(function (x) { return x.field === 'price_per_m2' && x.kind === 'must'; });
     put('wzLandMax', r ? r.num_max : null);
-    r = find(function (x) { return x.field === 'building_density_pct' && x.kind === 'must'; });
+    r = find(function (x) { return x.field === 'building_density_pct'; });
     put('wzDensityMin', r ? r.num_min : null);
+    r = find(function (x) { return x.field === 'custom' && /^the site coverage allowed is at least /.test(x.rule_text || ''); });
+    put('wzCoverMin', r ? parseFloat((r.rule_text.match(/([\d.]+)%/) || [])[1]) : null);
     r = find(function (x) { return x.field === 'price_per_buildable_m2' && x.kind === 'scoring'; });
     put('wzBuildFull', r ? r.full_to : null); put('wzBuildZero', r ? r.zero_above : null);
     feat = {};
@@ -304,18 +340,36 @@
     head.className = 'acq-wz-feat acq-wz-feat-head';
     head.innerHTML = '<span></span><span>Must have</span><span>Nice to have</span><span>Doesn&rsquo;t matter</span>';
     box.appendChild(head);
-    var none = base.length === 0;
+    var none = base.length === 0, lastG = '';
     feats().forEach(function (pair) {
       var key = pair[0], f = F[key];
+      var r = find(function (x) { return same(x, f); });
       if (!feat[key]) {
-        var r = find(function (x) { return same(x, f); });
         feat[key] = r ? (r.kind === 'must' ? 'm' : 'n') : (none ? pair[1] : 'x');
+      }
+      if (f.num && featNum[key] == null) { featNum[key] = r && r.num_min != null ? parseFloat(r.num_min) : f.num; }
+      if (f.g && f.g !== lastG) {         // RA24 - a heading for each group
+        lastG = f.g;
+        var gh = document.createElement('div');
+        gh.className = 'acq-wz-feat-group';
+        gh.textContent = f.g;
+        box.appendChild(gh);
       }
       var row = document.createElement('div');
       row.className = 'acq-wz-feat';
       row.setAttribute('data-wz-feature', key);
       var name = document.createElement('span');
       name.textContent = f.label;
+      if (f.num) {                        // RA24 - parking spaces and year built are yours to set
+        var n = document.createElement('input');
+        n.type = 'number'; n.className = 'form-control acq-wz-num'; n.value = featNum[key];
+        n.min = key === 'built' ? '1900' : '1'; n.max = key === 'built' ? '2100' : '9';
+        n.setAttribute('aria-label', f.label);
+        n.setAttribute('data-wz-num', key);
+        n.oninput = function () { var v = parseInt(n.value, 10); if (!isNaN(v)) { featNum[key] = v; } };
+        name.appendChild(document.createTextNode(' '));
+        name.appendChild(n);
+      }
       if (f.claude) { var c = document.createElement('span'); c.className = 'acq-muted ml-1'; c.textContent = '(checked by Claude)'; name.appendChild(c); }
       row.appendChild(name);
       [['m', 'Must have'], ['n', 'Nice to have'], ['x', 'Doesn’t matter']].forEach(function (o) {
@@ -362,9 +416,13 @@
   function build() {
     var out = [], musts = [], earn = [];
     var add = function (list, r) { if (r) { list.push(r); } };
-    add(musts, rule('Location', 'area', 'must', 'in', {text_values: ticked(), rule: ticked().join(' or ')}));
+    // RA24 - a skipped step writes no rules (Demetri: "I should be able to
+    // Skip any step ... I then can add more rules manually").
+    if (!skipped.where) { add(musts, rule('Location', 'area', 'must', 'in', {text_values: ticked(), rule: ticked().join(' or ')})); }
     var max = num('wzPriceMax'), ideal = num('wzPriceIdeal');
-    if (deal === 'rent') {
+    if (skipped.budget) {
+      // no budget rules
+    } else if (deal === 'rent') {
       add(musts, rule('Rent ≤ ' + money(max) + ' a month', 'monthly_rent', 'must', 'lte', {num_max: max}));
       if (ideal != null) { add(earn, rule('Rent headroom', 'monthly_rent', 'scoring', 'lte', {full_to: ideal, zero_above: max, weight: WEIGHT.headroom})); }
     } else {
@@ -373,14 +431,20 @@
     }
     if (type === 'plot') {
       var pl = num('wzPlotMin'), ph = num('wzPlotMax');
-      add(musts, range('Plot', 'plot_m2', pl, ph, ' m²'));
-      add(earn, fit('Plot size fit', 'plot_m2', pl, ph, num('wzPlotFrom'), num('wzPlotTo'), WEIGHT.plotfit));
+      if (!skipped.plotsize) {
+        add(musts, range('Plot', 'plot_m2', pl, ph, ' m²'));
+        add(earn, fit('Plot size fit', 'plot_m2', pl, ph, num('wzPlotFrom'), num('wzPlotTo'), WEIGHT.plotfit));
+      }
+      if (skipped.cost) { return musts.concat(earn).concat(featureRules()); }
       var land = num('wzLandMax'), dens = num('wzDensityMin'), bf = num('wzBuildFull'), bz = num('wzBuildZero');
       if (land != null) { add(musts, rule('≤ €' + fmt(land) + ' per m² of land', 'price_per_m2', 'must', 'lte', {num_max: land})); }
-      if (dens != null) { add(musts, rule('Building density at least ' + fmt(dens) + '%', 'building_density_pct', 'must', 'gte', {num_min: dens})); }
+      var cover = num('wzCoverMin');
+      if (dens != null) { add(earn, rule('Building density at least ' + fmt(dens) + '%', 'building_density_pct', 'preferred', 'gte', {num_min: dens, weight: WEIGHT.feature})); }
+      if (cover != null) { add(earn, rule('Site coverage at least ' + fmt(cover) + '%', 'custom', 'preferred', 'judged', {rule_text: 'the site coverage allowed is at least ' + fmt(cover) + '%', weight: WEIGHT.feature})); }
       if (bf != null) { add(earn, rule('€ per buildable m²', 'price_per_buildable_m2', 'scoring', 'lte', {full_to: bf, zero_above: bz, weight: WEIGHT.buildable})); }
     } else {
       var sl = num('wzSizeMin'), sh = num('wzSizeMax');
+      if (!skipped.size) {
       add(musts, range('Internal area', 'internal_m2', sl, sh, ' m²'));
       add(earn, fit('Internal area fit', 'internal_m2', sl, sh, num('wzSizeFrom'), num('wzSizeTo'), WEIGHT.sizefit));
       if (type === 'apartment') {
@@ -389,19 +453,30 @@
       } else {
         add(musts, range('Plot', 'plot_m2', num('wzHousePlotMin'), num('wzHousePlotMax'), ' m²'));
       }
+      }
       var bl = num('wzBedMin'), bh = num('wzBedMax'), ba = num('wzBathMin');
-      add(musts, range('Bedrooms', 'bedrooms', bl, bh));
-      if (ba != null) { add(musts, rule('At least ' + fmt(ba) + ' bathrooms', 'bathrooms', 'must', 'gte', {num_min: ba, group: 'bathrooms'})); }
+      if (!skipped.rooms) {
+        add(musts, range('Bedrooms', 'bedrooms', bl, bh));
+        // RA24 - "At least 1 bathroom", not "1 bathrooms"
+        if (ba != null) { add(musts, rule('At least ' + fmt(ba) + (ba === 1 ? ' bathroom' : ' bathrooms'), 'bathrooms', 'must', 'gte', {num_min: ba, group: 'bathrooms'})); }
+      }
     }
+    var fr = featureRules();
+    out = musts.concat(fr.filter(function (r) { return r.kind === 'must'; }), earn, fr.filter(function (r) { return r.kind !== 'must'; }));
+    return out;
+  }
+  function featureRules() {
+    var out = [];
+    if (skipped.features) { return out; }
     feats().forEach(function (pair) {
       var key = pair[0], f = F[key], s = feat[key];
       if (s !== 'm' && s !== 'n') { return; }
-      var extra = {};
+      var extra = {}, label = f.label;
       ['num_min', 'text_values', 'rule_text'].forEach(function (k) { if (f[k] != null) { extra[k] = f[k]; } });
+      if (f.num) { extra.num_min = featNum[key] != null ? featNum[key] : f.num; label = f.say(extra.num_min); }
       if (s === 'm' && f.group) { extra.group = f.group; }
-      add(s === 'm' ? musts : earn, rule(f.label, f.field, s === 'm' ? 'must' : 'preferred', f.op, extra));
+      out.push(rule(label, f.field, s === 'm' ? 'must' : 'preferred', f.op, extra));
     });
-    out = musts.concat(earn);
     return out;
   }
 
@@ -428,7 +503,7 @@
       if (!order('wzBedMin', 'wzBedMax')) { return 'The fewest bedrooms should be below the most.'; }
     }
     if (step === 'cost') {
-      if (bad(['wzLandMax', 'wzDensityMin', 'wzBuildFull', 'wzBuildZero'])) { return 'Each box takes a number, or leave it empty.'; }
+      if (bad(['wzLandMax', 'wzDensityMin', 'wzCoverMin', 'wzBuildFull', 'wzBuildZero'])) { return 'Each box takes a number, or leave it empty.'; }
       if (num('wzBuildZero') != null && num('wzBuildFull') == null) { return 'Give the € per buildable m² for full points too.'; }
       if (!order('wzBuildFull', 'wzBuildZero')) { return 'Full points should come at a lower € per buildable m² than no points.'; }
     }
@@ -495,6 +570,11 @@
   function drawReview() {
     var ul = $('wzReview');
     while (ul.firstChild) { ul.removeChild(ul.firstChild); }
+    if (!drafts.length) {
+      var none = document.createElement('li');
+      none.textContent = 'No rules: every step was skipped. Go back, or close this and add rules by hand.';
+      ul.appendChild(none);
+    }
     drafts.forEach(function (r) {
       var li = document.createElement('li');
       var a = document.createElement('span');
@@ -529,19 +609,32 @@
     document.querySelectorAll('#acqWizardModal [name=wzDeal]').forEach(function (rb) { rb.checked = rb.value === deal; });
     $('wzCount').textContent = {apartment: 'Apartment', house: 'House', plot: 'Plot'}[type] + (deal === 'rent' ? ' to rent' : '') + ' · step ' + (at + 1) + ' of ' + list.length;
     var last = at === list.length - 1;
+    // RA24 - an empty table has nothing to replace: one button, "Use these
+    // rules" (Demetri: "If it is a new scenario, it should not say Replace
+    // my Rules").
+    var empty = now.length === 0;
     $('wzBack').hidden = at === 0;
-    $('wzNext').innerHTML = last ? '<i class="fas fa-check"></i> Replace my rules' : 'Next <i class="fas fa-arrow-right"></i>';
-    $('wzAdd').hidden = !last;
+    $('wzSkip').hidden = at === 0 || last;
+    $('wzNext').innerHTML = last ? (empty ? '<i class="fas fa-check"></i> Use these rules' : '<i class="fas fa-check"></i> Replace my rules') : 'Next <i class="fas fa-arrow-right"></i>';
+    $('wzAdd').hidden = !last || empty;
+    document.querySelectorAll('#acqWizardModal [data-wz-empty]').forEach(function (el) { el.hidden = (el.getAttribute('data-wz-empty') === 'yes') !== empty; });
     $('wzError').hidden = true;
   }
 
-  window.acqWizardGo = function (step) {
+  window.acqWizardGo = function (step, skip) {
     var err = $('wzError');
     if (step > 0 && at === STEPS[type].length - 1) { window.acqWizardApply('replace'); return; }
     if (step > 0) {
-      var why = check(STEPS[type][at]);
-      if (why) { err.textContent = why; err.hidden = false; return; }
-      if (STEPS[type][at + 1] === 'points') {
+      var here = STEPS[type][at];
+      if (skip) {
+        skipped[here] = true;       // RA24 - leave this step's rules out
+      } else {
+        var why = check(here);
+        if (why) { err.textContent = why; err.hidden = false; return; }
+        delete skipped[here];
+      }
+      var next = STEPS[type][at + 1];
+      if (next === 'points' || next === 'review') {
         var fresh = drafts.length === 0;
         // Keep the points already shared when you come back this way.
         drafts.forEach(function (r) { if (r.kind !== 'must') { pts[r.field + '|' + r.kind + '|' + (r.rule_text || '').toLowerCase()] = parseFloat(r.points) || 0; } });
@@ -578,6 +671,8 @@
     if (type === 'plot') { deal = 'buy'; }
     base = (type === sType && deal === sDeal) ? now : [];
     drafts = [];
+    skipped = {};
+    featNum = {};
     prefill();
   }
   document.querySelectorAll('#acqWizardModal [name=wzType]').forEach(function (rb) {

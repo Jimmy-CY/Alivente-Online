@@ -145,7 +145,8 @@ ok(set(steps) == {'apartment', 'house', 'plot'} and
    '  and the steps after it are that type\'s - rooms for a home, '
    '€ per buildable m² for a plot', steps)
 ok("['garden', 'm']" in W and "['pool', 'n']" in W and
-   "garden: {label: 'Private garden', field: 'custom'" in W,
+   # RA24 - plain-words features are made by C(label, text, group) now.
+   "garden: C('Private garden', 'the house has its own private garden'" in W,
    'A HOUSE IS ASKED ABOUT A GARDEN AND A POOL - plain-words rules Claude '
    'answers, as there is no such fact on a listing')
 ok('auctions' not in read(J(APP, 'urls.py')) and
@@ -177,7 +178,8 @@ ok('Nothing is saved until you press Save scenario' in W,
 foot = W[W.index('<div class="modal-footer">'):]
 foot = foot[:foot.index('</div>')]
 ok(re.findall(r'class="btn (action-\w+)"', foot) ==
-   ['action-secondary', 'action-secondary', 'action-primary'],
+   # RA24, 25 Nov 2026 - Skip this step joins Back and Add as a secondary.
+   ['action-secondary', 'action-secondary', 'action-secondary', 'action-primary'],
    'ONE PRIMARY IN THE FOOTER, AND IT IS LAST - Next, which on the last '
    'step reads Replace my rules (the house footer rule)')
 ok(not re.search(r'#[0-9a-fA-F]{3,6}\b|style="', W),
@@ -376,11 +378,15 @@ else:
         nxt(pg)
         feats = pg.evaluate("[...document.querySelectorAll('[data-wz-feature]')]"
                             ".map(r => r.getAttribute('data-wz-feature'))")
-        ok(step(pg) == ['features'] and feats == ['deeds', 'frontages', 'zone',
+        # RA24 - more plot features, and no planning zone (Demetri: "I
+        # don't know the zones. Let's leave that out").
+        ok(step(pg) == ['features'] and feats == ['deeds', 'frontages', 'roadaccess',
+                                                   'nocross', 'flat', 'noflood',
                                                    'corner', 'utilities'],
-           'A PLOT\'S FEATURES: title deed, road frontages, planning zone, '
-           'corner, utilities', feats)
-        pg.check('[name=wzf_zone][value=m]')
+           'A PLOT\'S FEATURES: title deed, road frontages, road access, nothing '
+           'across it, flat, no flood, corner, utilities', feats)
+        pg.check('[name=wzf_roadaccess][value=x]')
+        pg.check('[name=wzf_flat][value=m]')
         nxt(pg)
         tot = pg.inner_text('#wzPointsTotal')
         ok(step(pg) == ['points'] and tot == '100',
@@ -399,9 +405,11 @@ else:
         nxt(pg)
         rv = pg.inner_text('#wzReview')
         ok(step(pg) == ['review'] and 'Engomi or Aglantzia Test' in rv and
-           'Claude checks that the plot is in a residential planning zone' in rv
-           and pg.inner_text('#wzNext').strip() == 'Replace my rules' and
-           not pg.evaluate("document.getElementById('wzAdd').hidden"),
+           'Claude checks that the plot is flat and of a regular shape' in rv
+           # RA24 - a new scenario has nothing to replace: one button,
+           # Use these rules, and no Add (Demetri).
+           and pg.inner_text('#wzNext').strip() == 'Use these rules' and
+           pg.evaluate("document.getElementById('wzAdd').hidden"),
            'REVIEW: every rule in plain words, then Replace or Add', rv)
         pg.click('#wzNext')
         pg.wait_for_timeout(200)
@@ -644,7 +652,7 @@ else:
                           ".modal-footer button')].filter(b => !b.hidden).map(b => {"
                           " const r = b.getBoundingClientRect(); return r.left >= "
                           "m.left && r.right <= m.right; }); })()")
-        ok(step(pg) == ['review'] and box == [True, True, True],
+        ok(step(pg) == ['review'] and box == [True, True],   # RA24 - Back, Use these rules
            '  and Back, Add to my rules and Replace my rules all sit inside '
            'the pop-up (they wrap)', box)
         pg.close()

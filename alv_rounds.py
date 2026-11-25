@@ -1702,6 +1702,8 @@ ROUNDS = [
     '.bak_ra22',
     # RA23, 25 Nov 2026 - the criteria table fits its card; a year reads 1995.
     '.bak_ra23',
+    # RA24, 25 Nov 2026 - run now, after save, the wizard's Skip, more features.
+    '.bak_ra24',
 ]
 
 

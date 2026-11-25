@@ -78,6 +78,19 @@
 .acq-section-title { display: flex; align-items: baseline; gap: 6px; }
 .acq-section-title .ml-auto { font-size: 14px; font-weight: 400; }
 /* RA22 - Build rules step by step. */
+.acq-wz-feat-group { margin: 12px 0 2px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--alv-accent-ink); }   /* RA24 */
+.acq-wz-num { display: inline-block; width: 84px; margin-left: 6px; }
+.acq-folds { align-items: start; }   /* RA24 - folding boxes on the Overview */
+.acq-fold > summary { display: flex; align-items: center; gap: 6px; cursor: pointer; list-style: none; }
+.acq-fold > summary::-webkit-details-marker { display: none; }
+.acq-fold-icon { margin-left: auto; color: var(--alv-ink-soft); transition: transform .15s; }
+.acq-fold[open] .acq-fold-icon { transform: rotate(180deg); }
+.acq-brief-frame { display: block; width: 100%; height: 75vh; border: 0; }
+.acq-pick { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 8px; }   /* RA24 */
+.acq-explain { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: 13px; color: var(--alv-ink-soft); }
+.acq-explain dt { font-weight: 600; color: var(--alv-ink); }
+.acq-explain dd { margin: 0; }
+@media screen and (max-width: 575px) { .acq-explain { grid-template-columns: 1fr; } .acq-explain dd { margin-bottom: 6px; } }
 .acq-wz-head { display: flex; justify-content: flex-end; }
 .acq-wz-dots { display: flex; gap: 6px; margin: 6px 0 16px; }
 .acq-wz-dots span { flex: 1; height: 4px; border-radius: 2px; background: var(--alv-line); }

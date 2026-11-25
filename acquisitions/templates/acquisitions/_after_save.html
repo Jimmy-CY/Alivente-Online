@@ -1,0 +1,48 @@
+{# AFTER SAVE - RA24, 25 Nov 2026. Saving a scenario lands here with     #}
+{# ?saved=1, and this asks whether to run it now or wait for its          #}
+{# schedule (Demetri: "If I make changes and Save, it should ask me if I  #}
+{# would like to run this scenario now manually, or if I want to wait for #}
+{# the scheduled run at whatever has been set").                          #}
+<div class="modal fade" id="acqAfterSave" tabindex="-1" role="dialog" aria-labelledby="acqAfterSaveTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header alv-modal-head">
+        <h5 class="modal-title" id="acqAfterSaveTitle"><i class="fas fa-check-circle"></i> Saved</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        {% if s.is_active %}
+        <p class="mb-2">&ldquo;{{ s.name }}&rdquo; is saved. Run it now with the new rules, or wait for its next scheduled run?</p>
+        <p class="acq-muted mb-0">Its schedule: <strong>{{ schedule }}</strong>. The listings already tracked have been re-scored under the new rules either way.</p>
+        {% else %}
+        <p class="mb-2">&ldquo;{{ s.name }}&rdquo; is saved. It is paused, so it will not run on its schedule ({{ schedule }}) until you resume it.</p>
+        <p class="acq-muted mb-0">The listings already tracked have been re-scored under the new rules.</p>
+        {% endif %}
+      </div>
+      <div class="modal-footer">
+        {% if s.is_active %}
+        <button type="button" class="btn action-secondary" data-dismiss="modal">Wait for the schedule</button>
+        <button type="button" class="btn action-primary" data-scenario="{{ s.pk }}" onclick="acqAfterRun(this.getAttribute('data-scenario'))"><i class="fas fa-play"></i> Run it now</button>
+        {% else %}
+        <button type="button" class="btn action-secondary" data-dismiss="modal">Close</button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // Run it now: close this pop-up, then open Run a search with just this scenario ticked.
+  window.acqAfterRun = function (pk) {
+    var $ = window.jQuery;
+    if (!$) { return; }
+    $('#acqAfterSave').one('hidden.bs.modal', function () {
+      if (window.acqRunOpen) { window.acqRunOpen(pk); }
+      $('#acqRunModal').modal('show');
+    }).modal('hide');
+  };
+  window.addEventListener('load', function () {
+    // Ask once: a reload of this page does not ask again.
+    if (window.history && history.replaceState) { history.replaceState(null, '', window.location.pathname); }
+    if (window.jQuery) { window.jQuery('#acqAfterSave').modal('show'); }
+  });
+</script>

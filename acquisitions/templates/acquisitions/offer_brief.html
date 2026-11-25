@@ -71,7 +71,11 @@
 {% endif %}
 
 <h2>Confirm before making an offer</h2>
-<ul>{% for q in questions %}<li>{{ q }}</li>{% endfor %}<li>Common expenses and any building-fund arrears</li></ul>
+<ul>{% for q in questions %}<li>{{ q }}</li>{% endfor %}{% if p.property_type != 'plot' %}<li>Common expenses and any building-fund arrears</li>{% endif %}</ul>
+
+{# RA24 - the legal checks: on the brief, not Musts (Demetri: "The legal checks can be on the offer brief. Not Musts"). #}
+<h2>Legal checks, for your lawyer</h2>
+<ul>{% for q in legal %}<li>{{ q }}</li>{% endfor %}</ul>
 
 <p class="foot">Based on asking prices collected by your searches, not on registered sale prices. This is a negotiating aid, not a valuation. Get a surveyor&rsquo;s valuation and a lawyer&rsquo;s title check before signing.</p>
 </body></html>

@@ -102,7 +102,8 @@ CRS_N = 8
 # RA19, 23 Nov 2026 - A THIRD ROOT: acquisitions/templates, the Property
 # Acquisitions app, kept beside its code the way CRS is. Fourteen
 # templates, every basename distinct from the other two roots.
-ACQ_N = 14
+# RA24, 25 Nov 2026 - fifteen: _after_save.html (was 14).
+ACQ_N = 15
 TOTAL_N = MAIN_N + CRS_N + ACQ_N
 
 CRS_PAGES = [

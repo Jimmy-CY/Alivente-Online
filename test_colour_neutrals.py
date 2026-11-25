@@ -189,7 +189,8 @@ BYNAME = {alv_tree.rel(q).replace(os.sep, '/'): q
 # RA22, 24 Nov 2026 - 23 (was 22): the Build rules step by step partial,
 # _rules_wizard.html, included into the scenario editor. test_ra22_rules_
 # wizard.py checks it holds no colour and no style attribute.
-ok(len(STAND) == 23, '%d standalone template(s)' % len(STAND))
+# RA24, 25 Nov 2026 - 24 (was 23): _after_save.html, the Run it now or wait question after Save scenario, a partial with no colour of its own.
+ok(len(STAND) == 24, '%d standalone template(s)' % len(STAND))
 bad = [s for s in sorted(STAND) if os.path.exists(BYNAME[s] + SUFFIX)]
 ok(not bad,
    '  none of them was rewritten - with no {% extends %} a var() there '
