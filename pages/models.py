@@ -5938,3 +5938,101 @@ class RecordChange(models.Model):
 
     def __str__(self):
         return '%s %s %s' % (self.at, self.action, self.name)
+
+
+# --------------------------------------------------------------------------
+# SECRET SANTA - RA31, 26 Nov 2026.
+# Demetri, 26 Nov: "capture (and save) up to 20 people, with their Name,
+# Surname, Nicknames and email addresses. Then I need to have the ability
+# to exclude certain people buying gifts for certain people. Then I need to
+# enter an amount that everyone will spend ... allocate people randomly and
+# then send out a nice personalised Xmas email to everybody explaining what
+# the rules are, how much to spend, when the secret santa event is
+# happening." Christmas only. Last year's pairs never match again. He takes
+# part, so the pairings are hidden from him until he deliberately reveals
+# them (revealed_at records it). Reminders a week and a day before; an
+# optional big reveal afterwards. PRIVATE to the owner, like Gifts.
+# --------------------------------------------------------------------------
+class SantaExchange(models.Model):
+    MAX_PEOPLE = 20
+    owner = models.ForeignKey(User, on_delete=models.CASCADE,
+                              related_name='santa_exchanges')
+    year = models.PositiveIntegerField()
+    title = models.CharField(max_length=120)
+    event_date = models.DateField(null=True, blank=True)
+    event_time = models.TimeField(null=True, blank=True)
+    place = models.CharField(max_length=200, blank=True)
+    budget = models.DecimalField(max_digits=9, decimal_places=2, null=True,
+                                 blank=True)
+    rules = models.TextField(blank=True)
+    remind_week = models.BooleanField(default=True)
+    remind_day = models.BooleanField(default=True)
+    drawn_at = models.DateTimeField(null=True, blank=True)
+    revealed_at = models.DateTimeField(null=True, blank=True)
+    week_sent_at = models.DateTimeField(null=True, blank=True)
+    day_sent_at = models.DateTimeField(null=True, blank=True)
+    reveal_sent_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'santa_exchanges'
+        ordering = ['-year', '-id']
+        unique_together = [('owner', 'year')]
+
+    def __str__(self):
+        return '%s (%s)' % (self.title, self.year)
+
+
+class SantaPerson(models.Model):
+    exchange = models.ForeignKey(SantaExchange, on_delete=models.CASCADE,
+                                 related_name='people')
+    contact = models.ForeignKey(Contact, on_delete=models.SET_NULL,
+                                null=True, blank=True, related_name='+')
+    first_name = models.CharField(max_length=80)
+    surname = models.CharField(max_length=80, blank=True)
+    nickname = models.CharField(max_length=80, blank=True)
+    email = models.EmailField()
+    emailed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'santa_people'
+        ordering = ['first_name', 'surname', 'id']
+
+    def __str__(self):
+        return self.full_name
+
+    @property
+    def full_name(self):
+        return ('%s %s' % (self.first_name, self.surname)).strip()
+
+    @property
+    def called(self):
+        """What the emails call them: the nickname, else the first name."""
+        return self.nickname or self.first_name
+
+
+class SantaExclusion(models.Model):
+    """One way: giver must not draw receiver. "Both ways" is two rows."""
+    exchange = models.ForeignKey(SantaExchange, on_delete=models.CASCADE,
+                                 related_name='exclusions')
+    giver = models.ForeignKey(SantaPerson, on_delete=models.CASCADE,
+                              related_name='+')
+    receiver = models.ForeignKey(SantaPerson, on_delete=models.CASCADE,
+                                 related_name='+')
+
+    class Meta:
+        db_table = 'santa_exclusions'
+        unique_together = [('giver', 'receiver')]
+
+
+class SantaPair(models.Model):
+    exchange = models.ForeignKey(SantaExchange, on_delete=models.CASCADE,
+                                 related_name='pairs')
+    giver = models.OneToOneField(SantaPerson, on_delete=models.CASCADE,
+                                 related_name='pair')
+    receiver = models.ForeignKey(SantaPerson, on_delete=models.CASCADE,
+                                 related_name='+')
+
+    class Meta:
+        db_table = 'santa_pairs'

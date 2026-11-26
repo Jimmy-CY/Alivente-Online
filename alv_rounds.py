@@ -1716,6 +1716,8 @@ ROUNDS = [
     '.bak_ra29',
     # RA30, 26 Nov 2026 - delete a scenario; the results pages lead with the listings; Area multi-select.
     '.bak_ra30',
+    # RA31, 26 Nov 2026 - Secret Santa in Celebrations.
+    '.bak_ra31',
 ]
 
 

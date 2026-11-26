@@ -3417,7 +3417,9 @@ $suites = @(
     # RA29, 26 Nov 2026 - a speech bubble beside a listing's title: his comment, decision and viewings.
     'test_ra29_note_bubble.py',
     # RA30, 26 Nov 2026 - delete a scenario; the results pages lead with the listings; Area multi-select.
-    'test_ra30_delete_and_listings_first.py'
+    'test_ra30_delete_and_listings_first.py',
+    # RA31, 26 Nov 2026 - Secret Santa in Celebrations.
+    'test_ra31_secret_santa.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

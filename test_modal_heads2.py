@@ -139,7 +139,7 @@ BOOT = os.path.join(ROOT, 'test_fixture_bootstrap413.css')
 EXE = '/opt/pw-browsers/chromium'
 
 HOUSE = 'modal-header alv-modal-head alv-modal-head--danger'
-PRECEDENTS = 15   # RA30, 26 Nov 2026 - the Delete scenario pop-up on the homes and the plots results pages wears the house danger header.   # (was 13)   # RT-1, 18 Oct 2026 - three of the sixteen were written on pages MN-1 retired. This is a count of the live tree, not of what MH-2 did.   # (was 16)
+PRECEDENTS = 16   # RA31, 26 Nov 2026 - Secret Santa's Undo the draw pop-up wears the house danger header.   # (was 15)   # RA30, 26 Nov 2026 - the Delete scenario pop-up on the homes and the plots results pages wears the house danger header.   # (was 13)   # RT-1, 18 Oct 2026 - three of the sixteen were written on pages MN-1 retired. This is a count of the live tree, not of what MH-2 did.   # (was 16)
 CRS = ('crs/country_list.html', 'crs/fi_list.html',
        'crs/submission_detail.html', 'crs/submission_list.html')
 RULE_PAGES = ['comments_report.html', 'finance/cashflow_forecast.html',

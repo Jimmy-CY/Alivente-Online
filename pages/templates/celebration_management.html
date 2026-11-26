@@ -730,6 +730,10 @@ button.gift-btn { background: transparent; }
         <a href="{% url 'celebration_gifts' %}" class="btn action-secondary">
             <i class="fas fa-gift"></i> My gifts
         </a>
+        {# RA31, 26 Nov 2026 - Secret Santa. #}
+        <a href="{% url 'secret_santa' %}" class="btn action-secondary">
+            <i class="fas fa-gifts"></i> Secret Santa
+        </a>
 
         <button class="btn action-secondary" id="viewToggleBtn" onclick="toggleView()">
             <i class="fas fa-th-large"></i> Compact View
@@ -753,6 +757,9 @@ button.gift-btn { background: transparent; }
                 {% endif %}
                 <a href="{% url 'celebration_gifts' %}" class="action-more-item" role="menuitem">
                     <i class="fas fa-gift"></i> My gifts
+                </a>
+                <a href="{% url 'secret_santa' %}" class="action-more-item" role="menuitem">
+                    <i class="fas fa-gifts"></i> Secret Santa
                 </a>
                 <button type="button" class="action-more-item" role="menuitem" id="viewToggleMoreItem" onclick="toggleView()">
                     <i class="fas fa-th-large"></i> Compact View

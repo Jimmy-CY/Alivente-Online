@@ -275,8 +275,9 @@ head('1. THE CENSUS BUG, MADE PERMANENT')
 # RA26, 25 Nov 2026 - _ticks.html, in acquisitions/ (was 179 and 41).
 # RA27, 25 Nov 2026 - the four RA27 partials, in acquisitions/ (was 180 and 42).
 # RA28, 26 Nov 2026 - _filter_fields.html, in acquisitions/ (was 184 and 46).
-ok(len(tree) == 185, 'a WALK finds 185 templates', len(tree))
-ok(len(top) == 138, '  a flat listing finds 138 - 120 was what H7 '
+# RA31, 26 Nov 2026 - secret_santa.html, at the top of pages/templates (was 185 and 138).
+ok(len(tree) == 186, 'a WALK finds 186 templates', len(tree))
+ok(len(top) == 139, '  a flat listing finds 139 - 120 was what H7 '
    'counted, 122 after MN-1, and RD-1 adds the quick-look pair',
    len(top))
 ok(len(sub) == 47, '  so 47 live in subdirectories and H7 never saw them',

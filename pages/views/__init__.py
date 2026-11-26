@@ -34,6 +34,7 @@ from .receipts import *  # noqa: F401, F403
 from .passports import *  # noqa: F401, F403
 from .celebrations import *  # noqa: F401, F403
 from .celebration_gifts import *  # noqa: F401, F403  CG-1
+from .secret_santa import *  # noqa: F401, F403  RA31 - Secret Santa
 from .users import *  # noqa: F401, F403
 from .administration import *  # noqa: F401, F403
 from .notifications import *  # noqa: F401, F403

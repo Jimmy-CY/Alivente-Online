@@ -138,6 +138,14 @@ class Command(BaseCommand):
                 self.stdout.write(f'\u26a0\ufe0f  wellness_weekly failed: {e}')
                 logger.error(f'wellness_weekly failed: {e}', exc_info=True)
 
+            # SECRET SANTA - RA31, 26 Nov 2026. The reminders a week and a
+            # day before; each is sent once. Guarded like the jobs above.
+            try:
+                call_command('santa_tick', dry_run=self.dry_run)
+            except Exception as e:
+                self.stdout.write(f'\u26a0\ufe0f  santa_tick failed: {e}')
+                logger.error(f'santa_tick failed: {e}', exc_info=True)
+
             # Then get all the data with property details
             vacant_properties, expiring_leases, declined_renewals, overdue_invoices = self.get_all_property_details()
 

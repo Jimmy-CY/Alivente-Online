@@ -547,6 +547,10 @@ urlpatterns = [
     # CG-1, 13 Nov 2026 - gifts, My gifts and the Christmas list, greetings.
     path('celebrations/gifts/', views.my_gifts, name='celebration_gifts'),
     path('celebrations/gifts/save/', views.celebration_gift_save, name='celebration_gift_save'),
+    # RA31, 26 Nov 2026 - Secret Santa
+    path('celebrations/secret-santa/', views.secret_santa, name='secret_santa'),
+    path('celebrations/secret-santa/save/', views.secret_santa_save, name='secret_santa_save'),
+    path('celebrations/secret-santa/preview/', views.secret_santa_preview, name='secret_santa_preview'),
     path('celebrations/event/<int:event_id>/greeting/', views.celebration_greeting, name='celebration_greeting'),
     path('celebrations/event/<int:event_id>/update-notifications/', views.update_event_notifications, name='update_event_notifications'),
 
