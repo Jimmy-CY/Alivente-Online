@@ -12,12 +12,21 @@
 <h4 class="page-subtitle-h4">RESULTS &mdash; {{ s.name }}</h4>
 <p class="acq-sub">{% if s.is_active %}<span class="alv-pill alv-pill-good">Active</span>{% else %}<span class="alv-pill alv-pill-neutral">Paused</span>{% endif %} {{ s.purpose }}</p>
 
+{% if can_edit %}
+{# RA30 - Pause / Resume, as on the homes page; in More. #}
+<form method="post" action="{% url 'acquisitions:scenario_toggle' s.pk %}" id="acqToggleForm" hidden>{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"></form>
+{% endif %}
 <div class="page-action-buttons">
   <button type="button" class="btn action-primary" data-toggle="modal" data-target="#acqRunModal" data-run-only="{{ s.pk }}"><i class="fas fa-play"></i> Run this search now</button>
   {% if can_edit %}
   <a href="{% url 'acquisitions:scenario_edit' s.pk %}" class="btn action-secondary" role="button"><i class="fas fa-sliders-h"></i> Edit criteria</a>
   {% endif %}
+  {# RA30 - every action stays in the bar on a computer; More is the phone's (house rule). #}
   <a href="{% url 'acquisitions:scenario_csv' s.pk %}" class="btn action-secondary" role="button"><i class="fas fa-file-csv"></i> Export CSV</a>
+  {% if can_edit %}
+  <button type="submit" form="acqToggleForm" class="btn action-secondary"><i class="fas {% if s.is_active %}fa-pause{% else %}fa-play-circle{% endif %}"></i> {% if s.is_active %}Pause{% else %}Resume{% endif %}</button>
+  <button type="button" class="btn action-secondary action-danger" data-toggle="modal" data-target="#acqDeleteModal"><i class="fas fa-trash"></i> Delete</button>
+  {% endif %}
   <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#acquisitionsHelpModal" aria-label="Help"><i class="fas fa-question-circle"></i> Help</button>
   <button type="button" class="btn action-filter" id="filterBtn" aria-pressed="false" aria-controls="acqFilterPanel" aria-label="Show filters"><i class="fas fa-filter"></i><span class="action-filter-label"> Filter</span><span class="action-filter-count" data-count="0"></span></button>
   <!-- Phone: the secondaries above move into More (house rule, base.html). -->
@@ -28,7 +37,14 @@
       <a href="{% url 'acquisitions:scenario_edit' s.pk %}" class="action-more-item" role="menuitem"><i class="fas fa-sliders-h"></i> Edit criteria</a>
       {% endif %}
       <a href="{% url 'acquisitions:scenario_csv' s.pk %}" class="action-more-item" role="menuitem"><i class="fas fa-file-csv"></i> Export CSV</a>
+      {% if can_edit %}
+      <button type="submit" form="acqToggleForm" class="action-more-item" role="menuitem"><i class="fas {% if s.is_active %}fa-pause{% else %}fa-play-circle{% endif %}"></i> {% if s.is_active %}Pause{% else %}Resume{% endif %}</button>
+      {% endif %}
       <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#acquisitionsHelpModal"><i class="fas fa-question-circle"></i> Help</button>
+      {% if can_edit %}
+      {# RA30 - Demetri: "I need to create a Delete button, so that I can delete a scenario and all of its listings." #}
+      <button type="button" class="action-more-item action-more-item-danger" role="menuitem" data-toggle="modal" data-target="#acqDeleteModal"><i class="fas fa-trash"></i> Delete scenario&hellip;</button>
+      {% endif %}
     </div>
   </div>
   <a href="{% url 'acquisitions:scenarios' %}" class="btn action-back" role="button" aria-label="Back to scenarios"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
@@ -36,18 +52,28 @@
 
 {% include 'acquisitions/_tabs.html' %}
 
-<div class="alv-card mb-3">
-  <div class="alv-card-head"><span class="alv-card-title">Scenario summary</span>{% if run %}<span class="ml-auto acq-muted">{{ run.started_at|date:"l j M" }}</span>{% endif %}</div>
-  <div class="alv-card-body">
-    {% if summaries %}<p>{{ summaries.0.summary|linebreaksbr }}</p>{% else %}<p class="acq-muted">No summary yet. Each search writes one here once Claude is connected to the app.</p>{% endif %}
-    <div class="alv-stats">
-      <div class="alv-stat"><div class="alv-stat-value">{{ tracked }}</div><div class="alv-stat-label">Tracked</div></div>
-      <div class="alv-stat alv-stat-good"><div class="alv-stat-value">{{ musts_met }}</div><div class="alv-stat-label">Meet all Musts</div></div>
-      <div class="alv-stat"><div class="alv-stat-value">{{ best_pbm|euros }}</div><div class="alv-stat-label">Best &euro;/buildable m&sup2;</div></div>
-      <div class="alv-stat {% if drops %}alv-stat-attn{% endif %}"><div class="alv-stat-value">{{ drops }}</div><div class="alv-stat-label">Price drops this week</div></div>
-    </div>
-  </div>
+<div class="acq-figrow">
+  <div class="acq-figrow-i"><span class="acq-figrow-v">{{ inside_n }}</span><span class="acq-figrow-l">in your rules{% if tracked != inside_n %} (of {{ tracked }}){% endif %}</span></div>
+  <div class="acq-figrow-i"><span class="acq-figrow-v">{{ n_new }}</span><span class="acq-figrow-l">new</span></div>
+  <div class="acq-figrow-i"><span class="acq-figrow-v">{{ musts_met }}</span><span class="acq-figrow-l">meet all Musts</span></div>
+  <div class="acq-figrow-i"><span class="acq-figrow-v">{{ best_pbm|euros }}</span><span class="acq-figrow-l">best &euro;/buildable m&sup2;</span></div>
+  <div class="acq-figrow-i"><span class="acq-figrow-v">{{ drops }}</span><span class="acq-figrow-l">price drops this week</span></div>
 </div>
+{# RA30, 26 Nov 2026 - the listings come first (Demetri: "We can't have the filter button so far up and the table it is filtering so far down"): the search report folds into one line, the figures into one row, and what holds listings back into tags that filter. #}
+{% if summaries %}
+<details class="acq-report">
+  <summary><i class="fas fa-history" aria-hidden="true"></i> Last search {{ summaries.0.started_at|date:"D j M H:i" }} &middot; {{ summaries.0.get_where_display }} &middot; {{ summaries.0.listings_added }} new &middot; <b>Read the report</b></summary>
+  <div class="acq-report-body">
+    <p class="mb-2">{{ summaries.0.summary|linebreaksbr }}</p>
+    {% if summaries|length > 1 %}
+    <details><summary class="acq-muted">Earlier summaries</summary>
+      {% for r in summaries|slice:"1:" %}<p class="acq-quote mt-2"><span class="acq-muted">{{ r.started_at|date:"D j M H:i" }}</span><br>{{ r.summary|linebreaksbr }}</p>{% endfor %}
+    </details>
+    {% endif %}
+  </div>
+</details>
+{% else %}<p class="acq-muted mb-2"><i class="fas fa-history" aria-hidden="true"></i> No search report yet. Each search writes one here.</p>{% endif %}
+{% if held %}<div class="acq-held"><span class="acq-muted">Holding listings back:</span>{% for h in held %}<a class="acq-held-tag {% if h.on %}is-on{% endif %}" href="?{{ h.url }}" title="Show the listings where this is still to confirm">{{ h.label }} ? {{ h.count }}</a>{% endfor %}</div>{% endif %}
 
 {# RA27, 25 Nov 2026 - no chart (Demetri: "Can we get rid of this graph?"): #}
 {# the table carries the area, the price incl. VAT and the per-m2 prices.  #}
@@ -92,6 +118,31 @@
 </details>
 {% endif %}
 
+{% if can_edit and gone %}
+{# RA30 - asked first, with the numbers: what goes, what stays. #}
+<div class="modal fade" id="acqDeleteModal" tabindex="-1" role="dialog" aria-labelledby="acqDeleteTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content" method="post" action="{% url 'acquisitions:scenario_delete' s.pk %}">{% csrf_token %}
+      <div class="modal-header alv-modal-head alv-modal-head--danger"><h5 class="modal-title" id="acqDeleteTitle"><i class="fas fa-trash"></i> Delete &ldquo;{{ s.name }}&rdquo;?</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
+      <div class="modal-body">
+        <p>This deletes, for good:</p>
+        <ul class="mb-2">
+          <li>the scenario and its {{ gone.rules }} rule{{ gone.rules|pluralize }}</li>
+          <li><strong>{{ gone.listings }} listing{{ gone.listings|pluralize }}</strong> only this scenario found, with their prices and sources{% if gone.viewings %}, and {{ gone.viewings }} viewing{{ gone.viewings|pluralize }}{% endif %}</li>
+          {% if gone.yours %}<li>your comments and decisions on {{ gone.yours }} of them</li>{% endif %}
+        </ul>
+        {% if gone.shared %}<p class="acq-muted mb-1">{{ gone.shared }} listing{{ gone.shared|pluralize }} also found by another scenario {{ gone.shared|pluralize:"stays,stay" }} there.</p>{% endif %}
+        <p class="acq-muted mb-0">Its search runs stay in the log. This cannot be undone &mdash; <strong>Pause</strong> keeps everything instead.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn action-secondary action-danger"><i class="fas fa-trash"></i> Delete for good</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
 {% include 'acquisitions/_run_modal.html' %}
 {% if ask_run %}{% include 'acquisitions/_after_save.html' %}{% endif %}
 {% render_help_modal "acquisitions" %}

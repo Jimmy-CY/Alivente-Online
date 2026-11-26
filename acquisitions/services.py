@@ -384,6 +384,19 @@ def new_count():
     return ScenarioMatch.objects.filter(status="new").count()
 
 
+def unopened_count():
+    """RA30 - the Scenarios tab's number (Demetri: "The 116 next to
+    Scenarios does not make sense"): listings within your rules that you
+    have not opened yet - what is waiting for you. Outside your rules,
+    rejected and gone listings are not waiting for anything."""
+    n = 0
+    for failed, status in ScenarioMatch.objects.filter(opened_at__isnull=True).exclude(
+            status__in=("rejected", "removed")).values_list("failed_musts", "status"):
+        if not failed or status == "shortlisted":
+            n += 1
+    return n
+
+
 def recent_drops(days=7):
     """Properties whose price fell in the last `days` days."""
     since = timezone.localdate() - timedelta(days=days)
@@ -401,7 +414,7 @@ def recent_drops(days=7):
 
 
 def badges():
-    return {"new": new_count(), "drops": len(recent_drops())}
+    return {"new": new_count(), "unopened": unopened_count(), "drops": len(recent_drops())}
 
 
 # --------------------------------------------------------------------------

@@ -51,8 +51,10 @@
       <div class="acq-muted">{{ c.rules|default:"No rules yet" }} &middot; {{ c.counts.areas }} area{{ c.counts.areas|pluralize }}</div>
       {% if c.s.is_active %}
       <div class="acq-card-figs">
-        <div class="acq-fig"><strong>{{ c.tracked }}</strong><span>tracked</span></div>
+        {# RA30 - listings within your rules (of all tracked), and those not opened yet #}
+        <div class="acq-fig"><strong>{{ c.inside }}</strong><span>in your rules{% if c.tracked != c.inside %} (of {{ c.tracked }}){% endif %}</span></div>
         <div class="acq-fig"><strong>{{ c.new }}</strong><span>new</span></div>
+        <div class="acq-fig"><strong>{{ c.unopened }}</strong><span>not opened</span></div>
         <div class="acq-fig"><strong>{{ c.active }}</strong><span>active</span></div>
         {% if c.best_pbm %}<div class="acq-fig"><strong>{{ c.best_pbm|euros }}</strong><span>best &euro;/buildable m&sup2;</span></div>{% endif %}
         <div class="acq-fig"><strong>{{ c.best|n }}</strong><span>best score</span></div>

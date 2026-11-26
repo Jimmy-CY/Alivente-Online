@@ -21,6 +21,8 @@ urlpatterns = [
     path("scenarios/<int:pk>/edit/", views.scenario_edit, name="scenario_edit"),
     path("scenarios/<int:pk>/preview/", views.scenario_preview, name="scenario_preview"),
     path("scenarios/<int:pk>/toggle/", views.scenario_toggle, name="scenario_toggle"),
+    # RA30, 26 Nov 2026 - delete a scenario and the listings only it found
+    path("scenarios/<int:pk>/delete/", views.scenario_delete, name="scenario_delete"),
     path("scenarios/<int:pk>/export.csv", views.scenario_csv, name="scenario_csv"),
     path("property/<int:pk>/", views.property_detail, name="property"),
     path("property/<int:pk>/status/", views.property_status, name="property_status"),

@@ -272,10 +272,13 @@ for p in alv_tree.templates():
 # results pages joined the house panel: ten fields in _filter_fields.html
 # (search, area, status, price from and to, size from and to, bedrooms,
 # opened, sort), every one paired with .form-control.
-ok(len(paired) + len(bare) == 49,
-   'forty-nine uses of the two class names across the tree',
+# RA30, 26 Nov 2026 - 48 and 45. Area became a tick-box list (Demetri:
+# "Area must be multi-select") - the Recipes page's multi-select, not a
+# .filter-select.
+ok(len(paired) + len(bare) == 48,
+   'forty-eight uses of the two class names across the tree',
    len(paired) + len(bare))
-ok(len(paired) == 46, '  forty-six pair it with .form-control, and do '
+ok(len(paired) == 45, '  forty-five pair it with .form-control, and do '
    'not move', len(paired))
 ins = [b for b in bare if 'filter-input' in b[1]]
 ok(len(ins) == 1,

@@ -3415,7 +3415,9 @@ $suites = @(
     # RA28, 26 Nov 2026 - the results pages filter like the rest of the app; outside your rules is not Rejected.
     'test_ra28_filters_and_outside_rules.py',
     # RA29, 26 Nov 2026 - a speech bubble beside a listing's title: his comment, decision and viewings.
-    'test_ra29_note_bubble.py'
+    'test_ra29_note_bubble.py',
+    # RA30, 26 Nov 2026 - delete a scenario; the results pages lead with the listings; Area multi-select.
+    'test_ra30_delete_and_listings_first.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

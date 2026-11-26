@@ -3,12 +3,20 @@
   <label class="filter-label" for="acqQ"><i class="fas fa-search"></i> <strong>Search</strong></label>
   <input type="text" name="q" id="acqQ" class="form-control filter-input" placeholder="Title or area..." value="{{ f.q }}">
 </div>
+{% if f.ask %}<input type="hidden" name="ask" value="{{ f.ask }}">{% endif %}
+{# RA30, 26 Nov 2026 - Demetri: "Area must be multi-select." The Recipes page's tick-box dropdown; the choice applies when it closes. #}
 <div class="filter-group">
-  <label class="filter-label" for="acqArea"><i class="fas fa-map-marker-alt"></i> <strong>Area</strong></label>
-  <select name="area" id="acqArea" class="form-control filter-select">
-    <option value="">All Areas</option>
-    {% for a in f_areas %}<option value="{{ a }}" {% if f.area|lower == a|lower %}selected{% endif %}>{{ a }}</option>{% endfor %}
-  </select>
+  <label class="filter-label" for="acqAreaBtn"><i class="fas fa-map-marker-alt"></i> <strong>Area</strong></label>
+  <div class="filter-multiselect-dropdown" id="acqAreaPick">
+    <button type="button" class="filter-multiselect-button" id="acqAreaBtn" aria-haspopup="true" aria-expanded="false" aria-controls="acqAreaMenu">
+      <span class="filter-multiselect-placeholder" id="acqAreaSays">All Areas</span>
+      <i class="fas fa-chevron-down" aria-hidden="true"></i>
+    </button>
+    <div class="filter-multiselect-menu" id="acqAreaMenu" role="group" aria-label="Areas">
+      {% for a in f_areas %}<label class="filter-multiselect-item"><input type="checkbox" name="area" value="{{ a }}" {% if a|lower in f_areas_on %}checked{% endif %}> {{ a }}</label>{% endfor %}
+      {% if not f_areas %}<span class="filter-multiselect-item acq-muted">No areas yet</span>{% endif %}
+    </div>
+  </div>
 </div>
 <div class="filter-group">
   <label class="filter-label" for="acqStatus"><i class="fas fa-info-circle"></i> <strong>Status</strong></label>
@@ -63,7 +71,34 @@
   form.addEventListener('submit', function () {
     Array.prototype.forEach.call(form.elements, function (el) { if (el.name && !el.value) { el.disabled = true; } });
   });
+  function go() { if (form.requestSubmit) { form.requestSubmit(); } else { form.submit(); } }
   // requestSubmit fires the submit event, so base keeps the panel open across the reload.
-  form.addEventListener('change', function () { if (form.requestSubmit) { form.requestSubmit(); } else { form.submit(); } });
+  // A tick in the Area list waits: it applies when the list closes.
+  form.addEventListener('change', function (e) { if (!e.target.closest('#acqAreaMenu')) { go(); } });
+  // RA30 - the Area tick-box list
+  var pick = document.getElementById('acqAreaPick');
+  if (!pick) { return; }
+  var btn = document.getElementById('acqAreaBtn'), menu = document.getElementById('acqAreaMenu');
+  var says = document.getElementById('acqAreaSays'), was = '';
+  function ticked() { return Array.prototype.filter.call(menu.querySelectorAll('input[type=checkbox]'), function (c) { return c.checked; }).map(function (c) { return c.value; }); }
+  function label() {
+    var t = ticked();
+    says.textContent = t.length === 0 ? 'All Areas' : (t.length === 1 ? t[0] : t.length + ' areas');
+    btn.classList.toggle('has-value', t.length > 0);
+  }
+  function shut() {
+    if (!menu.classList.contains('show')) { return; }
+    menu.classList.remove('show'); btn.classList.remove('active'); btn.setAttribute('aria-expanded', 'false');
+    if (ticked().join('|') !== was) { go(); }
+  }
+  btn.addEventListener('click', function () {
+    if (menu.classList.contains('show')) { shut(); return; }
+    was = ticked().join('|');
+    menu.classList.add('show'); btn.classList.add('active'); btn.setAttribute('aria-expanded', 'true');
+  });
+  menu.addEventListener('change', label);
+  document.addEventListener('click', function (e) { if (!pick.contains(e.target)) { shut(); } });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { shut(); } });
+  label();
 })();
 </script>

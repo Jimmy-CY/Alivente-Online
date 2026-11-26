@@ -16,6 +16,7 @@ RA25, 25 Nov 2026 - the connector: the search tasks read the scenarios and
 report into the app through api.py (a key, no login); intake.py does it.
 """
 import csv
+from collections import Counter
 import json
 from datetime import datetime, timedelta, timezone as dt_tz
 from decimal import Decimal, InvalidOperation
@@ -23,7 +24,7 @@ from decimal import Decimal, InvalidOperation
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -94,7 +95,10 @@ def overview(request):
         ins = [m for m in ms if not outside(m)]
         best = max((m.score for m in ins if m.score is not None
                     and m.status not in ("rejected", "removed")), default=None)
-        card = {"s": s, "tracked": len(ms),
+        # RA30 - "What about total Listings?": within your rules, of all tracked
+        card = {"s": s, "tracked": len(ms), "inside": len(ins),
+                "unopened": sum(1 for m in ins if not m.opened_at
+                                and m.status not in ("rejected", "removed")),
                 "new": sum(1 for m in ins if m.status == "new"),
                 "active": sum(1 for m in ins if m.status in ("active", "price_changed",
                                                                "shortlisted")),
@@ -109,7 +113,9 @@ def overview(request):
     last = SearchRun.objects.prefetch_related("site_results__website").first()
     return _page(request, "overview.html", "overview",
                  cards=cards, n_active=sum(1 for s in scenarios if s.is_active),
-                 kpi_new=ScenarioMatch.objects.filter(date_found__gte=week).count(),
+                 # RA30 - new this week within your rules, as every other count
+                 kpi_new=sum(1 for m in ScenarioMatch.objects.filter(date_found__gte=week)
+                             if not outside(m)),
                  kpi_short=ScenarioMatch.objects.filter(status="shortlisted").count(),
                  kpi_price=len(S.recent_drops()),
                  last=last, last_outcome=S.run_outcome(last),
@@ -154,6 +160,46 @@ def scenario_toggle(request, pk):
     s.save(update_fields=["is_active", "updated_at"])
     messages.success(request, '"%s" %s.' % (s.name, "resumed" if s.is_active else "paused"))
     return redirect(request.POST.get("next") or reverse("acquisitions:scenarios"))
+
+
+def delete_counts(s):
+    """RA30 - what deleting a scenario takes with it, for the pop-up that
+    asks first and for the message after. A listing another scenario also
+    found is kept: it is still that scenario's."""
+    ids = list(s.matches.values_list("property_id", flat=True))
+    shared = set(ScenarioMatch.objects.filter(property_id__in=ids)
+                 .exclude(scenario=s).values_list("property_id", flat=True))
+    only = [i for i in ids if i not in shared]
+    return {
+        "rules": s.criteria.count(),
+        "only": only,
+        "listings": len(only),
+        "shared": len(shared),
+        "yours": s.matches.filter(Q(status_set_by_user=True) | ~Q(your_comments="")).count(),
+        "viewings": Viewing.objects.filter(property_id__in=only).count(),
+    }
+
+
+@login_required
+@require_POST
+@permission_required(EDIT, raise_exception=True)
+def scenario_delete(request, pk):
+    """RA30, 26 Nov 2026 - Demetri: "I need to create a Delete button, so
+    that I can delete a scenario and all of its listings." The scenario,
+    its rules and its matches go; so does every listing ONLY this scenario
+    found, with its prices, sources and viewings. A listing another
+    scenario also found stays there. Search runs stay in the log, their
+    scenario blank. Asked first, in a pop-up that gives these numbers."""
+    s = get_object_or_404(Scenario, pk=pk)
+    name = s.name
+    n = delete_counts(s)
+    with transaction.atomic(), SIG.quiet():
+        s.delete()
+        Property.objects.filter(pk__in=n["only"], matches__isnull=True).delete()
+    messages.success(request, 'Deleted "%s": %d listing%s removed%s.' % (
+        name, n["listings"], "" if n["listings"] == 1 else "s",
+        ("; %d kept, also found by another scenario" % n["shared"]) if n["shared"] else ""))
+    return redirect("acquisitions:scenarios")
 
 
 # --------------------------------------------------------------------------
@@ -542,7 +588,8 @@ def _num(v):
 FILTER_FIELDS = (("q", "Search"), ("area", "Area"), ("status", "Status"),
                  ("pmin", "Price from"), ("pmax", "Price to"),
                  ("smin", "Size from"), ("smax", "Size to"),
-                 ("beds", "Bedrooms"), ("opened", "Opened"), ("sort", "Sort"))
+                 ("beds", "Bedrooms"), ("opened", "Opened"), ("ask", "To confirm"),
+                 ("sort", "Sort"))
 
 # RA28 - Demetri: "I also want to be able to filter properties that I have
 # not viewed yet"
@@ -569,7 +616,13 @@ def _filters(request, ms, plot):
     pool = [m for m in ms if outside(m)] if status == "outside" else (
         inside if status == "all" else [m for m in inside if m.status == status])
     q = (g.get("q") or "").strip()
-    area = (g.get("area") or "").strip()
+    # RA30 - Demetri: "Area must be multi-select." Every ticked area is one
+    # ?area= in the address; a listing in any of them is shown.
+    areas_on = [a.strip() for a in g.getlist("area") if a.strip()]
+    want = {a.lower() for a in areas_on}
+    # RA30 - a "holding listings back" tag: the listings whose rule is
+    # still to confirm (or, for one you shortlisted, failed).
+    ask = (g.get("ask") or "").strip()
     pmin, pmax = _num(g.get("pmin") or ""), _num(g.get("pmax") or "")
     smin, smax = _num(g.get("smin") or ""), _num(g.get("smax") or "")
     beds = None if plot else _num(g.get("beds") or "")
@@ -582,11 +635,15 @@ def _filters(request, ms, plot):
         if q and q.lower() not in ("%s %s %s %s" % (p.title, place, m.your_comments,
                                                    m.decision_note)).lower():
             continue
-        if opened == "no" and m.opened_at:
+        # RA30 - "It must ignore un-opened Rejected listings": a rejected
+        # listing is decided, so it is never "not opened yet".
+        if opened == "no" and (m.opened_at or m.status in ("rejected", "removed")):
             continue
         if opened == "undecided" and not undecided(m):
             continue
-        if area and place.lower() != area.lower():
+        if want and place.lower() not in want:
+            continue
+        if ask and ask not in (m.unknown_musts or []) and ask not in (m.failed_musts or []):
             continue
         price = p.price_incl_vat
         if pmin is not None and (price is None or price < pmin):
@@ -608,17 +665,21 @@ def _filters(request, ms, plot):
         ("outside", "Outside your rules", out_n)]
     areas = sorted({_place(m.property) for m in (pool if status == "outside" else inside)} - {""},
                    key=str.lower)
-    vals = {"q": q, "area": area, "status": "" if status == "all" else status,
+    vals = {"q": q, "status": "" if status == "all" else status,
             "pmin": g.get("pmin", "").strip() if pmin is not None else "",
             "pmax": g.get("pmax", "").strip() if pmax is not None else "",
             "smin": g.get("smin", "").strip() if smin is not None else "",
             "smax": g.get("smax", "").strip() if smax is not None else "",
             "beds": g.get("beds", "").strip() if beds is not None else "",
-            "sort": "" if sort == "score" else sort, "opened": opened}
+            "sort": "" if sort == "score" else sort, "opened": opened, "ask": ask}
     names = dict((k, l) for k, l, _n in statuses)
     tags = []
+    for a in areas_on:   # one tag per ticked area; its x clears that one
+        rest = request.GET.copy()
+        rest.setlist("area", [x for x in areas_on if x != a])
+        tags.append({"name": "Area", "value": a, "clear": rest.urlencode()})
     for key, name in FILTER_FIELDS:
-        if not vals[key]:
+        if key == "area" or not vals.get(key):
             continue
         rest = request.GET.copy()
         rest.pop(key, None)
@@ -633,9 +694,21 @@ def _filters(request, ms, plot):
         tags.append({"name": "Plot m² from" if (plot and key == "smin") else
                      "Plot m² to" if (plot and key == "smax") else name,
                      "value": words, "clear": rest.urlencode()})
+    # RA30 - "Holding listings back" as tags that filter: the rules most
+    # often still to confirm among the listings within your rules.
+    tally = Counter()
+    for m in inside:
+        for label in set(m.unknown_musts or []) | (set(m.failed_musts or []) if m.status == "shortlisted" else set()):
+            tally[label] += 1
+    held = []
+    for label, n in tally.most_common(6):
+        go = request.GET.copy()
+        go["ask"] = label
+        held.append({"label": label, "count": n, "on": label == ask, "url": go.urlencode()})
     return shown, status, sort, {
         "f": vals, "f_tags": tags, "f_statuses": statuses, "f_areas": areas,
-        "f_plot": plot, "outside_n": out_n, "inside_n": len(inside), "f_opened": OPENED}
+        "f_plot": plot, "outside_n": out_n, "inside_n": len(inside), "f_opened": OPENED,
+        "f_areas_on": [a.lower() for a in areas_on], "held": held}
 
 
 def _matches(scenario):
@@ -663,7 +736,11 @@ def scenario_results(request, pk):
                sort=sort, sorts=SORTS, **fctx,
                ask_run=ask_run, schedule=S.schedule_text(s),
                tracked=len(ms), live=live, run=run, holding=S.holding_back(ms),
-               summaries=s.runs.exclude(summary="").order_by("-started_at")[:5])
+               summaries=s.runs.exclude(summary="").order_by("-started_at")[:5],
+               # RA30 - the slim figures row, and what Delete would take
+               n_new=sum(1 for m in ms if m.status == "new" and not outside(m)),
+               n_short=sum(1 for m in ms if m.status == "shortlisted"),
+               gone=delete_counts(s) if request.user.has_perm(EDIT) else None)
     prices = [m.property.price_incl_vat for m in live if m.property.price_incl_vat]
     ctx["price_lo"], ctx["price_hi"] = (min(prices), max(prices)) if prices else (None, None)
     if S.is_plot(s):

@@ -124,6 +124,32 @@
   .acq-wz-feat-head { display: none; }
   .acq-wz-feat-say { display: inline; font-size: 12px; }
 }
+/* RA30, 26 Nov 2026 - the Area tick-box list (the Recipes page's
+   multi-select, on house tokens), the slim figures row, the folded
+   report, and the holding-back tags. */
+.filter-multiselect-dropdown { position: relative; }
+.filter-multiselect-button { width: 100%; height: 38px; padding: 6px 12px; background: var(--alv-paper); border: 1px solid var(--alv-line); border-radius: var(--alv-radius-sm); display: flex; justify-content: space-between; align-items: center; cursor: pointer; text-align: left; color: var(--alv-ink); }
+.filter-multiselect-button.active, .filter-multiselect-button:focus-visible { border-color: var(--alv-accent); outline: none; }
+.filter-multiselect-placeholder { color: var(--alv-ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filter-multiselect-button.has-value .filter-multiselect-placeholder { color: var(--alv-ink); }
+.filter-multiselect-menu { display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; margin-top: 4px; max-height: 260px; overflow-y: auto; background: var(--alv-paper); border: 1px solid var(--alv-accent-line); border-radius: var(--alv-radius-sm); }
+.filter-multiselect-menu.show { display: block; }
+.filter-multiselect-item { display: flex; align-items: center; gap: 8px; margin: 0; padding: 7px 12px; cursor: pointer; font-weight: 400; }
+.filter-multiselect-item:hover { background: var(--alv-surface); }
+.acq-figrow { display: flex; flex-wrap: wrap; border: 1px solid var(--alv-line-soft); border-radius: var(--alv-radius-sm); background: var(--alv-paper); margin-bottom: 8px; }
+.acq-figrow-i { padding: 6px 16px; border-right: 1px solid var(--alv-line-soft); text-align: center; }
+.acq-figrow-i:last-child { border-right: 0; }
+.acq-figrow-v { display: block; font-size: 17px; font-weight: 600; color: var(--alv-ink-strong); }
+.acq-figrow-l { display: block; font-size: 12px; color: var(--alv-ink-soft); }
+.acq-report { margin-bottom: 8px; }
+.acq-report > summary { cursor: pointer; color: var(--alv-ink-soft); font-size: 13px; }
+.acq-report > summary b { color: var(--alv-accent-ink); font-weight: 600; }
+.acq-report-body { margin-top: 8px; padding: 10px 14px; border: 1px solid var(--alv-line-soft); border-radius: var(--alv-radius-sm); background: var(--alv-paper); }
+.acq-held { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 10px; font-size: 13px; }
+.acq-held-tag { display: inline-block; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--alv-warn-line); background: var(--alv-warn-soft); color: var(--alv-warn-ink); text-decoration: none; }
+.acq-held-tag:hover, .acq-held-tag.is-on { border-color: var(--alv-warn-ink); color: var(--alv-warn-ink); text-decoration: none; }
+.acq-held-tag.is-on { font-weight: 600; }
+@media screen and (max-width: 767.98px) { .acq-figrow-i { flex: 1 1 33%; border-right: 0; } }
 /* RA29, 26 Nov 2026 - the note bubble beside a listing's title: his
    comment, his decision and reason, his viewings. Fixed, so a table that
    scrolls sideways cannot clip it; placed by the script below. */

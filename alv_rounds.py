@@ -1714,6 +1714,8 @@ ROUNDS = [
     '.bak_ra28',
     # RA29, 26 Nov 2026 - a speech bubble beside a listing's title: his comment, decision and viewings.
     '.bak_ra29',
+    # RA30, 26 Nov 2026 - delete a scenario; the results pages lead with the listings; Area multi-select.
+    '.bak_ra30',
 ]
 
 
