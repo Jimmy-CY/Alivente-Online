@@ -190,7 +190,8 @@ STAND = set(alv_tree.standalone())
 # RA24, 25 Nov 2026 - 24 (was 23): _after_save.html, the Run it now or wait question after Save scenario, a partial with no colour of its own.
 # RA26, 25 Nov 2026 - 25 (was 24): _ticks.html, the script behind every table of ticks (the header's tick box), a partial with no colour of its own.
 # RA27, 25 Nov 2026 - 29 (was 25): the four RA27 partials (_plot_head, _plot_row, _result_head, _result_row), the plot and home results tables drawn once for the main list and once for the folded Rejected list; no colour of their own.
-ok(len(STAND) == 29, '%d standalone template(s)' % len(STAND), sorted(STAND))
+# RA28, 26 Nov 2026 - 30 (was 29): _filter_fields.html, the results pages' filter fields, a partial with no colour of its own.
+ok(len(STAND) == 30, '%d standalone template(s)' % len(STAND), sorted(STAND))
 BYNAME = {alv_tree.rel(q).replace(os.sep, '/'): q
           for q in alv_tree.templates()}
 for s in sorted(STAND):

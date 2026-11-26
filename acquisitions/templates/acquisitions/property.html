@@ -10,7 +10,7 @@
 
 <h2 class="page-title-h2">SCENARIOS</h2>
 <h4 class="page-subtitle-h4">PROPERTY &mdash; {{ p.title }}</h4>
-<p class="acq-sub">{% if m %}{{ m.status|pill }} {% endif %}{% if p.floor_level %}{{ p.floor_level }} floor &middot; {% endif %}{% if p.year_built %}built {{ p.year_built }} &middot; {% endif %}{% if m %}found {{ m.date_found|date:"j M" }}, checked {{ m.last_checked|date:"j M" }}{% endif %}</p>
+<p class="acq-sub">{% if m %}{% if m.is_outside %}<span class="alv-pill alv-pill-neutral">Outside your rules</span>{% else %}{{ m.status|pill }}{% endif %} {% endif %}{% if p.floor_level %}{{ p.floor_level }} floor &middot; {% endif %}{% if p.year_built %}built {{ p.year_built }} &middot; {% endif %}{% if m %}found {{ m.date_found|date:"j M" }}, checked {{ m.last_checked|date:"j M" }}{% endif %}</p>
 
 <div class="page-action-buttons">
   {% if can_edit and m %}
@@ -259,6 +259,60 @@ function acqCopyQuestions(btn) {
   };
 })();
 </script>
+
+{% if ask_leave %}
+{# RA28, 26 Nov 2026 - Demetri: "If I have opened it, I need to be asked to either reject it, or to enter a comment." Asked when a link on this page is followed; the browser's own Back and closing the tab cannot be asked, and "Opened, no decision yet" in the filter finds those. #}
+<div class="modal fade" id="acqLeaveModal" tabindex="-1" role="dialog" aria-labelledby="acqLeaveTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form class="modal-content" method="post" id="acqLeaveForm" action="{% url 'acquisitions:property_notes' p.pk %}">{% csrf_token %}
+      <input type="hidden" name="s" value="{{ m.scenario_id }}"><input type="hidden" name="next" id="acqLeaveNext" value=""><input type="hidden" name="action" id="acqLeaveAction" value="">
+      <div class="modal-header alv-modal-head"><h5 class="modal-title" id="acqLeaveTitle"><i class="fas fa-comment"></i> What did you think of it?</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
+      <div class="modal-body">
+        <label for="acqLeaveText"><strong>Your comment</strong></label>
+        <textarea id="acqLeaveText" name="your_comments" class="form-control" rows="3" placeholder="Separate kitchen, but on a busy road"></textarea>
+        <p class="acq-muted mt-2 mb-0">Save it as a comment, or reject or shortlist the listing with it as the reason. Your words stay with the listing and show in the results.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn action-secondary" id="acqLeaveLater">Not now</button>
+        <button type="submit" class="btn action-secondary" formaction="{% url 'acquisitions:property_status' p.pk %}" data-action="reject"><i class="fas fa-times-circle"></i> Reject</button>
+        <button type="submit" class="btn action-secondary" formaction="{% url 'acquisitions:property_status' p.pk %}" data-action="shortlist"><i class="fas fa-star"></i> Shortlist</button>
+        <button type="submit" class="btn action-primary" data-action="comment"><i class="fas fa-save"></i> Save comment</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+(function () {
+  var asked = false, next = '';
+  var form = document.getElementById('acqLeaveForm');
+  function leave() { asked = true; window.location.href = next; }
+  document.addEventListener('click', function (e) {
+    if (asked || e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey) { return; }
+    var a = e.target.closest('a[href]');
+    if (!a || a.closest('.modal') || a.target === '_blank' || a.hasAttribute('download')) { return; }
+    var href = a.getAttribute('href');
+    if (!href || href.charAt(0) === '#' || /^(mailto|tel|javascript):/i.test(href)) { return; }
+    var url = new URL(a.href, window.location.href);
+    if (url.origin !== window.location.origin) { return; }
+    if (url.pathname === window.location.pathname) { return; }   // the same listing, another scenario
+    e.preventDefault();
+    next = url.pathname + url.search;
+    document.getElementById('acqLeaveNext').value = next;
+    if (window.jQuery) { window.jQuery('#acqLeaveModal').modal('show'); } else { leave(); }
+  }, true);
+  document.getElementById('acqLeaveLater').addEventListener('click', leave);
+  form.addEventListener('submit', function (e) {
+    var go = e.submitter || document.activeElement;
+    var what = go && go.getAttribute('data-action');
+    var text = document.getElementById('acqLeaveText');
+    if (what === 'comment' && !text.value.trim()) { e.preventDefault(); text.focus(); return; }
+    document.getElementById('acqLeaveAction').value = what === 'comment' ? '' : what;
+    asked = true;
+  });
+})();
+</script>
+{% endif %}
 
 {% render_help_modal "acquisitions" %}
 {% endblock %}

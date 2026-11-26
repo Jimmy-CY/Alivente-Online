@@ -453,6 +453,10 @@ class ScenarioMatch(models.Model):
 
     date_found = models.DateField(default=timezone.localdate)
     last_checked = models.DateField(default=timezone.localdate)
+    # RA28, 26 Nov 2026 - when you first opened its page (Demetri: "I also
+    # want a flag by property, if I have looked at it or not"). Blank =
+    # not opened yet. Never written by a search.
+    opened_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["scenario", "-score"]

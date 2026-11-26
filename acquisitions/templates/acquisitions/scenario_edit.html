@@ -163,7 +163,7 @@
       </div>
       <div class="modal-body">
         <p id="acqSaveConfirmText" class="mb-2"></p>
-        <p class="acq-muted mb-0">Listings you shortlisted or rejected yourself keep your decision. A listing the rules reject comes back by itself if you loosen them again.</p>
+        <p class="acq-muted mb-0">Listings you shortlisted or rejected yourself keep your decision. A listing outside your rules is not deleted: it comes back by itself if you loosen them again.</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn action-secondary" data-dismiss="modal">Cancel</button>
@@ -321,8 +321,9 @@
   var effect = null, sure = false;
   function effectWords(e) {
     var bits = [];
-    if (e.reject) { bits.push('reject ' + e.reject + ' listing' + (e.reject === 1 ? '' : 's')); }
-    if (e.back) { bits.push('bring back ' + e.back + ' rejected by the rules'); }
+    // RA28 - what the rules fail is put out of sight, not called Rejected
+    if (e.reject) { bits.push('put ' + e.reject + ' listing' + (e.reject === 1 ? '' : 's') + ' outside your rules (no longer shown)'); }
+    if (e.back) { bits.push('bring back ' + e.back + ' that now pass'); }
     return bits.length ? 'Saving these rules would ' + bits.join(' and ') + ', and re-score the rest.' : '';
   }
   function drawEffect(e) {

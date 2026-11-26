@@ -1710,6 +1710,8 @@ ROUNDS = [
     '.bak_ra26',
     # RA27, 25 Nov 2026 - see what a rule change does, plots with VAT, rejected folded, searches followed.
     '.bak_ra27',
+    # RA28, 26 Nov 2026 - the results pages filter like the rest of the app; outside your rules is not Rejected.
+    '.bak_ra28',
 ]
 
 

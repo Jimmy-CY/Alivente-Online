@@ -288,7 +288,8 @@ ok(not any(d[0] == 'manual_pdf.html' for d in drift),
 # RA24, 25 Nov 2026 - 24 (was 23): _after_save.html, the Run it now or wait question after Save scenario, a partial with no colour of its own.
 # RA26, 25 Nov 2026 - 25 (was 24): _ticks.html, the script behind every table of ticks (the header's tick box), a partial with no colour of its own.
 # RA27, 25 Nov 2026 - 29 (was 25): the four RA27 partials (_plot_head, _plot_row, _result_head, _result_row), the plot and home results tables drawn once for the main list and once for the folded Rejected list; no colour of their own.
-ok(len(stand) == 29, '  twenty-nine templates are standalone',
+# RA28, 26 Nov 2026 - 30 (was 29): _filter_fields.html, the results pages' filter fields, a partial with no colour of its own.
+ok(len(stand) == 30, '  thirty templates are standalone',
    sorted(stand))
 
 # (b) a grouped selector is one declaration, not two

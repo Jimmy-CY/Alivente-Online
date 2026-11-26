@@ -105,7 +105,8 @@ CRS_N = 8
 # RA24, 25 Nov 2026 - fifteen: _after_save.html (was 14).
 # RA26, 25 Nov 2026 - sixteen: _ticks.html (was 15).
 # RA27, 25 Nov 2026 - twenty: _plot_head, _plot_row, _result_head, _result_row (was 16).
-ACQ_N = 20
+# RA28, 26 Nov 2026 - twenty-one: _filter_fields.html (was 20).
+ACQ_N = 21
 TOTAL_N = MAIN_N + CRS_N + ACQ_N
 
 CRS_PAGES = [

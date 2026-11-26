@@ -19,6 +19,7 @@
   {% endif %}
   <a href="{% url 'acquisitions:scenario_csv' s.pk %}" class="btn action-secondary" role="button"><i class="fas fa-file-csv"></i> Export CSV</a>
   <button type="button" class="btn action-secondary" data-toggle="modal" data-target="#acquisitionsHelpModal" aria-label="Help"><i class="fas fa-question-circle"></i> Help</button>
+  <button type="button" class="btn action-filter" id="filterBtn" aria-pressed="false" aria-controls="acqFilterPanel" aria-label="Show filters"><i class="fas fa-filter"></i><span class="action-filter-label"> Filter</span><span class="action-filter-count" data-count="0"></span></button>
   <!-- Phone: the secondaries above move into More (house rule, base.html). -->
   <div class="action-more-wrapper" data-menu>
     <button type="button" class="btn action-more-btn" data-menu-toggle aria-label="More actions" aria-expanded="false" aria-haspopup="true"><i class="fas fa-ellipsis-v"></i></button>
@@ -51,22 +52,32 @@
 {# RA27, 25 Nov 2026 - no chart (Demetri: "Can we get rid of this graph?"): #}
 {# the table carries the area, the price incl. VAT and the per-m2 prices.  #}
 <h3 class="acq-section-h">Plots</h3>
-<div class="d-flex flex-wrap align-items-center justify-content-between" style="gap: 8px">
-  <div class="acq-chips">
-    {% for key, label, count in chips %}<a class="acq-chip {% if status == key %}is-on{% endif %}" href="?status={{ key }}&amp;sort={{ sort }}">{{ label }} {{ count }}</a>{% endfor %}
-  </div>
-  <form method="get" class="d-flex align-items-center mb-2" style="gap: 8px">
-    <input type="hidden" name="status" value="{{ status }}">
-    <label for="acqSort" class="mb-0"><strong>Sort</strong></label>
-    <select id="acqSort" name="sort" class="form-control" onchange="this.form.submit()">{% for k, v in sorts.items %}<option value="{{ k }}" {% if sort == k %}selected{% endif %}>{{ v.0 }}</option>{% endfor %}</select>
-  </form>
+{# RA28 - the house filter (Demetri: "We need a section, like we have in the rest of the app"): base owns the open state, the chips row and the count. #}
+<div class="alv-filter-active" id="activeFilters">
+  <span class="alv-filter-active-label">Active filters:</span>
+  <div class="filter-tags" id="filterTags">{% for t in f_tags %}<span class="filter-tag">{{ t.name }}: {{ t.value }} <a class="remove-tag" href="?{{ t.clear }}" aria-label="Clear {{ t.name }}">&times;</a></span>{% endfor %}</div>
 </div>
+
+<div class="alv-filter" id="acqFilterPanel">
+  <div class="filter-header">
+    <h5 class="filter-title"><i class="fas fa-filter"></i> <span class="filter-title-text">{% if f_plot %}Plot{% else %}Listing{% endif %} Filters</span><span class="filter-title-text-mobile">Filters</span></h5>
+    <a href="?" id="clearAllBtn" class="btn action-secondary btn-sm" role="button"><i class="fas fa-times-circle"></i> Clear All</a>
+  </div>
+  <div class="filter-content">
+    <form method="get" id="filterForm">
+      <div class="filter-grid">
+        {% include 'acquisitions/_filter_fields.html' %}
+      </div>
+    </form>
+  </div>
+</div>
+{% if outside_n and status != 'outside' %}<p class="acq-muted mb-2">{{ outside_n }} listing{{ outside_n|pluralize }} outside your rules {{ outside_n|pluralize:"is,are" }} not shown. <a href="?status=outside">Show {{ outside_n|pluralize:"it,them" }}</a></p>{% elif status == 'outside' %}<p class="acq-muted mb-2">These listings fail a Must rule. They come back by themselves if you loosen it. <a href="?">Back to the listings</a></p>{% endif %}
 <div class="table-container">
   <table class="table alv-table">
     <thead>{% include 'acquisitions/_plot_head.html' %}</thead>
     <tbody>{% for m in rows %}{% include 'acquisitions/_plot_row.html' %}{% endfor %}</tbody>
   </table>
-  {% if not rows %}<div class="alv-empty"><i class="fas fa-vector-square"></i><div class="alv-empty-title">{% if rejected_rows %}Every plot here is rejected{% else %}No plots yet{% endif %}</div><div class="alv-empty-hint">{% if rejected_rows %}They are folded below.{% else %}Plots appear here as the scenario&rsquo;s searches find them.{% endif %}</div></div>{% endif %}
+  {% if not rows %}<div class="alv-empty"><i class="fas fa-vector-square"></i><div class="alv-empty-title">{% if f_tags %}No plots match these filters{% elif rejected_rows %}Every plot here is rejected{% else %}No plots yet{% endif %}</div><div class="alv-empty-hint">{% if f_tags %}<a href="?">Clear all filters</a>{% elif rejected_rows %}They are folded below.{% else %}Plots appear here as the scenario&rsquo;s searches find them.{% endif %}</div></div>{% endif %}
 </div>
 {# RA27 - "group all rejected at the bottom (collapsed, with the ability to expand)" #}
 {% if rejected_rows %}

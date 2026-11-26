@@ -353,7 +353,9 @@ print('        %d standalone template(s) do not inherit the tab: %s'
 # RA27, 25 Nov 2026 - 21 -> 25. The four results-table partials
 # (_plot_head, _plot_row, _result_head, _result_row), included into the
 # plot and home results pages, which extend base.
-check('  the standalone set is small and known', len(_alone) <= 25,
+# RA28, 26 Nov 2026 - 25 -> 26. _filter_fields.html, the results pages'
+# filter fields, included into pages that extend base.
+check('  the standalone set is small and known', len(_alone) <= 26,
       '%d' % len(_alone))
 
 # ===========================================================================

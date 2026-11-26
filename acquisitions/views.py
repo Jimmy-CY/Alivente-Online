@@ -28,6 +28,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.text import slugify
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
@@ -89,16 +90,18 @@ def overview(request):
     cards = []
     for s in scenarios:
         ms = list(s.matches.select_related("property"))
-        best = max((m.score for m in ms if m.score is not None
+        # RA28 - a listing outside the rules is not counted as New or Active
+        ins = [m for m in ms if not outside(m)]
+        best = max((m.score for m in ins if m.score is not None
                     and m.status not in ("rejected", "removed")), default=None)
         card = {"s": s, "tracked": len(ms),
-                "new": sum(1 for m in ms if m.status == "new"),
-                "active": sum(1 for m in ms if m.status in ("active", "price_changed",
-                                                              "shortlisted")),
+                "new": sum(1 for m in ins if m.status == "new"),
+                "active": sum(1 for m in ins if m.status in ("active", "price_changed",
+                                                               "shortlisted")),
                 "best": best, "rules": S.key_rules(s, 3), "counts": S.counts(s),
                 "schedule": S.schedule_text(s), "last": S.last_run(s)}
         if S.is_plot(s):
-            vals = [m.property.price_per_buildable_m2 for m in ms
+            vals = [m.property.price_per_buildable_m2 for m in ins
                     if m.status not in ("rejected", "removed")
                     and m.property.price_per_buildable_m2]
             card["best_pbm"] = min(vals) if vals else None
@@ -253,12 +256,16 @@ def _effect(scenario, crit, cap, limit, deal="buy"):
     fake = _Unsaved(cap, limit, deal)
     reject = back = rescore = 0
     for m in scenario.matches.select_related("property"):
-        if m.status_set_by_user or m.status == "removed":
+        # RA28 - counted by what is SHOWN: a listing goes out of sight when
+        # it starts failing a Must and comes back when it stops (a
+        # shortlisted one stays in sight either way, and is not counted).
+        if m.status == "shortlisted" or m.status == "removed":
             continue
         r = evaluate(fake, m.property, m, criteria=temp)
-        if r.failed_musts and m.status != "rejected":
+        was_out = bool(m.failed_musts)
+        if r.failed_musts and not was_out:
             reject += 1
-        elif not r.failed_musts and m.status == "rejected":
+        elif not r.failed_musts and was_out:
             back += 1
         elif not r.failed_musts:
             rescore += 1
@@ -500,14 +507,135 @@ def _dupes(ms):
     return out
 
 
+def outside(m):
+    """RA28 - a listing that fails a Must is OUTSIDE YOUR RULES: it is not
+    shown, not counted and not called Rejected (Demetri: "Rejected should
+    only be properties that fall within the parameters, but have been set
+    as rejected by me"). Nothing is deleted - loosen a rule and it is back.
+    A listing you shortlisted stays in sight, its failed rule named, so a
+    rule change never hides one of your picks."""
+    return bool(m.failed_musts) and m.status != "shortlisted"
+
+
 def _split(shown, status):
     """RA27 - the rejected go to the foot of the page, folded (Demetri:
     "group all rejected at the bottom (collapsed, with the ability to
-    expand)"); the Rejected chip still lists them on their own."""
+    expand)"). RA28 - only the ones YOU rejected: the rules' are outside."""
     if status != "all":
         return shown, []
     return ([m for m in shown if m.status != "rejected"],
             [m for m in shown if m.status == "rejected"])
+
+
+def _place(p):
+    return p.area.name if p.area_id else (p.suburb_text or "").strip()
+
+
+def _num(v):
+    try:
+        d = Decimal(str(v).replace(",", "").replace("€", "").strip())
+        return d if d >= 0 else None
+    except (InvalidOperation, ValueError):
+        return None
+
+
+FILTER_FIELDS = (("q", "Search"), ("area", "Area"), ("status", "Status"),
+                 ("pmin", "Price from"), ("pmax", "Price to"),
+                 ("smin", "Size from"), ("smax", "Size to"),
+                 ("beds", "Bedrooms"), ("opened", "Opened"), ("sort", "Sort"))
+
+# RA28 - Demetri: "I also want to be able to filter properties that I have
+# not viewed yet"
+OPENED = {"no": "Not opened yet", "undecided": "Opened, no decision yet"}
+
+
+def undecided(m):
+    """RA28 - opened, and not yet shortlisted, rejected or commented on."""
+    return bool(m.opened_at) and not m.status_set_by_user and not (m.your_comments or "").strip()
+
+
+def _filters(request, ms, plot):
+    """RA28 - the house filter panel on a results page (Demetri: "I want
+    to be able to filter and sort. We need a section, like we have in the
+    rest of the app"). A GET form: the address carries the filter, Back
+    works. Returns the rows to show, the status, the sort and the panel."""
+    g = request.GET
+    status = g.get("status") or "all"
+    if status not in ["all", "outside"] + STATUS_ORDER:
+        status = "all"
+    sort = g.get("sort") if g.get("sort") in SORTS else "score"
+    inside = [m for m in ms if not outside(m)]
+    out_n = len(ms) - len(inside)
+    pool = [m for m in ms if outside(m)] if status == "outside" else (
+        inside if status == "all" else [m for m in inside if m.status == status])
+    q = (g.get("q") or "").strip()
+    area = (g.get("area") or "").strip()
+    pmin, pmax = _num(g.get("pmin") or ""), _num(g.get("pmax") or "")
+    smin, smax = _num(g.get("smin") or ""), _num(g.get("smax") or "")
+    beds = None if plot else _num(g.get("beds") or "")
+    opened = g.get("opened") if g.get("opened") in OPENED else ""
+    shown = []
+    for m in pool:
+        p = m.property
+        place = _place(p)
+        # RA28 - the search reads your own words too ("kitchen", "noisy road")
+        if q and q.lower() not in ("%s %s %s %s" % (p.title, place, m.your_comments,
+                                                   m.decision_note)).lower():
+            continue
+        if opened == "no" and m.opened_at:
+            continue
+        if opened == "undecided" and not undecided(m):
+            continue
+        if area and place.lower() != area.lower():
+            continue
+        price = p.price_incl_vat
+        if pmin is not None and (price is None or price < pmin):
+            continue
+        if pmax is not None and (price is None or price > pmax):
+            continue
+        size = p.plot_m2 if plot else (p.internal_m2 or p.total_m2)
+        if smin is not None and (size is None or size < smin):
+            continue
+        if smax is not None and (size is None or size > smax):
+            continue
+        if beds is not None and (p.bedrooms is None or p.bedrooms < beds):
+            continue
+        shown.append(m)
+    shown.sort(key=SORTS[sort][1])
+    label = dict(ScenarioMatch.Status.choices)
+    statuses = [("all", "All", len(inside))] + [
+        (k, label[k], sum(1 for m in inside if m.status == k)) for k in STATUS_ORDER] + [
+        ("outside", "Outside your rules", out_n)]
+    areas = sorted({_place(m.property) for m in (pool if status == "outside" else inside)} - {""},
+                   key=str.lower)
+    vals = {"q": q, "area": area, "status": "" if status == "all" else status,
+            "pmin": g.get("pmin", "").strip() if pmin is not None else "",
+            "pmax": g.get("pmax", "").strip() if pmax is not None else "",
+            "smin": g.get("smin", "").strip() if smin is not None else "",
+            "smax": g.get("smax", "").strip() if smax is not None else "",
+            "beds": g.get("beds", "").strip() if beds is not None else "",
+            "sort": "" if sort == "score" else sort, "opened": opened}
+    names = dict((k, l) for k, l, _n in statuses)
+    tags = []
+    for key, name in FILTER_FIELDS:
+        if not vals[key]:
+            continue
+        rest = request.GET.copy()
+        rest.pop(key, None)
+        if key == "status":
+            words = names[vals[key]]
+        elif key == "sort":
+            words = SORTS[vals[key]][0]
+        elif key == "opened":
+            words = OPENED[vals[key]]
+        else:
+            words = vals[key]
+        tags.append({"name": "Plot m² from" if (plot and key == "smin") else
+                     "Plot m² to" if (plot and key == "smax") else name,
+                     "value": words, "clear": rest.urlencode()})
+    return shown, status, sort, {
+        "f": vals, "f_tags": tags, "f_statuses": statuses, "f_areas": areas,
+        "f_plot": plot, "outside_n": out_n, "inside_n": len(inside), "f_opened": OPENED}
 
 
 def _matches(scenario):
@@ -520,22 +648,18 @@ def _matches(scenario):
 def scenario_results(request, pk):
     s = get_object_or_404(Scenario.objects.prefetch_related("criteria"), pk=pk)
     ms = _matches(s)
-    status = request.GET.get("status", "all")
-    sort = request.GET.get("sort", "score") if request.GET.get("sort") in SORTS else "score"
-    shown = [m for m in ms if status == "all" or m.status == status]
-    shown.sort(key=SORTS[sort][1])
-    chips = [("all", "All", len(ms))] + [
-        (k, dict(ScenarioMatch.Status.choices)[k], sum(1 for m in ms if m.status == k))
-        for k in STATUS_ORDER]
-    live = [m for m in ms if m.status not in ("rejected", "removed")]
+    # RA28 - the filter panel, and the listings outside the rules left out
+    shown, status, sort, fctx = _filters(request, ms, S.is_plot(s))
+    live = [m for m in ms if m.status not in ("rejected", "removed") and not outside(m)]
     run = S.last_run(s)
     ask_run = request.GET.get("saved") == "1" and request.user.has_perm(EDIT)
-    dup = _dupes(ms)
+    dup = _dupes(ms if status == "outside" else [m for m in ms if not outside(m)])
     for m in shown:
         m.dupe_of = dup.get(m.pk)
+        m.is_outside = outside(m)
     shown, rejected = _split(shown, status)
-    ctx = dict(s=s, rows=shown, rejected_rows=rejected, chips=chips, status=status,
-               sort=sort, sorts=SORTS,
+    ctx = dict(s=s, rows=shown, rejected_rows=rejected, status=status,
+               sort=sort, sorts=SORTS, **fctx,
                ask_run=ask_run, schedule=S.schedule_text(s),
                tracked=len(ms), live=live, run=run, holding=S.holding_back(ms),
                summaries=s.runs.exclude(summary="").order_by("-started_at")[:5])
@@ -546,7 +670,7 @@ def scenario_results(request, pk):
         # table carries the area, the price incl. VAT and the €/m².
         bars = sorted([m for m in live if m.property.price_per_buildable_m2],
                       key=lambda m: m.property.price_per_buildable_m2)
-        ctx.update(musts_met=sum(1 for m in ms if m.passes_musts),
+        ctx.update(musts_met=sum(1 for m in ms if m.passes_musts and not outside(m)),
                    best_pbm=bars[0].property.price_per_buildable_m2 if bars else None,
                    drops=sum(1 for p, _a, _b in S.recent_drops()
                              if any(m.property_id == p.pk for m in ms)))
@@ -608,14 +732,27 @@ def property_detail(request, pk):
         vs = round(100 * (prop.price_per_m2 - snap.median_price_per_m2)
                    / snap.median_price_per_m2)
     card = []
+    ask_leave = False
     if match:
+        match.is_outside = outside(match)   # RA28
+        # RA28 - opened: every scenario's listing of this property, the
+        # first time only. Only a user who decides (EDIT) marks it.
+        if request.user.has_perm(EDIT):
+            first = timezone.now()
+            prop.matches.filter(opened_at__isnull=True).update(opened_at=first)
+            for x in all_matches:
+                x.opened_at = x.opened_at or first
+            match.opened_at = match.opened_at or first
+            # "If I have opened it, I need to be asked to either reject it,
+            # or to enter a comment" - asked as you leave the page.
+            ask_leave = undecided(match)
         fields = dict(match.scenario.criteria.values_list("pk", "field"))
         for b in match.breakdown or []:
             card.append(dict(b, value=S.shown_value(fields.get(b.get("criterion"), ""), b.get("value")),
                              mark={"met": "met", "failed": "failed", "unknown": "unknown",
                                       "partial": "partial"}.get(b["outcome"], "unknown")))
     return _page(request, "property.html", "scenarios", p=prop, m=match,
-                 matches=all_matches, card=card, history=history,
+                 matches=all_matches, ask_leave=ask_leave, card=card, history=history,
                  chart=S.step_chart(history, w=520, h=130),
                  cuts=S.price_cuts(history), days=S.days_listed(prop),
                  questions=S.agent_questions(match) if match else [],
@@ -632,6 +769,13 @@ def property_status(request, pk):
         return redirect("acquisitions:property", pk=pk)
     action = request.POST.get("action")
     note = (request.POST.get("note") or "").strip()
+    # RA28 - from the leave pop-up the reason is the comment typed there,
+    # and it is kept as the comment too.
+    said = (request.POST.get("your_comments") or "").strip()
+    if said and action in ("shortlist", "reject"):
+        note = note or said[:200]
+        match.your_comments = said
+        match.save(update_fields=["your_comments"])
     if action == "shortlist":
         match.set_status_by_user(ScenarioMatch.Status.SHORTLISTED, note)
         messages.success(request, "Shortlisted. Searches will never change that.")
@@ -645,8 +789,20 @@ def property_status(request, pk):
         match.save(update_fields=["status", "status_set_by_user", "decision_note"])
         apply_score(match)
         messages.success(request, "Your decision is cleared; the rules decide again.")
+    if action in ("shortlist", "reject") and _next(request):
+        return redirect(_next(request))   # RA28 - asked on the way out: carry on
     return redirect("%s?s=%s" % (reverse("acquisitions:property", args=[pk]),
                                  match.scenario_id))
+
+
+def _next(request):
+    """RA28 - where you were going when the leave pop-up asked; only an
+    address in this app."""
+    nxt = request.POST.get("next") or ""
+    if nxt and url_has_allowed_host_and_scheme(nxt, allowed_hosts={request.get_host()},
+                                               require_https=request.is_secure()):
+        return nxt
+    return ""
 
 
 @login_required
@@ -659,6 +815,8 @@ def property_notes(request, pk):
         match.your_comments = request.POST.get("your_comments") or ""
         match.save(update_fields=["your_comments"])
         messages.success(request, "Notes saved.")
+        if _next(request):
+            return redirect(_next(request))   # RA28
     return redirect("%s?s=%s" % (reverse("acquisitions:property", args=[pk]),
                                  match.scenario_id if match else ""))
 

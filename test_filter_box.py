@@ -268,10 +268,14 @@ for p in alv_tree.templates():
 # panel, so one control crossed from bare to paired. The TOTAL is
 # unchanged, which is the useful half of this check: a control did not
 # appear or vanish, it changed company.
-ok(len(paired) + len(bare) == 39,
-   'thirty-nine uses of the two class names across the tree',
+# RA28, 26 Nov 2026 - 49 and 46 (was 39 and 36). The Acquisitions
+# results pages joined the house panel: ten fields in _filter_fields.html
+# (search, area, status, price from and to, size from and to, bedrooms,
+# opened, sort), every one paired with .form-control.
+ok(len(paired) + len(bare) == 49,
+   'forty-nine uses of the two class names across the tree',
    len(paired) + len(bare))
-ok(len(paired) == 36, '  thirty-six pair it with .form-control, and do '
+ok(len(paired) == 46, '  forty-six pair it with .form-control, and do '
    'not move', len(paired))
 ins = [b for b in bare if 'filter-input' in b[1]]
 ok(len(ins) == 1,

@@ -129,7 +129,9 @@ def claims(sig, scoring, models, intake, views, urls, firing, plot, res, run, ed
             'run/progress/' in urls and 'run/pc/' in urls and 'id="acqPcModal"' in run
             and 'acqFollow' in run and 'def pc_task_url' in firing,
         'HELP: the preview, rejected folded, VAT on plots, the PC pop-up':
-            'Saving these rules would reject' in hlp and 'VAT on plots' in hlp
+            # RA28 - the words became "put ... outside your rules"
+            ('Saving these rules would reject' in hlp
+             or 'Saving these rules would put' in hlp) and 'VAT on plots' in hlp
             and 'Waiting for the PC search to start' in hlp and 'folded' in hlp,
     }
 
@@ -231,8 +233,12 @@ try:
                     'criteria_json': json.dumps(rows, default=float), 'unknown_score_cap': '60',
                     'max_unknown_musts': '4', 'cadence': 'daily', 'run_time': '06:00'}
             pv = E_.post('/acquisitions/scenarios/%d/preview/' % plot.pk, form).json()
-            ok(pv.get('effect') == {'reject': 1, 'back': 0, 'rescore': 2},
-               'THE PREVIEW SAYS WHAT SAVING WOULD DO: reject A (397/m2 > 350), keep B and C; D is yours',
+            # RA28, 26 Nov 2026 - counted by what is SHOWN: D, rejected by
+            # you, also leaves sight when it fails a rule (Demetri:
+            # "Rejected should only be properties that fall within the
+            # parameters"), so two go out (was 1).
+            ok(pv.get('effect') == {'reject': 2, 'back': 0, 'rescore': 2},
+               'THE PREVIEW SAYS WHAT SAVING WOULD DO: A (397/m2 > 350) and D (yours, 462) go out of sight; B and C stay',
                pv.get('effect'))
             ok(ScenarioMatch.objects.get(pk=ma.pk).status != 'rejected', '  and changes nothing itself')
             calls['n'] = 0

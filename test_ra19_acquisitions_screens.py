@@ -508,9 +508,13 @@ else:
                 "els => els.filter(e => e.offsetParent && "
                 "e.getBoundingClientRect().width > 0)"
                 ".map(e => Math.round(e.getBoundingClientRect().top))")
-            ok(len(tops) >= 2 and len(set(tops)) == 1 and len(tops) <= 3,
-               'PHONE, %s: the bar is one row (primary, More%s)'
-               % (k, ', Back' if k != 'overview' else ''), tops)
+            # RA28, 26 Nov 2026 - the results page's bar gains Filter, which
+            # base keeps on a phone (filtering matters more there): four.
+            ok(len(tops) >= 2 and len(set(tops)) == 1
+               and len(tops) <= (4 if k == 'scenario_results' else 3),
+               'PHONE, %s: the bar is one row (primary, %sMore%s)'
+               % (k, 'Filter, ' if k == 'scenario_results' else '',
+                  ', Back' if k != 'overview' else ''), tops)
             pg.click('.action-more-btn')
             pg.wait_for_timeout(200)
             items = pg.eval_on_selector_all(

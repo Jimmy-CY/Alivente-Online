@@ -209,7 +209,11 @@ OURS = sorted(['ingredient_base_units_management.html',
                # .filter-grid is the error this round was written around.
                # It is a real user now, and its four fields went from
                # 285px to the 240px cap.
-               'passport_management.html'])
+               'passport_management.html',
+               # RA28, 26 Nov 2026. The Acquisitions results pages - plots
+               # and homes - joined the house panel and set no columns of
+               # their own: base's default is the point.
+               'plot_results.html', 'scenario_results.html'])
 ok(moved == OURS,
    'the %d pages relying on base for their columns are the four Recipes '
    'panels, and nothing else' % len(moved),

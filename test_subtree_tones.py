@@ -274,11 +274,12 @@ head('1. THE CENSUS BUG, MADE PERMANENT')
 # RA24, 25 Nov 2026 - _after_save.html, in acquisitions/ (was 178 and 40).
 # RA26, 25 Nov 2026 - _ticks.html, in acquisitions/ (was 179 and 41).
 # RA27, 25 Nov 2026 - the four RA27 partials, in acquisitions/ (was 180 and 42).
-ok(len(tree) == 184, 'a WALK finds 184 templates', len(tree))
+# RA28, 26 Nov 2026 - _filter_fields.html, in acquisitions/ (was 184 and 46).
+ok(len(tree) == 185, 'a WALK finds 185 templates', len(tree))
 ok(len(top) == 138, '  a flat listing finds 138 - 120 was what H7 '
    'counted, 122 after MN-1, and RD-1 adds the quick-look pair',
    len(top))
-ok(len(sub) == 46, '  so 46 live in subdirectories and H7 never saw them',
+ok(len(sub) == 47, '  so 47 live in subdirectories and H7 never saw them',
    len(sub))
 folders = sorted({rel.split('/')[0] for rel, _ in sub})
 ok(len(folders) == 8, '  across %d folders: %s' % (len(folders),
