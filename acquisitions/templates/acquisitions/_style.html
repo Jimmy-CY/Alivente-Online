@@ -124,5 +124,68 @@
   .acq-wz-feat-head { display: none; }
   .acq-wz-feat-say { display: inline; font-size: 12px; }
 }
+/* RA29, 26 Nov 2026 - the note bubble beside a listing's title: his
+   comment, his decision and reason, his viewings. Fixed, so a table that
+   scrolls sideways cannot clip it; placed by the script below. */
+.acq-note { display: inline-block; margin-left: 6px; }
+.acq-note-btn { border: 0; background: none; padding: 0 2px; color: var(--alv-accent); cursor: pointer; font-size: 14px; line-height: 1; }
+.acq-note-btn:focus-visible { outline: 2px solid var(--alv-accent-line); border-radius: var(--alv-radius-sm); }
+.acq-note-box { display: none; position: fixed; z-index: 1060; width: 300px; max-width: calc(100vw - 24px); padding: 10px 12px; background: var(--alv-paper); color: var(--alv-ink); border: 1px solid var(--alv-line); border-radius: var(--alv-radius-sm); font-size: 13px; font-weight: 400; text-align: left; white-space: normal; }
+.acq-note.is-open .acq-note-box { display: block; }
+.acq-note-h { display: block; font-weight: 600; color: var(--alv-ink-strong); margin-top: 6px; }
+.acq-note-h:first-child { margin-top: 0; }
+.acq-note-p { display: block; color: var(--alv-ink); }
+@media print { .acq-note { display: none; } }
 </style>
+<script>
+// RA29 - hover or focus opens the bubble; a tap pins it until a tap elsewhere.
+(function () {
+  // The bubble is drawn by the notetip filter, not by this template, so
+  // every look-up is checked before it is used.
+  function place(n) {
+    var btn = n.querySelector('.acq-note-btn'), box = n.querySelector('.acq-note-box');
+    if (!btn || !box) { return; }
+    var r = btn.getBoundingClientRect();
+    var w = Math.min(300, window.innerWidth - 24);
+    box.style.left = Math.max(12, Math.min(r.left, window.innerWidth - w - 12)) + 'px';
+    box.style.top = (r.bottom + 6) + 'px';
+    if (r.bottom + 6 + box.offsetHeight > window.innerHeight - 8) {
+      box.style.top = Math.max(8, r.top - 6 - box.offsetHeight) + 'px';
+    }
+  }
+  function open(n, on) {
+    n.classList.toggle('is-open', on);
+    var btn = n.querySelector('.acq-note-btn');
+    if (btn) { btn.setAttribute('aria-expanded', on ? 'true' : 'false'); }
+    if (on) { place(n); }
+  }
+  function shut(except) {
+    Array.prototype.forEach.call(document.querySelectorAll('.acq-note.is-open'), function (n) {
+      if (n !== except) { n.classList.remove('is-pinned'); open(n, false); }
+    });
+  }
+  document.addEventListener('mouseover', function (e) {
+    var n = e.target.closest && e.target.closest('.acq-note');
+    if (n && !n.classList.contains('is-open')) { shut(n); open(n, true); }
+  });
+  document.addEventListener('mouseout', function (e) {
+    var n = e.target.closest && e.target.closest('.acq-note');
+    if (n && !n.contains(e.relatedTarget) && !n.classList.contains('is-pinned')) { open(n, false); }
+  });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('.acq-note-btn');
+    if (!b) { shut(null); return; }
+    var n = b.parentNode, pin = !n.classList.contains('is-pinned');
+    shut(n);
+    n.classList.toggle('is-pinned', pin);
+    open(n, pin);
+  });
+  document.addEventListener('focusin', function (e) {
+    var n = e.target.closest && e.target.closest('.acq-note');
+    if (n) { shut(n); open(n, true); }
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { shut(null); } });
+  window.addEventListener('scroll', function () { shut(null); }, true);
+})();
+</script>
 {% include 'acquisitions/_ticks.html' %}

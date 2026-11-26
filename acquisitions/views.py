@@ -640,7 +640,8 @@ def _filters(request, ms, plot):
 
 def _matches(scenario):
     return list(scenario.matches.select_related("property", "property__area")
-                .prefetch_related("property__sources", "property__prices"))
+                .prefetch_related("property__sources", "property__prices",
+                                  "property__viewings"))   # RA29 - the note bubble
 
 
 @login_required

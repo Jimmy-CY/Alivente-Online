@@ -1712,6 +1712,8 @@ ROUNDS = [
     '.bak_ra27',
     # RA28, 26 Nov 2026 - the results pages filter like the rest of the app; outside your rules is not Rejected.
     '.bak_ra28',
+    # RA29, 26 Nov 2026 - a speech bubble beside a listing's title: his comment, decision and viewings.
+    '.bak_ra29',
 ]
 
 

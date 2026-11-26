@@ -67,3 +67,38 @@ def get(d, k):
         return d.get(k)
     except AttributeError:
         return None
+
+
+@register.filter
+def notetip(m):
+    """RA29, 26 Nov 2026 - Demetri: "a little "i", where if I hover over, I
+    can see my general comments or rejected comments for a property". A
+    speech bubble beside the title, only when there is something of his to
+    read: his comment in full, his decision and its reason, his viewings.
+    Filled when there is a comment, outlined when there is only the rest.
+    Hover or focus shows it; a tap pins it (a phone has no hover)."""
+    from django.utils.html import escape
+    from django.utils.safestring import mark_safe
+    said = (m.your_comments or "").strip()
+    parts = []
+    if said:
+        parts.append(format_html('<span class="acq-note-h">Your comment</span><span class="acq-note-p">{}</span>',
+                                 mark_safe(escape(said).replace("\n", "<br>"))))
+    if m.status_set_by_user:
+        parts.append(format_html('<span class="acq-note-h">{} by you</span>{}', m.get_status_display(),
+                                 format_html('<span class="acq-note-p">{}</span>', m.decision_note)
+                                 if m.decision_note else ""))
+    views = list(m.property.viewings.all())
+    if views:
+        parts.append(format_html('<span class="acq-note-h">Viewing{}</span>{}', "s" if len(views) > 1 else "",
+                                 mark_safe("".join(format_html('<span class="acq-note-p">{}{}</span>',
+                                                               "%d %s %d" % (v.viewed_on.day, v.viewed_on.strftime("%b"), v.viewed_on.year),
+                                                               (" \u2013 " + v.notes) if v.notes else "")
+                                                   for v in views))))
+    if not parts:
+        return ""
+    return format_html(
+        '<span class="acq-note"><button type="button" class="acq-note-btn" aria-label="Your notes on this listing" '
+        'aria-expanded="false"><i class="{} fa-comment" aria-hidden="true"></i></button>'
+        '<span class="acq-note-box" role="tooltip">{}</span></span>',
+        "fas" if said else "far", mark_safe("".join(parts)))
