@@ -14,6 +14,7 @@ From: "Santa (Demetri)" at the app's sending address (Gmail only sends from
 the account it signs in as), with his own address as Reply-To.
 """
 import html
+import itertools
 import logging
 import random
 from email.utils import formataddr
@@ -37,13 +38,18 @@ SOFT = '#5f6b70'
 # Who may draw whom
 # --------------------------------------------------------------------------
 def last_year_pairs(ex):
-    """{giver email: receiver email} from this owner's latest earlier year."""
-    before = (SantaExchange.objects.filter(owner_id=ex.owner_id, year__lt=ex.year)
-              .exclude(drawn_at__isnull=True).order_by('-year').first())
+    """{giver email: receiver email} from this owner's latest earlier year -
+    every Christmas event he drew that year (RA32: there may be several).
+    Christmas only: an office party or another occasion has no such rule."""
+    if occasion(ex) != SantaExchange.CHRISTMAS:
+        return {}
+    xmas = SantaExchange.objects.filter(owner_id=ex.owner_id, year__lt=ex.year,
+                                        occasion=SantaExchange.CHRISTMAS).exclude(drawn_at__isnull=True)
+    before = xmas.order_by('-year').first()
     if before is None:
         return {}
     return {p.giver.email.lower(): p.receiver.email.lower()
-            for p in SantaPair.objects.filter(exchange=before)
+            for p in SantaPair.objects.filter(exchange__in=xmas.filter(year=before.year))
             .select_related('giver', 'receiver')}
 
 
@@ -63,13 +69,14 @@ def allowed(ex, people=None):
     return ok, banned
 
 
-def draw(ok, rng=None):
+def draw(ok, rng=None, minimum=2):
     """A random assignment giver -> receiver, everyone giving once and
     receiving once, within `ok`; None when the rules make it impossible.
-    Backtracking, most-constrained giver first; at 20 people it is instant."""
+    Backtracking, most-constrained giver first; at 20 people it is instant.
+    `minimum` is 2 for a whole draw; a redraw may re-pair a single giver."""
     rng = rng or random.SystemRandom()
     givers = list(ok)
-    if len(givers) < 2:
+    if len(givers) < minimum:
         return None
     rng.shuffle(givers)
     givers.sort(key=lambda g: len(ok[g]))
@@ -99,6 +106,59 @@ def possible(ex):
 
 
 # --------------------------------------------------------------------------
+# RA32, 27 Nov 2026 - the redraw. Demetri: "there should be the ability to
+# re-draw, in case a new person is added or an existing person is removed
+# (after the initial draw). It should prompt if this happens."
+# It changes as few pairs as it can, so whoever has already bought a gift
+# most likely keeps their person: a newcomer splits one pair (two emails),
+# a leaver's Santa is given the leaver's person (one email).
+# --------------------------------------------------------------------------
+def current(ex):
+    """{giver id: receiver id} as drawn now."""
+    return dict(ex.pairs.values_list('giver_id', 'receiver_id'))
+
+
+def kept_pairs(ok, now):
+    """The pairs that still stand: both people still in, still allowed."""
+    return {g: r for g, r in now.items() if g in ok and r in ok[g]}
+
+
+def stale(ok, now):
+    """How many people lack a standing pair - 0 when the draw is whole."""
+    return len(set(ok) - set(kept_pairs(ok, now)))
+
+
+def repair(ok, now, rng=None, tries=400):
+    """A full assignment within `ok` that keeps as many of the standing
+    pairs in `now` as it can. Releases 0, 1, 2 ... standing pairs until the
+    free givers can be matched to the free receivers. None if no draw at
+    all is possible."""
+    rng = rng or random.SystemRandom()
+    keep = kept_pairs(ok, now)
+    if len(ok) < 2:
+        return None
+    if len(keep) == len(ok):
+        return dict(keep)
+    standing = list(keep)
+    for k in range(0, len(standing) + 1):
+        combos = list(itertools.combinations(standing, k)) if k <= 3 or len(standing) <= 8 else None
+        if combos is None:
+            combos = [tuple(rng.sample(standing, k)) for _ in range(tries)]
+        else:
+            rng.shuffle(combos)
+            combos = combos[:tries]
+        for drop in combos:
+            stay = {g: r for g, r in keep.items() if g not in drop}
+            free_r = set(ok) - set(stay.values())
+            sub = {g: ok[g] & free_r for g in ok if g not in stay}
+            got = draw(sub, rng, minimum=1)
+            if got is not None:
+                stay.update(got)
+                return stay
+    return None
+
+
+# --------------------------------------------------------------------------
 # Words
 # --------------------------------------------------------------------------
 def nice_date(d):
@@ -115,9 +175,82 @@ def euros(v):
     return '€%s' % (('%d' % v) if v == int(v) else ('%.2f' % v))
 
 
+def _first(user):
+    return (user.first_name or user.get_username()).split(' ')[0]
+
+
+def occasion(ex):
+    return getattr(ex, 'occasion', '') or SantaExchange.CHRISTMAS
+
+
 def santa_name(ex):
-    first = (ex.owner.first_name or ex.owner.get_username()).split(' ')[0]
-    return 'Santa (%s)' % first
+    """Who the emails are from and signed by: the person who CREATED the
+    event (RA32 - "signed by the person who created the event"). Santa
+    (Angie) for Christmas and other occasions; at an office party their
+    full name."""
+    if occasion(ex) == SantaExchange.OFFICE:
+        return ex.owner.get_full_name() or ex.owner.get_username()
+    return 'Santa (%s)' % _first(ex.owner)
+
+
+# RA32 - the tone of each occasion. Christmas reads exactly as RA31 did.
+TONES = {
+    'christmas': {
+        'head': RED, 'mark': '&#127876; %s &#127876;', 'hello': 'Ho ho ho, %s!',
+        'secret': 'keep it secret &ndash; don&rsquo;t tell anyone who you drew.',
+        'bye': 'Merry Christmas!',
+        'draw': ('%(t)s: your Secret Santa',
+                 'Santa&rsquo;s elves have drawn the names, and this year you&rsquo;re buying a gift for&hellip;'),
+        'change': ('Change of plan: %(t)s',
+                   'The names have changed a little since the draw, so Santa&rsquo;s elves have drawn again '
+                   'for you. Please forget the earlier email &ndash; you&rsquo;re now buying a gift for&hellip;'),
+        'week': ('One week to go: %(t)s',
+                 'Just a week until the Secret Santa! In case it slipped your mind, you&rsquo;re buying for&hellip;'),
+        'day': ("It's tomorrow: %(t)s",
+                'The Secret Santa is tomorrow! Wrapped and ready? Your gift is for&hellip;'),
+        'reveal': ('The big reveal: %(t)s',
+                   'The secret can come out now. Your Secret Santa this year was&hellip;'),
+        'giver': 'your Secret Santa',
+    },
+    'office': {
+        'head': TEAL, 'mark': '%s', 'hello': 'Hi %s,',
+        'secret': 'please keep it a secret until the exchange.',
+        'bye': 'Thank you',
+        'draw': ('%(t)s: your gift exchange',
+                 'The names have been drawn for the gift exchange. You&rsquo;re buying a gift for&hellip;'),
+        'change': ('Change of plan: %(t)s',
+                   'The group has changed a little since the draw, so your name has been drawn again. '
+                   'Please ignore the earlier email &ndash; you&rsquo;re now buying a gift for&hellip;'),
+        'week': ('One week to go: %(t)s',
+                 'Just a week to go. A reminder that you&rsquo;re buying a gift for&hellip;'),
+        'day': ("It's tomorrow: %(t)s",
+                'The gift exchange is tomorrow. A reminder that your gift is for&hellip;'),
+        'reveal': ('The reveal: %(t)s',
+                   'Thank you for taking part. Your secret gift-giver was&hellip;'),
+        'giver': 'your secret gift-giver',
+    },
+    'other': {
+        'head': TEAL, 'mark': '&#127873; %s &#127873;', 'hello': 'Hi %s!',
+        'secret': 'keep it secret &ndash; don&rsquo;t tell anyone who you drew.',
+        'bye': 'Happy gifting!',
+        'draw': ('%(t)s: your Secret Santa',
+                 'The names have been drawn! You&rsquo;re buying a gift for&hellip;'),
+        'change': ('Change of plan: %(t)s',
+                   'The group has changed a little since the draw, so your name has been drawn again. '
+                   'Please forget the earlier email &ndash; you&rsquo;re now buying a gift for&hellip;'),
+        'week': ('One week to go: %(t)s',
+                 'Just a week to go! In case it slipped your mind, you&rsquo;re buying a gift for&hellip;'),
+        'day': ("It's tomorrow: %(t)s",
+                'It&rsquo;s tomorrow! Wrapped and ready? Your gift is for&hellip;'),
+        'reveal': ('The big reveal: %(t)s',
+                   'The secret can come out now. Your secret gift-giver was&hellip;'),
+        'giver': 'your secret gift-giver',
+    },
+}
+
+
+def tone(ex):
+    return TONES.get(occasion(ex), TONES['christmas'])
 
 
 def _details(ex):
@@ -132,15 +265,20 @@ def _details(ex):
     return rows
 
 
-def _page(ex, hello, lead, box_label, box_name, after):
+def _page(ex, hello, lead, box_label, box_name, after, thanks=False):
     e = html.escape
+    T = tone(ex)
     rows = ''.join(
         '<tr><td style="padding:3px 14px 3px 0;color:%s;font-size:14px;">%s</td>'
         '<td style="padding:3px 0;font-size:14px;color:%s;">%s</td></tr>'
         % (SOFT, e(k), INK, e(v)) for k, v in _details(ex))
-    rules = ('<p style="margin:14px 0 0;font-size:14px;line-height:1.6;color:%s;">'
-             '<b>The rules:</b> keep it secret &ndash; don&rsquo;t tell anyone who you drew.'
-             '%s</p>' % (INK, (' ' + e(ex.rules).replace('\n', '<br>')) if ex.rules else ''))
+    if thanks:
+        rules = ('<p style="margin:14px 0 0;font-size:14px;line-height:1.6;color:%s;">'
+                 '<b>Thank you</b> for taking part.</p>' % INK)
+    else:
+        rules = ('<p style="margin:14px 0 0;font-size:14px;line-height:1.6;color:%s;">'
+                 '<b>The rules:</b> %s%s</p>' % (INK, T['secret'],
+                                                (' ' + e(ex.rules).replace('\n', '<br>')) if ex.rules else ''))
     box = ('<table role="presentation" width="100%%" cellpadding="0" cellspacing="0" '
            'style="margin:14px 0;"><tr><td align="center" style="border:2px dashed %s;'
            'border-radius:12px;padding:12px;"><div style="font-size:12px;color:%s;">%s</div>'
@@ -154,69 +292,59 @@ def _page(ex, hello, lead, box_label, box_name, after):
         '<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:100%%;'
         'background:#ffffff;border:1px solid #dde3e6;border-radius:12px;">'
         '<tr><td align="center" style="background:%(red)s;color:#ffffff;padding:18px 20px;'
-        'border-radius:12px 12px 0 0;"><div style="font-size:13px;">&#127876; %(t)s &#127876;</div>'
+        'border-radius:12px 12px 0 0;"><div style="font-size:13px;">%(mark)s</div>'
         '<div style="font-size:24px;font-weight:bold;margin-top:4px;">%(hello)s</div></td></tr>'
         '<tr><td style="padding:18px 22px;"><p style="margin:0;font-size:15px;line-height:1.6;color:%(ink)s;">'
         '%(lead)s</p>%(box)s<table role="presentation" cellpadding="0" cellspacing="0">%(rows)s</table>'
-        '%(rules)s%(after)s<p style="margin:16px 0 0;font-size:14px;color:%(ink)s;">Merry Christmas!<br>'
+        '%(rules)s%(after)s<p style="margin:16px 0 0;font-size:14px;color:%(ink)s;">%(bye)s<br>'
         '&mdash; %(santa)s</p></td></tr></table></td></tr></table></body></html>'
-        % {'t': e(ex.title), 'red': RED, 'hello': e(hello), 'ink': INK, 'lead': lead,
-           'box': box, 'rows': rows, 'rules': rules, 'after': after, 'santa': e(santa_name(ex))})
+        % {'t': e(ex.title), 'red': T['head'], 'mark': T['mark'] % e(ex.title), 'hello': e(hello),
+           'ink': INK, 'lead': lead, 'box': box, 'rows': rows, 'rules': rules, 'after': after,
+           'bye': T['bye'], 'santa': e(santa_name(ex))})
 
 
-def _text(ex, hello, lead, box_name, after=''):
+def _text(ex, hello, lead, box_name, after='', thanks=False):
+    T = tone(ex)
     lines = [ex.title, '', hello, '', lead]
     if box_name:
         lines += ['', '    %s' % box_name, '']
     lines += ['%s: %s' % kv for kv in _details(ex)]
-    lines += ['', "The rules: keep it secret - don't tell anyone who you drew.%s"
-              % ((' ' + ex.rules) if ex.rules else '')]
+    if thanks:
+        lines += ['', 'Thank you for taking part.']
+    else:
+        lines += ['', 'The rules: %s%s' % (html.unescape(T['secret']).replace('–', '-').replace('’', "'"),
+                                         (' ' + ex.rules) if ex.rules else '')]
     if after:
         lines += ['', after]
-    lines += ['', 'Merry Christmas!', '- %s' % santa_name(ex)]
+    lines += ['', T['bye'], '- %s' % santa_name(ex)]
     return '\n'.join(lines)
+
+
+def _plain(s):
+    return (html.unescape(s).replace('’', "'").replace('–', '-').replace('…', '...'))
 
 
 def message(ex, kind, person, receiver_name):
     """(subject, text, html) for one person. kind: draw, test, week, day,
-    reveal. For reveal, receiver_name is who their Santa was."""
-    e = html.escape
-    hi = 'Ho ho ho, %s!' % person.called
-    if kind in ('draw', 'test'):
-        subject = '%s: your Secret Santa' % ex.title
-        lead = 'Santa&rsquo;s elves have drawn the names, and this year you&rsquo;re buying a gift for&hellip;'
-        tlead = "Santa's elves have drawn the names, and this year you're buying a gift for..."
-        label = 'your secret recipient'
-        after = ''
-        if kind == 'test':
-            subject = 'TEST - ' + subject
-            after = ('<p style="margin:14px 0 0;font-size:12px;color:%s;">This is a test, sent only '
-                     'to you. Each person&rsquo;s email names the person they drew.</p>' % SOFT)
-    elif kind == 'week':
-        subject = 'One week to go: %s' % ex.title
-        lead = 'Just a week until the Secret Santa! In case it slipped your mind, you&rsquo;re buying for&hellip;'
-        tlead = "Just a week until the Secret Santa! In case it slipped your mind, you're buying for..."
-        label, after = 'your secret recipient', ''
-    elif kind == 'day':
-        subject = "It's tomorrow: %s" % ex.title
-        lead = 'The Secret Santa is tomorrow! Wrapped and ready? Your gift is for&hellip;'
-        tlead = 'The Secret Santa is tomorrow! Wrapped and ready? Your gift is for...'
-        label, after = 'your secret recipient', ''
-    elif kind == 'reveal':
-        subject = 'The big reveal: %s' % ex.title
-        lead = 'The secret can come out now. Your Secret Santa this year was&hellip;'
-        tlead = 'The secret can come out now. Your Secret Santa this year was...'
-        label, after = 'your Secret Santa', ''
-    else:
+    reveal, change (RA32 - a redraw gave them someone new). For reveal,
+    receiver_name is who their Santa was. The words follow the occasion
+    (RA32): Christmas, an office party, or another occasion."""
+    T = tone(ex)
+    hi = T['hello'] % person.called
+    key = 'draw' if kind == 'test' else kind
+    if key not in ('draw', 'change', 'week', 'day', 'reveal'):
         raise ValueError(kind)
-    body = _page(ex, hi, lead, label, receiver_name, after)
-    if kind == 'reveal':
-        body = body.replace('<b>The rules:</b> keep it secret &ndash; don&rsquo;t tell anyone who you drew.',
-                            '<b>Thank you</b> for taking part.', 1)
-    text = _text(ex, hi, tlead, receiver_name,
-                 'This is a test, sent only to you.' if kind == 'test' else '')
-    if kind == 'reveal':
-        text = text.replace("The rules: keep it secret - don't tell anyone who you drew.", 'Thank you for taking part.', 1)
+    subj, lead = T[key]
+    subject = subj % {'t': ex.title}
+    label = T['giver'] if kind == 'reveal' else 'your secret recipient'
+    after = ''
+    if kind == 'test':
+        subject = 'TEST - ' + subject
+        after = ('<p style="margin:14px 0 0;font-size:12px;color:%s;">This is a test, sent only '
+                 'to you. Each person&rsquo;s email names the person they drew.</p>' % SOFT)
+    body = _page(ex, hi, lead, label, receiver_name, after, thanks=(kind == 'reveal'))
+    text = _text(ex, hi, _plain(lead), receiver_name,
+                 'This is a test, sent only to you.' if kind == 'test' else '', thanks=(kind == 'reveal'))
     return subject, text, body
 
 
@@ -252,7 +380,7 @@ def send_kind(ex, kind, only=None):
             failed.append(person.full_name)
             continue
         sent += 1
-        if kind == 'draw':
+        if kind in ('draw', 'change'):
             person.emailed_at = timezone.now()
             person.save(update_fields=['emailed_at'])
     return sent, failed

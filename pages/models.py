@@ -5955,10 +5955,18 @@ class RecordChange(models.Model):
 # --------------------------------------------------------------------------
 class SantaExchange(models.Model):
     MAX_PEOPLE = 20
+    # RA32, 27 Nov 2026 - Demetri: "when creating the event, the user needs
+    # to be able to stipulate if this is a XMAS event or other ... Maybe it
+    # is a company party". The emails change their tone with it.
+    CHRISTMAS, OFFICE, OTHER = 'christmas', 'office', 'other'
+    OCCASIONS = [(CHRISTMAS, 'Christmas'), (OFFICE, 'Office / company party'),
+                 (OTHER, 'Other occasion')]
     owner = models.ForeignKey(User, on_delete=models.CASCADE,
                               related_name='santa_exchanges')
     year = models.PositiveIntegerField()
     title = models.CharField(max_length=120)
+    occasion = models.CharField(max_length=16, choices=OCCASIONS, default=CHRISTMAS)
+    occasion_name = models.CharField(max_length=60, blank=True)
     event_date = models.DateField(null=True, blank=True)
     event_time = models.TimeField(null=True, blank=True)
     place = models.CharField(max_length=200, blank=True)
@@ -5978,7 +5986,9 @@ class SantaExchange(models.Model):
     class Meta:
         db_table = 'santa_exchanges'
         ordering = ['-year', '-id']
-        unique_together = [('owner', 'year')]
+        # RA32, 27 Nov 2026 - more than one a Christmas (Demetri: "There
+        # might be a need for more than one event per year / xmas"), so
+        # the one-per-owner-per-year rule is gone.
 
     def __str__(self):
         return '%s (%s)' % (self.title, self.year)

@@ -129,7 +129,7 @@ ok('def last_year_pairs(' in santa and 'def draw(' in santa and 'SystemRandom' i
    'THE DRAW: random, and last year\'s pairs barred')
 ok('.ics' not in santa and 'text/calendar' not in santa, 'NO CALENDAR INVITE ("We don\'t need the calendar invite")')
 ok("'Santa (%s)'" in santa and 'reply_to=' in santa, 'FROM "Santa (Demetri)", replies to him')
-ok('ex.revealed_at' in views and "if ex.revealed_at else []" in views,
+ok('ex.revealed_at' in views and "if (mine and ex.revealed_at) else []" in views,   # RA32 - and only on his own
    'THE PAIRINGS are read for the page only once he has pressed Reveal')
 ok("url 'secret_santa'" in dash and "url 'secret_santa'" in mgmt, 'REACHED from both Celebrations pages')
 ok("call_command('santa_tick'" in daily and 'due_reminders' in tick, 'THE REMINDERS ride the daily job')
@@ -269,8 +269,15 @@ try:
         t = C.get(url + '?year=%d' % Y).content.decode()
         names_after_arrow = [pr.receiver.full_name for pr in pairs]
         ok('Drawn ' in t and '&rarr;' not in t, 'HE TAKES PART: the page says Drawn and shows no pairing')
+        # RA32, 27 Nov 2026 - the people are no longer locked after the draw
+        # (a redraw follows; test_ra32_santa_back.py drives it). Add and take
+        # back out, so the five pairs below stand.
         r = C.post(save, {'action': 'person_add', 'year': Y, 'first_name': 'Late', 'email': 'late@example.com'})
-        ok(ex.people.count() == 5, 'AFTER THE DRAW the people are locked')
+        late = ex.people.filter(email='late@example.com').first()
+        ok(late is not None, 'AFTER THE DRAW a person can still be added (RA32)')
+        if late is not None:
+            C.post(save, {'action': 'person_remove', 'year': Y, 'pid': late.pk})
+        ok(ex.people.count() == 5 and ex.pairs.count() == 5, '  and removed again, the draw untouched')
         mail.outbox.clear()
         C.post(save, {'action': 'resend', 'year': Y, 'pid': P['Erene'].pk})
         ok(len(mail.outbox) == 1 and mail.outbox[0].to == ['erene@example.com'], 'RESEND: one email, to that person')

@@ -1718,6 +1718,8 @@ ROUNDS = [
     '.bak_ra30',
     # RA31, 26 Nov 2026 - Secret Santa in Celebrations.
     '.bak_ra31',
+    # RA32, 27 Nov 2026 - Secret Santa: Back, viewing others', the redraw, several a year, the occasion.
+    '.bak_ra32',
 ]
 
 
