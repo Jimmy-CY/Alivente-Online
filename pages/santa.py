@@ -265,7 +265,35 @@ def _details(ex):
     return rows
 
 
-def _page(ex, hello, lead, box_label, box_name, after, thanks=False):
+# --------------------------------------------------------------------------
+# RA33, 27 Nov 2026 - names in the emails. Demetri: "For those that we have
+# saved a nickname, then maybe it can state the Nickname (Name)", and list
+# the people taking part. Names only - nobody's email address goes to the
+# others - and the same list for everyone, so it gives nothing away.
+# --------------------------------------------------------------------------
+def shown(p):
+    """(big, small) for a person: the nickname over their name when they
+    have one that says something different; else just the name."""
+    if isinstance(p, str):
+        return p, ''
+    nick = (p.nickname or '').strip()
+    if nick and nick.lower() != p.full_name.lower():
+        return nick, p.full_name
+    return p.full_name, ''
+
+
+def label(p):
+    """'Papa (Demetri Manias)', or the name alone."""
+    big, small = shown(p)
+    return '%s (%s)' % (big, small) if small else big
+
+
+def roster(ex):
+    """Everyone taking part, as the emails list them, A to Z."""
+    return sorted((label(p) for p in ex.people.all()), key=lambda s: s.lower())
+
+
+def _page(ex, hello, lead, box_label, box_name, after, thanks=False, box_small='', people=()):
     e = html.escape
     T = tone(ex)
     rows = ''.join(
@@ -282,8 +310,14 @@ def _page(ex, hello, lead, box_label, box_name, after, thanks=False):
     box = ('<table role="presentation" width="100%%" cellpadding="0" cellspacing="0" '
            'style="margin:14px 0;"><tr><td align="center" style="border:2px dashed %s;'
            'border-radius:12px;padding:12px;"><div style="font-size:12px;color:%s;">%s</div>'
-           '<div style="font-size:24px;font-weight:bold;color:%s;">%s</div></td></tr></table>'
-           % (TEAL, SOFT, e(box_label), TEAL_INK, e(box_name))) if box_name else ''
+           '<div style="font-size:24px;font-weight:bold;color:%s;">%s</div>%s</td></tr></table>'
+           % (TEAL, SOFT, e(box_label), TEAL_INK, e(box_name),
+              ('<div style="font-size:14px;color:%s;">%s</div>' % (SOFT, e(box_small))) if box_small else '')
+           ) if box_name else ''
+    if people:
+        after = ('<p style="margin:14px 0 4px;font-size:14px;color:%s;"><b>Who&rsquo;s taking part (%d)</b></p>'
+                 '<ul style="margin:0;padding-left:20px;font-size:14px;line-height:1.6;color:%s;">%s</ul>'
+                 % (INK, len(people), INK, ''.join('<li>%s</li>' % e(n) for n in people))) + after
     return (
         '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>%(t)s</title></head>'
         '<body style="margin:0;padding:0;background:#f4f6f7;font-family:Arial,Helvetica,sans-serif;">'
@@ -303,12 +337,14 @@ def _page(ex, hello, lead, box_label, box_name, after, thanks=False):
            'bye': T['bye'], 'santa': e(santa_name(ex))})
 
 
-def _text(ex, hello, lead, box_name, after='', thanks=False):
+def _text(ex, hello, lead, box_name, after='', thanks=False, box_small='', people=()):
     T = tone(ex)
     lines = [ex.title, '', hello, '', lead]
     if box_name:
-        lines += ['', '    %s' % box_name, '']
+        lines += ['', '    %s' % box_name] + (['    (%s)' % box_small] if box_small else []) + ['']
     lines += ['%s: %s' % kv for kv in _details(ex)]
+    if people:
+        lines += ['', "Who's taking part (%d):" % len(people)] + ['  - %s' % n for n in people]
     if thanks:
         lines += ['', 'Thank you for taking part.']
     else:
@@ -324,11 +360,14 @@ def _plain(s):
     return (html.unescape(s).replace('’', "'").replace('–', '-').replace('…', '...'))
 
 
-def message(ex, kind, person, receiver_name):
+def message(ex, kind, person, receiver_name, people=None):
     """(subject, text, html) for one person. kind: draw, test, week, day,
     reveal, change (RA32 - a redraw gave them someone new). For reveal,
     receiver_name is who their Santa was. The words follow the occasion
-    (RA32): Christmas, an office party, or another occasion."""
+    (RA32): Christmas, an office party, or another occasion.
+    RA33: receiver_name may be the SantaPerson (shown as nickname over name);
+    the draw, test and change emails list everyone taking part - `people`,
+    or the event's own list when not given."""
     T = tone(ex)
     hi = T['hello'] % person.called
     key = 'draw' if kind == 'test' else kind
@@ -336,15 +375,21 @@ def message(ex, kind, person, receiver_name):
         raise ValueError(kind)
     subj, lead = T[key]
     subject = subj % {'t': ex.title}
-    label = T['giver'] if kind == 'reveal' else 'your secret recipient'
+    box = T['giver'] if kind == 'reveal' else 'your secret recipient'
     after = ''
     if kind == 'test':
         subject = 'TEST - ' + subject
         after = ('<p style="margin:14px 0 0;font-size:12px;color:%s;">This is a test, sent only '
                  'to you. Each person&rsquo;s email names the person they drew.</p>' % SOFT)
-    body = _page(ex, hi, lead, label, receiver_name, after, thanks=(kind == 'reveal'))
-    text = _text(ex, hi, _plain(lead), receiver_name,
-                 'This is a test, sent only to you.' if kind == 'test' else '', thanks=(kind == 'reveal'))
+    big, small = shown(receiver_name)
+    if kind in ('draw', 'test', 'change'):
+        crowd = people if people is not None else (roster(ex) if ex.pk else [])
+    else:
+        crowd = []
+    body = _page(ex, hi, lead, box, big, after, thanks=(kind == 'reveal'), box_small=small, people=crowd)
+    text = _text(ex, hi, _plain(lead), big,
+                 'This is a test, sent only to you.' if kind == 'test' else '', thanks=(kind == 'reveal'),
+                 box_small=small, people=crowd)
     return subject, text, body
 
 
@@ -360,19 +405,19 @@ def send_kind(ex, kind, only=None):
     (sent, failed names). The pairings are read here and never shown."""
     pairs = {p.giver_id: p for p in ex.pairs.select_related('giver', 'receiver')}
     by_receiver = {p.receiver_id: p.giver for p in pairs.values()}
+    crowd = roster(ex)
     sent, failed = 0, []
     for person in ex.people.all():
         if only is not None and person.pk not in only:
             continue
         if kind == 'reveal':
-            santa = by_receiver.get(person.pk)
-            name = santa.full_name if santa else ''
+            name = by_receiver.get(person.pk)
         else:
             pair = pairs.get(person.pk)
-            name = pair.receiver.full_name if pair else ''
+            name = pair.receiver if pair else None
         if not name:
             continue
-        subject, text, body = message(ex, kind, person, name)
+        subject, text, body = message(ex, kind, person, name, people=crowd)
         try:
             send_one(ex, person.email, subject, text, body)
         except Exception:

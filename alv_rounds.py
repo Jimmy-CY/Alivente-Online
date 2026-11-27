@@ -1720,6 +1720,8 @@ ROUNDS = [
     '.bak_ra31',
     # RA32, 27 Nov 2026 - Secret Santa: Back, viewing others', the redraw, several a year, the occasion.
     '.bak_ra32',
+    # RA33, 27 Nov 2026 - Secret Santa emails: Nickname (Name), and who's taking part.
+    '.bak_ra33',
 ]
 
 
