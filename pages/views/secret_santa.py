@@ -170,6 +170,7 @@ def secret_santa(request):
            'occasions': SantaExchange.OCCASIONS,
            'sender': SS.santa_name(ex) if ex is not None else '',
            'xmas': ex is None or SS.occasion(ex) == SantaExchange.CHRISTMAS,
+           'ask_details': bool(ex is not None and mine and ex.details_due and request.GET.get('ask') == 'details'),
            'ex': ex, 'can_edit': mine, 'viewing': viewing, 'others': others,
            'max_people': SantaExchange.MAX_PEOPLE,
            'back_url': reverse(back[0]), 'back_label': back[1]}
@@ -258,8 +259,24 @@ def secret_santa_save(request):
         ex = SantaExchange.objects.filter(owner=request.user, year=year).order_by('-id').first()
 
     if action == 'event':
-        when = _date(P.get('event_date'))
-        occ = P.get('occasion') if P.get('occasion') in dict(SantaExchange.OCCASIONS) else SantaExchange.CHRISTMAS
+        # RA35, 28 Nov 2026 - Demetri: Occasion, Name, Budget and Rules are
+        # required; Date, Time and Place too, unless "not decided yet" is
+        # ticked (then they are cleared). Adding them later, after the draw,
+        # asks to send everyone the details.
+        later = P.get('details_later') == '1'
+        when = None if later else _date(P.get('event_date'))
+        missing = [n for n, v in (('Occasion', P.get('occasion') in dict(SantaExchange.OCCASIONS)),
+                                  ('Name', (P.get('title') or '').strip()),
+                                  ('Budget', _money(P.get('budget')) is not None),
+                                  ('Rules', (P.get('rules') or '').strip()))if not v]
+        if not later:
+            missing += [n for n, v in (('Date', when), ('Time', _time(P.get('event_time'))),
+                                       ('Place', (P.get('place') or '').strip())) if not v]
+        if missing:
+            messages.error(request, 'Please fill in: %s. (Not sure of the date, time and place yet? '
+                                    'Tick "Date, time and place not decided yet".)' % ', '.join(missing))
+            return redirect(_url(ex) if ex is not None else reverse('secret_santa') + '?new=1')
+        occ = P.get('occasion')
         # A Christmas belongs to its December (a January party counts with
         # it); any other occasion to the year of its date.
         y = (_christmas_of(when) if occ == SantaExchange.CHRISTMAS else when.year) if when else year
@@ -274,16 +291,24 @@ def secret_santa_save(request):
                        occ, ('%s %s' % (ex.occasion_name or 'Secret Santa', ex.year)))
         title = (P.get('title') or '').strip()[:120] or default
         ex.title = title
+        was_later = bool(ex.pk and ex.details_later)
+        ex.details_later = later
         ex.event_date = when
-        ex.event_time = _time(P.get('event_time'))
-        ex.place = (P.get('place') or '').strip()[:200]
+        ex.event_time = None if later else _time(P.get('event_time'))
+        ex.place = '' if later else (P.get('place') or '').strip()[:200]
         ex.budget = _money(P.get('budget'))
         ex.rules = (P.get('rules') or '').strip()[:2000]
-        ex.remind_week = P.get('remind_week') == '1'
-        ex.remind_day = P.get('remind_day') == '1'
+        if not later:            # greyed out while there is no date: keep them as they were
+            ex.remind_week = P.get('remind_week') == '1'
+            ex.remind_day = P.get('remind_day') == '1'
+        ask = bool(was_later and not later and ex.drawn_at)
+        if ask:
+            ex.details_due = True
+        elif later:
+            ex.details_due = False
         ex.save()
         messages.success(request, 'Saved.')
-        return redirect(_url(ex))
+        return redirect(_url(ex) + ('&ask=details' if ask else ''))
 
     if ex is None:
         messages.error(request, 'Save the event first.')
@@ -394,6 +419,21 @@ def secret_santa_save(request):
             len(moved), 'person has' if len(moved) == 1 else 'people have', sent, '' if sent == 1 else 's')
         if failed:
             messages.error(request, msg + ' Not sent to %s - use Resend on their row.' % ', '.join(failed))
+        else:
+            messages.success(request, msg)
+        return back
+
+    if action == 'details_send':
+        # RA35 - the date, time and place, to everyone drawn, with a reminder
+        # of whom they are buying for. Nobody's pairing changes.
+        if not ex.drawn_at or ex.details_later:
+            return back
+        sent, failed = SS.send_kind(ex, 'details')
+        ex.details_due = False
+        ex.save(update_fields=['details_due'])
+        msg = 'The date, time and place went to %d %s.' % (sent, 'person' if sent == 1 else 'people')
+        if failed:
+            messages.error(request, msg + ' Not sent to %s.' % ', '.join(failed))
         else:
             messages.success(request, msg)
         return back

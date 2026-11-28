@@ -473,7 +473,10 @@ for d, _s, fs in T.walk3():
 # RA31, 26 Nov 2026 - 236 -> 242. Six Secret Santa stars, each on a field
 # with `required` in its markup (row 1): Name and Email in Add a person
 # and in Edit a person, and the two people in Exclude.
-TOTAL = 242
+# RA35, 28 Nov 2026 - 242 -> 249. Seven Secret Santa event stars, each on
+# a field with `required` in its markup (row 1): Occasion, Name, Budget,
+# Rules, and Date, Time and Place (required unless "not decided yet").
+TOTAL = 249
 ok(len(rows) == TOTAL,
    'the corpus is %d starred labels' % len(rows),
    'pinned at %d. THE MARKER IS THE alv-req SPAN, not a bare asterisk - '
@@ -522,7 +525,8 @@ EXPECT = {
     # markup.
     # RA19, 24 Nov 2026 - 189 -> 191: the two Acquisitions stars above.
     # RA31, 26 Nov 2026 - 191 -> 197: the six Secret Santa stars above.
-    '1 static required': 197,
+    # RA35, 28 Nov 2026 - 197 -> 204: the seven event stars above.
+    '1 static required': 204,
     # ES-3b, 24 Oct 2026 - 7 -> 8. The lease upload on the Send for
     # Signature screen, the fifth of that screen's five stars. The
     # script writes it through getElementById with a literal on the

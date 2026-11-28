@@ -249,6 +249,24 @@ TONES = {
 }
 
 
+# RA35, 28 Nov 2026 - Demetri: date, time and place may be left for later;
+# when he adds them after the draw, everyone gets this "details" email.
+TONES['christmas']['details'] = (
+    'The date and place: %(t)s',
+    'Good news &ndash; the date and place are set! Here are the details. '
+    'As a reminder, you&rsquo;re buying a gift for&hellip;')
+TONES['office']['details'] = (
+    'Date and venue confirmed: %(t)s',
+    'The date and venue for the gift exchange are now confirmed. '
+    'As a reminder, you&rsquo;re buying a gift for&hellip;')
+TONES['other']['details'] = (
+    'The date and place: %(t)s',
+    'The date and place are set! Here are the details. '
+    'As a reminder, you&rsquo;re buying a gift for&hellip;')
+
+TBC = "To be confirmed - you'll get an email with the date, time and place"
+
+
 def tone(ex):
     return TONES.get(occasion(ex), TONES['christmas'])
 
@@ -257,6 +275,9 @@ def _details(ex):
     rows = []
     if ex.budget is not None:
         rows.append(('Spend', 'about %s' % euros(ex.budget)))
+    if getattr(ex, 'details_later', False):       # RA35 - not decided yet
+        rows.append(('When', TBC))
+        return rows
     when = ', '.join(x for x in (nice_date(ex.event_date), nice_time(ex.event_time)) if x)
     if when:
         rows.append(('When', when))
@@ -379,7 +400,7 @@ def message(ex, kind, person, receiver_name, people=None):
     nick = (person.nickname or '').strip()
     aka = nick if nick and nick.lower() not in (person.first_name.lower(), person.full_name.lower()) else ''
     key = 'draw' if kind == 'test' else kind
-    if key not in ('draw', 'change', 'week', 'day', 'reveal'):
+    if key not in ('draw', 'change', 'week', 'day', 'reveal', 'details'):
         raise ValueError(kind)
     subj, lead = T[key]
     subject = subj % {'t': ex.title}

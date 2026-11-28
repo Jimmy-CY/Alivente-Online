@@ -191,7 +191,8 @@ try:
         t = C.get(url + '?year=%d' % Y)
         ok(t.status_code == 200 and 'Start this Secret Santa' in t.content.decode(),
            'THE PAGE opens on a new Christmas, asking for the event')
-        r = C.post(save, {'action': 'event', 'year': Y, 'title': 'Manias Christmas', 'event_date': '2026-12-20',
+        # RA35 - Occasion is required now
+        r = C.post(save, {'action': 'event', 'year': Y, 'occasion': 'christmas', 'title': 'Manias Christmas', 'event_date': '2026-12-20',
                           'event_time': '19:30', 'place': 'Home, Engomi', 'budget': '40',
                           'rules': 'No gift cards. <b>Wrap it</b>.', 'remind_week': '1', 'remind_day': '1'})
         ex = SantaExchange.objects.get(owner=me, year=Y)

@@ -261,8 +261,9 @@ try:
         UserProfile.objects.update_or_create(user=she, defaults={'workspace': ws})
         ensure_workspace(out)
         url, save, Y = '/celebrations/secret-santa/', '/celebrations/secret-santa/save/', 2026
-        C.post(save, {'action': 'event', 'year': Y, 'title': 'Full Manias Family', 'event_date': '2026-12-25',
-                      'budget': '40', 'remind_week': '1'})
+        # RA35 - Occasion, Name, Budget, Rules, Date, Time and Place are required now
+        C.post(save, {'action': 'event', 'year': Y, 'occasion': 'christmas', 'title': 'Full Manias Family', 'event_date': '2026-12-25',
+                      'budget': '40', 'remind_week': '1', 'event_time': '13:00', 'place': 'Home', 'rules': 'Have fun', })
         ex = SantaExchange.objects.filter(owner=me, year=Y).first()
         ok(ex is not None, 'ACCESS ALONE (no edit rights) sets up your own Secret Santa')
         for f, e in (('Demetri', 'd32@example.com'), ('Angie', 'a32@example.com'), ('Alex', 'x32@example.com'),
@@ -292,7 +293,8 @@ try:
         S.post(save, {'action': 'person_add', 'year': Y, 'first_name': 'Hack', 'email': 'h32@example.com'})
         ok(not ex.people.filter(email='h32@example.com').exists(), '  her saves land on her own, never his')
         # a second event the same Christmas
-        C.post(save, {'action': 'event', 'year': Y, 'title': 'Friends', 'event_date': '2026-12-23'})
+        C.post(save, {'action': 'event', 'year': Y, 'occasion': 'christmas', 'title': 'Friends', 'event_date': '2026-12-23',
+                      'budget': '20', 'event_time': '13:00', 'place': 'Home', 'rules': 'Have fun', })
         two = list(SantaExchange.objects.filter(owner=me, year=Y).order_by('id'))
         t = C.get(url + '?ex=%d' % two[0].pk).content.decode()
         ok(len(two) == 2 and two[1].title == 'Friends' and two[1].people.count() == 0
@@ -309,8 +311,8 @@ try:
         from pages.models import SantaPerson as SP
         mail.outbox = []
         ok(SS.santa_name(ex) == 'Santa (Demetri)', 'CHRISTMAS: signed Santa (the creator\'s first name)')
-        S.post(save, {'action': 'event', 'year': Y, 'title': '', 'occasion': 'office', 'event_date': '2026-12-18',
-                      'budget': '25'})
+        S.post(save, {'action': 'event', 'year': Y, 'title': 'Office party 2026', 'occasion': 'office', 'event_date': '2026-12-18',
+                      'budget': '25', 'event_time': '13:00', 'place': 'Home', 'rules': 'Have fun', })
         off = SantaExchange.objects.filter(owner=she).first()
         she.last_name = 'Manias'
         she.save()
@@ -323,8 +325,8 @@ try:
            'OFFICE PARTY: businesslike, no Christmas words, signed with her full name', s1)
         s2, txt2, h2 = SS.message(off, 'reveal', p1, 'Carol Day')
         ok('secret gift-giver' in h2 and 'Thank you</b> for taking part' in h2, '  its reveal too')
-        S.post(save, {'action': 'event', 'year': Y, 'occasion': 'other', 'occasion_name': 'Easter',
-                      'event_date': '2027-04-04'})
+        S.post(save, {'action': 'event', 'year': Y, 'occasion': 'other', 'occasion_name': 'Easter', 'title': 'Easter 2027',
+                      'event_date': '2027-04-04', 'budget': '15', 'event_time': '13:00', 'place': 'Home', 'rules': 'Have fun', })
         eas = SantaExchange.objects.filter(owner=she, occasion='other').first()
         s3, txt3, h3 = SS.message(eas, 'draw', p1, 'Carol Day')
         ok(eas and eas.year == 2027 and eas.title == 'Easter 2027' and 'Hi Bob!' in h3 and 'Happy gifting!' in h3

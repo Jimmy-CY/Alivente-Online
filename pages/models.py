@@ -5967,6 +5967,10 @@ class SantaExchange(models.Model):
     title = models.CharField(max_length=120)
     occasion = models.CharField(max_length=16, choices=OCCASIONS, default=CHRISTMAS)
     occasion_name = models.CharField(max_length=60, blank=True)
+    # RA35, 28 Nov 2026 - date, time and place "not decided yet"; and, once
+    # they are added after the draw, an update owed to everyone.
+    details_later = models.BooleanField(default=False)
+    details_due = models.BooleanField(default=False)
     event_date = models.DateField(null=True, blank=True)
     event_time = models.TimeField(null=True, blank=True)
     place = models.CharField(max_length=200, blank=True)

@@ -3425,7 +3425,9 @@ $suites = @(
     # RA33, 27 Nov 2026 - Secret Santa emails: Nickname (Name), and who's taking part.
     'test_ra33_santa_names.py',
     # RA34, 27 Nov 2026 - Secret Santa's test and preview greet you by your nickname.
-    'test_ra34_santa_test_nickname.py'
+    'test_ra34_santa_test_nickname.py',
+    # RA35, 28 Nov 2026 - Secret Santa: required fields; date, time and place later.
+    'test_ra35_santa_details_later.py'
 )
 # NUMBER EVERY SUITE AS IT RUNS - Demetri, 1 Oct 2026: "for every check of
 # the 203, it shows 1/203 and then name for the first one... This way I can

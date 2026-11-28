@@ -1724,6 +1724,8 @@ ROUNDS = [
     '.bak_ra33',
     # RA34, 27 Nov 2026 - Secret Santa's test and preview greet you by your nickname.
     '.bak_ra34',
+    # RA35, 28 Nov 2026 - Secret Santa: required fields; date, time and place later.
+    '.bak_ra35',
 ]
 
 
