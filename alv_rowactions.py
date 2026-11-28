@@ -71,6 +71,9 @@ FAMILY = {
     # Edit is CHANGE, so the comment strip reads edit-then-notify
     # without the markup being told that.
     'notify': ADVANCE,
+    # RA34, 27 Nov 2026 - Start the PC search on an incomplete run's row:
+    # the run moves on (the PC finishes it). ADVANCE, after the eye.
+    'pc-search': ADVANCE,
     # DESTROY - last, always.
     'delete': DESTROY,
 }

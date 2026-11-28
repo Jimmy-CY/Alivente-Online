@@ -200,6 +200,19 @@ def secret_santa(request):
     return render(request, 'secret_santa.html', ctx)
 
 
+def _me(ex, user):
+    """RA34, 27 Nov 2026 - who the test and the preview greet. Demetri:
+    "why is my name at the top not my nickname?" His own row in the event
+    (by his login email), so it reads as his real email will - Ho ho ho,
+    Papa! Only when he is not in the event, his login's first name."""
+    mail = (user.email or '').strip().lower()
+    if mail:
+        row = next((p for p in ex.people.all() if p.email.lower() == mail), None)
+        if row is not None:
+            return row
+    return SantaPerson(first_name=(user.first_name or user.get_username()).split(' ')[0])
+
+
 def _others(user):
     """RA32 - the other people's Secret Santas this user may VIEW: owners in
     the same household (workspace), newest Christmas first."""
@@ -219,7 +232,7 @@ def secret_santa_preview(request):
     if ex is None:
         ex = get_object_or_404(SantaExchange.objects.filter(owner=request.user, year=_year(request.GET.get('year')) or 0)
                                .order_by('-id')[:1])
-    me = SantaPerson(first_name=(request.user.first_name or request.user.get_username()).split(' ')[0])
+    me = _me(ex, request.user)
     _s, _t, body = SS.message(ex, request.GET.get('kind') if request.GET.get('kind') in
                               ('draw', 'week', 'day', 'reveal') else 'draw', me, "Your recipient's name")
     return HttpResponse(body)
@@ -296,7 +309,7 @@ def secret_santa_save(request):
         if not request.user.email:
             messages.error(request, 'Your login has no email address to send the test to.')
             return back
-        me = SantaPerson(first_name=(request.user.first_name or request.user.get_username()).split(' ')[0])
+        me = _me(ex, request.user)
         subject, text, body = SS.message(ex, 'test', me, "Your recipient's name")
         try:
             SS.send_one(ex, request.user.email, subject, text, body)

@@ -272,18 +272,20 @@ def _details(ex):
 # others - and the same list for everyone, so it gives nothing away.
 # --------------------------------------------------------------------------
 def shown(p):
-    """(big, small) for a person: the nickname over their name when they
-    have one that says something different; else just the name."""
+    """(big, small) for a person: their name, and their nickname when
+    they have one that says something different. RA34 - the name first,
+    as the greeting does (Demetri: "Match the greeting")."""
     if isinstance(p, str):
         return p, ''
     nick = (p.nickname or '').strip()
-    if nick and nick.lower() != p.full_name.lower():
-        return nick, p.full_name
+    if nick and nick.lower() not in (p.first_name.lower(), p.full_name.lower()):
+        return p.full_name, nick
     return p.full_name, ''
 
 
 def label(p):
-    """'Papa (Demetri Manias)', or the name alone."""
+    """'Demetri Manias (Papa)', or the name alone. (Demetri: "drop the
+    a.k.a from everywhere, just the nickname in brackets".)"""
     big, small = shown(p)
     return '%s (%s)' % (big, small) if small else big
 
@@ -293,7 +295,7 @@ def roster(ex):
     return sorted((label(p) for p in ex.people.all()), key=lambda s: s.lower())
 
 
-def _page(ex, hello, lead, box_label, box_name, after, thanks=False, box_small='', people=()):
+def _page(ex, hello, lead, box_label, box_name, after, thanks=False, box_small='', people=(), aka=''):
     e = html.escape
     T = tone(ex)
     rows = ''.join(
@@ -312,7 +314,7 @@ def _page(ex, hello, lead, box_label, box_name, after, thanks=False, box_small='
            'border-radius:12px;padding:12px;"><div style="font-size:12px;color:%s;">%s</div>'
            '<div style="font-size:24px;font-weight:bold;color:%s;">%s</div>%s</td></tr></table>'
            % (TEAL, SOFT, e(box_label), TEAL_INK, e(box_name),
-              ('<div style="font-size:14px;color:%s;">%s</div>' % (SOFT, e(box_small))) if box_small else '')
+              ('<div style="font-size:14px;color:%s;">(%s)</div>' % (SOFT, e(box_small))) if box_small else '')
            ) if box_name else ''
     if people:
         after = ('<p style="margin:14px 0 4px;font-size:14px;color:%s;"><b>Who&rsquo;s taking part (%d)</b></p>'
@@ -327,19 +329,20 @@ def _page(ex, hello, lead, box_label, box_name, after, thanks=False, box_small='
         'background:#ffffff;border:1px solid #dde3e6;border-radius:12px;">'
         '<tr><td align="center" style="background:%(red)s;color:#ffffff;padding:18px 20px;'
         'border-radius:12px 12px 0 0;"><div style="font-size:13px;">%(mark)s</div>'
-        '<div style="font-size:24px;font-weight:bold;margin-top:4px;">%(hello)s</div></td></tr>'
+        '<div style="font-size:24px;font-weight:bold;margin-top:4px;">%(hello)s</div>%(aka)s</td></tr>'
         '<tr><td style="padding:18px 22px;"><p style="margin:0;font-size:15px;line-height:1.6;color:%(ink)s;">'
         '%(lead)s</p>%(box)s<table role="presentation" cellpadding="0" cellspacing="0">%(rows)s</table>'
         '%(rules)s%(after)s<p style="margin:16px 0 0;font-size:14px;color:%(ink)s;">%(bye)s<br>'
         '&mdash; %(santa)s</p></td></tr></table></td></tr></table></body></html>'
         % {'t': e(ex.title), 'red': T['head'], 'mark': T['mark'] % e(ex.title), 'hello': e(hello),
+           'aka': ('<div style="font-size:14px;margin-top:2px;">(%s)</div>' % e(aka)) if aka else '',
            'ink': INK, 'lead': lead, 'box': box, 'rows': rows, 'rules': rules, 'after': after,
            'bye': T['bye'], 'santa': e(santa_name(ex))})
 
 
-def _text(ex, hello, lead, box_name, after='', thanks=False, box_small='', people=()):
+def _text(ex, hello, lead, box_name, after='', thanks=False, box_small='', people=(), aka=''):
     T = tone(ex)
-    lines = [ex.title, '', hello, '', lead]
+    lines = [ex.title, '', hello] + (['(%s)' % aka] if aka else []) + ['', lead]
     if box_name:
         lines += ['', '    %s' % box_name] + (['    (%s)' % box_small] if box_small else []) + ['']
     lines += ['%s: %s' % kv for kv in _details(ex)]
@@ -369,7 +372,12 @@ def message(ex, kind, person, receiver_name, people=None):
     the draw, test and change emails list everyone taking part - `people`,
     or the event's own list when not given."""
     T = tone(ex)
-    hi = T['hello'] % person.called
+    # RA34, 27 Nov 2026 - Demetri: greet by the name, the nickname "in
+    # brackets underneath" - then "drop the a.k.a from everywhere, just the
+    # nickname in brackets".
+    hi = T['hello'] % (person.first_name or person.called)
+    nick = (person.nickname or '').strip()
+    aka = nick if nick and nick.lower() not in (person.first_name.lower(), person.full_name.lower()) else ''
     key = 'draw' if kind == 'test' else kind
     if key not in ('draw', 'change', 'week', 'day', 'reveal'):
         raise ValueError(kind)
@@ -386,10 +394,10 @@ def message(ex, kind, person, receiver_name, people=None):
         crowd = people if people is not None else (roster(ex) if ex.pk else [])
     else:
         crowd = []
-    body = _page(ex, hi, lead, box, big, after, thanks=(kind == 'reveal'), box_small=small, people=crowd)
+    body = _page(ex, hi, lead, box, big, after, thanks=(kind == 'reveal'), box_small=small, people=crowd, aka=aka)
     text = _text(ex, hi, _plain(lead), big,
                  'This is a test, sent only to you.' if kind == 'test' else '', thanks=(kind == 'reveal'),
-                 box_small=small, people=crowd)
+                 box_small=small, people=crowd, aka=aka)
     return subject, text, body
 
 

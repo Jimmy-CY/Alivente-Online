@@ -113,7 +113,7 @@ helpt = read(J(PG, 'help_content', 'administration.html'))
 ok('def shown(' in santa and 'def roster(' in santa, 'NAMES: nickname over name, and the roster')
 ok("Who&rsquo;s taking part" in santa and '.email' not in santa.split('def roster(')[1].split('def ')[0],
    'THE LIST carries names only - no email addresses')
-ok('Nickname (Name)' in helpt, 'HELP says so')
+ok('Name (Nickname)' in helpt, 'HELP says so')   # RA34 - the name first
 
 head('2. DRIVEN')
 os.environ.setdefault('SECRET_KEY', 'test-only-not-a-secret')
@@ -148,10 +148,11 @@ try:
                            ('Alexandra', 'Manias', 'Alex', 'x33@example.com'),
                            ('Erene', 'Manias', 'erene manias', 'e33@example.com')):
             P[f] = SantaPerson.objects.create(exchange=ex, first_name=f, surname=s, nickname=n, email=e)
-        ok(SS.label(P['Demetri']) == 'Papa (Demetri Manias)' and SS.label(P['Angie']) == 'Angie Manias',
-           'LABEL: Papa (Demetri Manias); no nickname, just the name')
+        # RA34 - the name first, as the greeting: Demetri Manias (Papa).
+        ok(SS.label(P['Demetri']) == 'Demetri Manias (Papa)' and SS.label(P['Angie']) == 'Angie Manias',
+           'LABEL: Demetri Manias (Papa); no nickname, just the name')
         ok(SS.label(P['Erene']) == 'Erene Manias', '  a nickname that only repeats the name is not doubled')
-        ok(SS.roster(ex) == ['Alex (Alexandra Manias)', 'Angie Manias', 'Erene Manias', 'Papa (Demetri Manias)'],
+        ok(SS.roster(ex) == ['Alexandra Manias (Alex)', 'Angie Manias', 'Demetri Manias (Papa)', 'Erene Manias'],
            'THE ROSTER: everyone, A to Z')
         ring = [('Demetri', 'Angie'), ('Angie', 'Alexandra'), ('Alexandra', 'Erene'), ('Erene', 'Demetri')]
         for g, r in ring:
@@ -163,16 +164,16 @@ try:
         by = {m.to[0]: m for m in mail.outbox}
         m = by['e33@example.com']                     # Erene drew Demetri
         h = m.alternatives[0][0]
-        ok('>Papa</div>' in h and '>Demetri Manias</div>' in h, 'THE BOX: Papa large, Demetri Manias under it')
-        ok('Papa' in m.body and '(Demetri Manias)' in m.body, '  and in the plain-text email')
-        ok("Who&rsquo;s taking part (4)" in h and '<li>Alex (Alexandra Manias)</li>' in h
+        ok('>Demetri Manias</div>' in h and '>(Papa)</div>' in h, 'THE BOX: Demetri Manias large, (Papa) under it')
+        ok('    Demetri Manias\n    (Papa)' in m.body, '  and in the plain-text email')
+        ok("Who&rsquo;s taking part (4)" in h and '<li>Alexandra Manias (Alex)</li>' in h
            and '<li>Angie Manias</li>' in h, 'WHO\'S TAKING PART: listed in the draw email')
         ok(all('33@example.com' not in mm.alternatives[0][0] and '33@example.com' not in mm.body for mm in mail.outbox),
            '  names only - nobody\'s address is in anyone\'s email')
         ok(len({mm.alternatives[0][0].split("taking part")[1].split('</ul>')[0] for mm in mail.outbox}) == 1,
            '  the same list for everyone, so it gives nothing away')
         h2 = by['a33@example.com'].alternatives[0][0]                 # Angie drew Alexandra
-        ok('>Alex</div>' in h2 and '>Alexandra Manias</div>' in h2, '  Alex (Alexandra Manias) for whoever drew her')
+        ok('>Alexandra Manias</div>' in h2 and '>(Alex)</div>' in h2, '  Alexandra Manias (Alex) for whoever drew her')
         h3 = by['d33@example.com'].alternatives[0][0]                 # Demetri drew Angie
         ok('>Angie Manias</div>' in h3 and 'Angie Manias</div><div' not in h3.split('your secret recipient')[1][:200],
            '  no nickname: the name alone, no second line')
@@ -183,7 +184,7 @@ try:
         mail.outbox = []
         SS.send_kind(ex, 'reveal')
         h4 = {mm.to[0]: mm for mm in mail.outbox}['a33@example.com'].alternatives[0][0]  # Angie's Santa: Demetri
-        ok('>Papa</div>' in h4 and '>Demetri Manias</div>' in h4, 'THE REVEAL: your Santa as Papa (Demetri Manias)')
+        ok('>Demetri Manias</div>' in h4 and '>(Papa)</div>' in h4, 'THE REVEAL: your Santa as Demetri Manias (Papa)')
         mail.outbox = []
         SS.send_kind(ex, 'change', only={P['Erene'].pk})
         ok(len(mail.outbox) == 1 and 'taking part (4)' in mail.outbox[0].alternatives[0][0],

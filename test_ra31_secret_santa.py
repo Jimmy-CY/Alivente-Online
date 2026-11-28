@@ -259,9 +259,11 @@ try:
         for pr in pairs:
             msg = to.get(pr.giver.email)
             body = msg.alternatives[0][0] if msg else ''
-            if not msg or pr.receiver.full_name not in body or 'Ho ho ho, %s!' % pr.giver.called not in body:
+            # RA34 - greeted by first name, the nickname in brackets under it.
+            if not msg or pr.receiver.full_name not in body or 'Ho ho ho, %s!' % pr.giver.first_name not in body \
+                    or (pr.giver.nickname and '>(%s)</div>' % pr.giver.nickname not in body):
                 okm = False
-        ok(okm, '  each email greets its person by nickname and names whom they drew')
+        ok(okm, '  each email greets its person by name, (nickname) under it, and names whom they drew')
         ok(all(pr.giver_id != pr.receiver_id for pr in pairs)
            and not any((pr.giver_id, pr.receiver_id) in ((P['Demetri'].pk, P['Angie'].pk), (P['Angie'].pk, P['Demetri'].pk),
                                                         (P['Alexandra'].pk, P['Erene'].pk)) for pr in pairs),

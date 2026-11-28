@@ -1085,6 +1085,16 @@ def runs(request):
         r.took = (int((r.finished_at - r.started_at).total_seconds() // 60)
                   if r.finished_at else None)
         r.complete = bool(rs) and not part and not bad
+    # RA34, 27 Nov 2026 - Demetri: "put a start PC run button or icon ...
+    # next to incomplete". On the latest cloud run of each scenario, when
+    # it finished incomplete and no PC run has followed it up yet.
+    latest = {}
+    for r in rows:                                   # newest first
+        if r.where == "cloud" and r.scenario_id and r.scenario_id not in latest:
+            latest[r.scenario_id] = r
+    for r in latest.values():
+        r.pc_offer = (bool(r.finished_at) and not r.complete
+                      and not list(r.follow_ups.all()))
     return _page(request, "runs.html", "runs", rows=rows, chosen=chosen,
                  scenarios=Scenario.objects.filter(is_active=True))
 

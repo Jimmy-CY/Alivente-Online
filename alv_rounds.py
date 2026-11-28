@@ -1722,6 +1722,8 @@ ROUNDS = [
     '.bak_ra32',
     # RA33, 27 Nov 2026 - Secret Santa emails: Nickname (Name), and who's taking part.
     '.bak_ra33',
+    # RA34, 27 Nov 2026 - Secret Santa's test and preview greet you by your nickname.
+    '.bak_ra34',
 ]
 
 

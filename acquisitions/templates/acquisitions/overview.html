@@ -24,6 +24,8 @@
       <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#acquisitionsHelpModal"><i class="fas fa-question-circle"></i> Help</button>
     </div>
   </div>
+  {# RA34, 27 Nov 2026 - Demetri: "we need a Back button here to take the user back to the Home page". #}
+  <a href="{% url 'home' %}" class="btn action-back" role="button" aria-label="Back to home"><i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span></a>
 </div>
 
 {% include 'acquisitions/_tabs.html' %}

@@ -368,9 +368,15 @@ try:
         C.post(save, {'action': 'redraw', 'year': Y})
         after = dict(ex.pairs.values_list('giver_id', 'receiver_id'))
         changed = {g for g in after if before.get(g) != after[g]}
-        ok(len(after) == 5 and changed == {santa_of_gone} and len(mail.outbox) == 1
-           and mail.outbox[0].subject.startswith('Change of plan'),
-           'A PERSON LEAVES: only their Santa gets a new person, one "Change of plan" email')
+        # RA34 - the draw is random: when the leaver and their Santa had drawn
+        # each other, the Santa cannot inherit (it would be themselves), so
+        # one more pair has to move - two emails, not one. Both are right.
+        swap = before.get(gone.pk) == santa_of_gone
+        want = 2 if swap else 1
+        ok(len(after) == 5 and santa_of_gone in changed and len(changed) == want and len(mail.outbox) == want
+           and all(m.subject.startswith('Change of plan') for m in mail.outbox),
+           'A PERSON LEAVES: only their Santa gets a new person (one more if they had drawn each other)',
+           (changed, swap))
         raise Rollback
 except Rollback:
     pass
